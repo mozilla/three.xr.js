@@ -72,6 +72,12 @@ THREE.WebXRManager = function( xrDisplays, renderer, camera, scene, updateCallba
 
 	};
 
+		this.getDisplay = function () {
+
+		return display;
+
+	};
+
 	this.session = null;
 
 	this.startSession = function (createVirtualReality=true, shouldStartPresenting=true) {

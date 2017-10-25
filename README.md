@@ -1,14 +1,21 @@
 # three.xr.js
 Extra classes to make it work WebXR API with three.js
 
-## Using
+## Running the examples
+<a href="https://docs.npmjs.com/getting-started/installing-node">Install npm</a> and then run the following:
 
-You can test it with:
+```
+$ npm install
+$ npm start
+```
+
+## Supported browsers
+
   - ARKit: Mozilla's [ARKit based iOS app](https://github.com/mozilla/webxr-ios)
-  - ARCore: Google's [WebARonARCore Android app] (https://github.com/google-ar/WebARonARCore)
+  - ARCore: Google's [WebARonARCore Android app](https://github.com/google-ar/WebARonARCore)
 
 
-### Script
+## Script
 
 You need to have loaded:
 ```html
