@@ -2,6 +2,7 @@
 THREE.WebXRUtils = {
 	getDisplays: () => new Promise((resolve, reject) => {
 		if(!navigator.XR){
+			console.log('WebXR polyfill is not found');
 			resolve(null);
 			return;
 		}else{

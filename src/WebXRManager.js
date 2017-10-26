@@ -100,7 +100,7 @@ THREE.WebXRManager = function( xrDisplays, renderer, camera, scene, updateCallba
 		setTimeout( () => {
 			display.requestSession(sessionInitParamers).then(session => {
 				this.session = session
-				this.session.depthNear = 0.1
+				this.session.depthNear = 0.05
 				this.session.depthFar = 1000.0
 	
 				// Handle session lifecycle events
