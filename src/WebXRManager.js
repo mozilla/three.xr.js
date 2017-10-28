@@ -47,21 +47,27 @@ THREE.WebXRManager = function( xrDisplays, renderer, camera, scene, updateCallba
 
 		// Prep THREE.js for the render of each XRView
 		this.renderer.autoClear = false;
-		this.renderer.setSize(this.session.baseLayer.framebufferWidth, this.session.baseLayer.framebufferHeight, false);
+		this.renderer.setSize(window.innerWidth, window.innerHeight);
 		this.renderer.clear();
-		this.camera.matrixAutoUpdate = false;
 
 		// Render each view into this.session.baseLayer.context
 		for(const view of frame.views){
-			// Each XRView has its own projection matrix, so set the camera to use that
-			this.camera.projectionMatrix.fromArray(view.projectionMatrix);
-			this.camera.matrix.fromArray(headPose.poseModelMatrix);
-			this.camera.updateMatrixWorld(true);
+			if(this.camera.parent && this.camera.parent.type !== 'Scene'){
+				this.camera.parent.matrixAutoUpdate = false;
+				this.camera.parent.matrix.fromArray(headPose.poseModelMatrix);
+				this.camera.parent.updateMatrixWorld(true);
+			}else{
+				this.camera.matrixAutoUpdate = false;
+				// Each XRView has its own projection matrix, so set the camera to use that
+				this.camera.projectionMatrix.fromArray(view.projectionMatrix);
+				this.camera.matrix.fromArray(headPose.poseModelMatrix);
+				this.camera.updateMatrixWorld(true);
+			}
 
 			// Set up the renderer to the XRView's viewport and then render
 			this.renderer.clearDepth();
 			const viewport = view.getViewport(this.session.baseLayer);
-			this.renderer.setViewport(viewport.x, viewport.y, viewport.width, viewport.height);
+			this.renderer.setViewport(viewport.x, viewport.y, viewport.width / window.devicePixelRatio, viewport.height / window.devicePixelRatio);
 			this.doRender();
 		}
 	}

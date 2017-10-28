@@ -43,7 +43,6 @@
         renderer = new THREE.WebGLRenderer( { alpha: true } );
         renderer.setPixelRatio(window.devicePixelRatio);
         renderer.autoClear = false;
-        renderer.setSize( window.innerWidth, window.innerHeight );
         container.appendChild( renderer.domElement );
 
         // Add custom content
@@ -53,15 +52,22 @@
         cube.position.set(0, 0, -1);
         scene.add (cube);
         // End custom content
+        window.addEventListener( 'resize', onWindowResize, false );
+        onWindowResize();
 
         xr = new THREE.WebXRManager(xrDisplays, renderer, camera, scene, update);
         xr.startSession( false, true );
       }
 
+      function onWindowResize() {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+      }
+
       // Called once per frame, before render, to give the app a chance to update this.scene
       function update(frame) {
-        var delta = clock.getDelta() * 60;
-        cube.rotation.y += delta * 0.01;
+        // var delta = clock.getDelta() * 60;
+        // cube.rotation.y += delta * 0.01;
       }
     </script>
   </body>

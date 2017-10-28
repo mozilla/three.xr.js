@@ -46,11 +46,18 @@ function init(displays) {
 
   // Add custom code here
 
+  window.addEventListener( 'resize', onWindowResize, false );
+  onWindowResize();
+
   // Init WebXR
   xr = new THREE.WebXRManager(xrDisplays, renderer, camera, scene, update);
   xr.startSession( false, true );
 }
 
+function onWindowResize() {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+}
 // Called once per frame, before render, to give the app a chance to update this.scene
 function update(frame) {
 

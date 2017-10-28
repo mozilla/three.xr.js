@@ -171,9 +171,8 @@ THREE.WebXRManager = function (xrDisplays, renderer, camera, scene, updateCallba
 
 		// Prep THREE.js for the render of each XRView
 		this.renderer.autoClear = false;
-		this.renderer.setSize(this.session.baseLayer.framebufferWidth, this.session.baseLayer.framebufferHeight, false);
+		this.renderer.setSize(window.innerWidth, window.innerHeight);
 		this.renderer.clear();
-		this.camera.matrixAutoUpdate = false;
 
 		// Render each view into this.session.baseLayer.context
 		var _iteratorNormalCompletion2 = true;
@@ -184,15 +183,22 @@ THREE.WebXRManager = function (xrDisplays, renderer, camera, scene, updateCallba
 			for (var _iterator2 = frame.views[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
 				var view = _step2.value;
 
-				// Each XRView has its own projection matrix, so set the camera to use that
-				this.camera.projectionMatrix.fromArray(view.projectionMatrix);
-				this.camera.matrix.fromArray(headPose.poseModelMatrix);
-				this.camera.updateMatrixWorld(true);
+				if (this.camera.parent && this.camera.parent.type !== 'Scene') {
+					this.camera.parent.matrixAutoUpdate = false;
+					this.camera.parent.matrix.fromArray(headPose.poseModelMatrix);
+					this.camera.parent.updateMatrixWorld(true);
+				} else {
+					this.camera.matrixAutoUpdate = false;
+					// Each XRView has its own projection matrix, so set the camera to use that
+					this.camera.projectionMatrix.fromArray(view.projectionMatrix);
+					this.camera.matrix.fromArray(headPose.poseModelMatrix);
+					this.camera.updateMatrixWorld(true);
+				}
 
 				// Set up the renderer to the XRView's viewport and then render
 				this.renderer.clearDepth();
 				var viewport = view.getViewport(this.session.baseLayer);
-				this.renderer.setViewport(viewport.x, viewport.y, viewport.width, viewport.height);
+				this.renderer.setViewport(viewport.x, viewport.y, viewport.width / window.devicePixelRatio, viewport.height / window.devicePixelRatio);
 				this.doRender();
 			}
 		} catch (err) {
@@ -270,7 +276,7 @@ THREE.WebXRManager = function (xrDisplays, renderer, camera, scene, updateCallba
 		setTimeout(function () {
 			display.requestSession(sessionInitParamers).then(function (session) {
 				_this2.session = session;
-				_this2.session.depthNear = 0.005;
+				_this2.session.depthNear = 0.05;
 				_this2.session.depthFar = 1000.0;
 
 				// Handle session lifecycle events
