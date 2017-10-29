@@ -67,7 +67,7 @@ THREE.WebXRManager = function( xrDisplays, renderer, camera, scene, updateCallba
 			// Set up the renderer to the XRView's viewport and then render
 			this.renderer.clearDepth();
 			const viewport = view.getViewport(this.session.baseLayer);
-			this.renderer.setViewport(viewport.x, viewport.y, viewport.width / window.devicePixelRatio, viewport.height / window.devicePixelRatio);
+			this.renderer.setViewport(viewport.x / window.devicePixelRatio, viewport.y / window.devicePixelRatio, viewport.width / window.devicePixelRatio, viewport.height / window.devicePixelRatio);
 			this.doRender();
 		}
 	}
@@ -91,19 +91,19 @@ THREE.WebXRManager = function( xrDisplays, renderer, camera, scene, updateCallba
 			exclusive: createVirtualReality,
 			type: createVirtualReality ? XRSession.REALITY : XRSession.AUGMENTATION
 		}
-		for(var displayObj of displays){
-			if(displayObj.supportsSession(sessionInitParamers)){
-				display = displayObj;
-				break
-			}
-		}
-		if(display === null){
-			console.error('Could not find a display for this type of session');
-			return
-		}
 
 		// Hack to receive WebVR 1.1 display info
 		setTimeout( () => {
+			for(var displayObj of displays){
+				if(displayObj.supportsSession(sessionInitParamers)){
+					display = displayObj;
+					break;
+				}
+			}
+			if(display === null){
+				console.error('Could not find a display for this type of session');
+				return
+			}
 			display.requestSession(sessionInitParamers).then(session => {
 				this.session = session
 				this.session.depthNear = 0.05
