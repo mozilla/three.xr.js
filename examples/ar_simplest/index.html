@@ -24,7 +24,7 @@
 
       var container;
       var renderer, camera, scene;
-      var xrDisplays, xr;
+      var xrDisplays;
 
       var cube;
 
@@ -55,8 +55,8 @@
         window.addEventListener( 'resize', onWindowResize, false );
         onWindowResize();
 
-        xr = new THREE.WebXRManager(xrDisplays, renderer, camera, scene, update);
-        xr.startSession( false, true );
+        renderer.xr = new THREE.WebXRManager(xrDisplays, renderer, camera, scene, update);
+        renderer.xr.startSession( false, true );
       }
 
       function onWindowResize() {

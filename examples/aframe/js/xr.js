@@ -10,9 +10,9 @@ AFRAME.registerComponent('xr', {
     this.poseIsLost = true;
 
     var self = this;
-    document.querySelector('a-scene').addEventListener('loaded', function () {
-      self.wrapScene();
-    })
+    // document.querySelector('a-scene').addEventListener('loaded', function () {
+    //   self.wrapScene();
+    // })
 
     if (this.el.sceneEl.camera) {
       this.cameraActivated();
@@ -22,11 +22,11 @@ AFRAME.registerComponent('xr', {
       });
     }
   },
-  wrapScene: function () {
-    this.el.sceneEl.enterVR = function () {
-      console.log('----enterVR_wrap');
-    };
-  },
+  // wrapScene: function () {
+  //   this.el.sceneEl.enterVR = function () {
+  //     console.log('----enterVR_wrap');
+  //   };
+  // },
   cameraActivated: function () {
     this.defaultPosition = new THREE.Vector3(0, 1.6, 0.1);
     this.el.sceneEl.camera.el.setAttribute('position', this.defaultPosition);
@@ -47,12 +47,11 @@ AFRAME.registerComponent('xr', {
     // To show camera on iOS devices
     document.documentElement.style.backgroundColor = 'transparent';
     document.body.style.backgroundColor = 'transparent';
-    this.xr = new THREE.WebXRManager(displays, this.el.sceneEl.renderer, this.el.sceneEl.camera, this.el.sceneEl.object3D, this.updateFrame);
-    this.el.sceneEl.renderer.xr = this.xr;
+    this.el.sceneEl.renderer.xr = new THREE.WebXRManager(displays, this.el.sceneEl.renderer, this.el.sceneEl.camera, this.el.sceneEl.object3D, this.updateFrame);
     if (this.data.reality === 'vr') {
-      this.xr.startSession(true, false);
+      this.el.sceneEl.renderer.xr.startSession(true, false);
     } else {
-      this.xr.startSession(false, true);
+      this.el.sceneEl.renderer.xr.startSession(false, true);
     }
   },
   updateFrame: function (frame) {
