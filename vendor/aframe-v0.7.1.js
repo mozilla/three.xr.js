@@ -70330,93 +70330,99 @@ var ORIENTATION_MODAL_CLASS = 'a-orientation-modal';
 /**
  * UI for entering VR mode.
  */
-module.exports.Component = registerComponent('vr-mode-ui', {
-  dependencies: ['canvas'],
+registerComponent('vr-mode-ui', {
+ dependencies: ['canvas'],
 
-  schema: {
-    enabled: {default: true}
-  },
+ schema: {
+   enabled: {default: true}
+ },
 
-  init: function () {
-    var self = this;
-    var sceneEl = this.el;
+ init: function () {
+   var self = this;
+   var sceneEl = this.el;
 
-    if (utils.getUrlParameter('ui') === 'false') { return; }
+   if (utils.getUrlParameter('ui') === 'false') { return; }
 
-    this.enterVR = bind(sceneEl.enterVR, sceneEl);
-    this.exitVR = bind(sceneEl.exitVR, sceneEl);
-    this.insideLoader = false;
-    this.enterVREl = null;
-    this.orientationModalEl = null;
+   this.insideLoader = false;
+   this.enterVREl = null;
+   this.orientationModalEl = null;
 
-    // Hide/show VR UI when entering/exiting VR mode.
-    sceneEl.addEventListener('enter-vr', bind(this.updateEnterVRInterface, this));
-    sceneEl.addEventListener('exit-vr', bind(this.updateEnterVRInterface, this));
+   // Hide/show VR UI when entering/exiting VR mode.
+   sceneEl.addEventListener('enter-vr', bind(this.updateEnterVRInterface, this));
+   sceneEl.addEventListener('exit-vr', bind(this.updateEnterVRInterface, this));
 
-    window.addEventListener('message', function (event) {
-      if (event.data.type === 'loaderReady') {
-        self.insideLoader = true;
-        self.remove();
-      }
-    });
+   window.addEventListener('message', function (event) {
+     if (event.data.type === 'loaderReady') {
+       self.insideLoader = true;
+       self.remove();
+     }
+   });
 
-    // Modal that tells the user to change orientation if in portrait.
-    window.addEventListener('orientationchange',
-                            bind(this.toggleOrientationModalIfNeeded, this));
-  },
+   // Modal that tells the user to change orientation if in portrait.
+   window.addEventListener('orientationchange',
+                           bind(this.toggleOrientationModalIfNeeded, this));
+ },
 
-  update: function () {
-    var sceneEl = this.el;
+ onModalClick: function () {
+   this.el.exitVR();
+ },
 
-    if (!this.data.enabled || this.insideLoader || utils.getUrlParameter('ui') === 'false') {
-      return this.remove();
-    }
-    if (this.enterVREl || this.orientationModalEl) { return; }
+ onEnterVRButtonClick: function () {
+   this.el.enterVR();
+ },
 
-    // Add UI if enabled and not already present.
-    this.enterVREl = createEnterVRButton(this.enterVR);
-    sceneEl.appendChild(this.enterVREl);
+ update: function () {
+   var sceneEl = this.el;
 
-    this.orientationModalEl = createOrientationModal(this.exitVR);
-    sceneEl.appendChild(this.orientationModalEl);
+   if (!this.data.enabled || this.insideLoader || utils.getUrlParameter('ui') === 'false') {
+     return this.remove();
+   }
+   if (this.enterVREl || this.orientationModalEl) { return; }
 
-    this.updateEnterVRInterface();
-  },
+   // Add UI if enabled and not already present.
+   this.enterVREl = createEnterVRButton(this.onEnterVRButtonClick.bind(this));
+   sceneEl.appendChild(this.enterVREl);
 
-  remove: function () {
-    [this.enterVREl, this.orientationModalEl].forEach(function (uiElement) {
-      if (uiElement) {
-        uiElement.parentNode.removeChild(uiElement);
-      }
-    });
-  },
+   this.orientationModalEl = createOrientationModal(this.onModalClick.bind(this));
+   sceneEl.appendChild(this.orientationModalEl);
 
-  updateEnterVRInterface: function () {
-    this.toggleEnterVRButtonIfNeeded();
-    this.toggleOrientationModalIfNeeded();
-  },
+   this.updateEnterVRInterface();
+ },
 
-  toggleEnterVRButtonIfNeeded: function () {
-    var sceneEl = this.el;
-    if (!this.enterVREl) { return; }
-    if (sceneEl.is('vr-mode')) {
-      this.enterVREl.classList.add(HIDDEN_CLASS);
-    } else {
-      this.enterVREl.classList.remove(HIDDEN_CLASS);
-    }
-  },
+ remove: function () {
+   [this.enterVREl, this.orientationModalEl].forEach(function (uiElement) {
+     if (uiElement) {
+       uiElement.parentNode.removeChild(uiElement);
+     }
+   });
+ },
 
-  toggleOrientationModalIfNeeded: function () {
-    var sceneEl = this.el;
-    var orientationModalEl = this.orientationModalEl;
-    if (!orientationModalEl || !sceneEl.isMobile) { return; }
-    if (!utils.device.isLandscape() && sceneEl.is('vr-mode')) {
-      // Show if in VR mode on portrait.
-      orientationModalEl.classList.remove(HIDDEN_CLASS);
-    } else {
-      orientationModalEl.classList.add(HIDDEN_CLASS);
-    }
-  }
+ updateEnterVRInterface: function () {
+   this.toggleEnterVRButtonIfNeeded();
+   this.toggleOrientationModalIfNeeded();
+ },
+
+ toggleEnterVRButtonIfNeeded: function () {
+   var sceneEl = this.el;
+   if (!this.enterVREl) { return; }
+   if (sceneEl.is('vr-mode')) {
+     this.enterVREl.classList.add(HIDDEN_CLASS);
+   } else {
+     this.enterVREl.classList.remove(HIDDEN_CLASS);
+   }
+ },
+
+ toggleOrientationModalIfNeeded: function () {
+   var sceneEl = this.el;
+   var orientationModalEl = this.orientationModalEl;
+   if (!orientationModalEl || !sceneEl.isMobile) { return; }
+   if (!utils.device.isLandscape() && sceneEl.is('vr-mode')) {
+     // Show if in VR mode on portrait.
+     orientationModalEl.classList.remove(HIDDEN_CLASS);
+   } else {
+     orientationModalEl.classList.add(HIDDEN_CLASS);
+   }
+ }
 });
 
 /**
