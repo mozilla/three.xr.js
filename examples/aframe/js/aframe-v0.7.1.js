@@ -3783,7 +3783,7 @@ if (typeof Object.create === 'function') {
 /*!
  * Determine if an object is a Buffer
  *
- * @author   Feross Aboukhadijeh <https://feross.org>
+ * @author   Feross Aboukhadijeh <feross@feross.org> <http://feross.org>
  * @license  MIT
  */
 
@@ -27430,7 +27430,7 @@ function rebuildAttribute (attrib, data, itemSize) {
 			// update camera matrices and frustum
 
 			if ( camera.parent === null ) camera.updateMatrixWorld();
-
+			
 			if ( vr.enabled ) {
 
 				camera = vr.getCamera( camera );
@@ -58927,29 +58927,52 @@ exports.right = function(str){
 
 },{}],46:[function(_dereq_,module,exports){
 module.exports={
-  "_from": "webvr-polyfill@^0.9.40",
+  "_args": [
+    [
+      {
+        "raw": "webvr-polyfill@^0.9.40",
+        "scope": null,
+        "escapedName": "webvr-polyfill",
+        "name": "webvr-polyfill",
+        "rawSpec": "^0.9.40",
+        "spec": ">=0.9.40 <0.10.0",
+        "type": "range"
+      },
+      "X:\\Development\\aframe"
+    ]
+  ],
+  "_from": "webvr-polyfill@>=0.9.40 <0.10.0",
   "_id": "webvr-polyfill@0.9.40",
-  "_inBundle": false,
-  "_integrity": "sha512-m7jhJHjFcUYPyPSNeGmly7a2h/cP7bARz0OZMoUn5SueVXEKeZ4P7bzbAUDBDvvqCsa5gHgM3PFIhYe13bqaWw==",
+  "_inCache": true,
   "_location": "/webvr-polyfill",
+  "_nodeVersion": "8.6.0",
+  "_npmOperationalInternal": {
+    "host": "s3://npm-registry-packages",
+    "tmp": "tmp/webvr-polyfill-0.9.40.tgz_1507657755590_0.00047161197289824486"
+  },
+  "_npmUser": {
+    "name": "jsantell",
+    "email": "jsantell@gmail.com"
+  },
+  "_npmVersion": "5.3.0",
   "_phantomChildren": {},
   "_requested": {
-    "type": "range",
-    "registry": true,
     "raw": "webvr-polyfill@^0.9.40",
-    "name": "webvr-polyfill",
+    "scope": null,
     "escapedName": "webvr-polyfill",
+    "name": "webvr-polyfill",
     "rawSpec": "^0.9.40",
-    "saveSpec": null,
-    "fetchSpec": "^0.9.40"
+    "spec": ">=0.9.40 <0.10.0",
+    "type": "range"
   },
   "_requiredBy": [
     "/"
   ],
   "_resolved": "https://registry.npmjs.org/webvr-polyfill/-/webvr-polyfill-0.9.40.tgz",
   "_shasum": "2cfa0ec0e0cc6ba7238c73a09cba4952fff59a63",
+  "_shrinkwrap": null,
   "_spec": "webvr-polyfill@^0.9.40",
-  "_where": "/Users/unboring/Documents/code/aframe-dmarcos",
+  "_where": "X:\\Development\\aframe",
   "authors": [
     "Boris Smus <boris@smus.com>",
     "Brandon Jones <tojiro@gmail.com>",
@@ -58958,8 +58981,7 @@ module.exports={
   "bugs": {
     "url": "https://github.com/googlevr/webvr-polyfill/issues"
   },
-  "bundleDependencies": false,
-  "deprecated": false,
+  "dependencies": {},
   "description": "Use WebVR today, on mobile or desktop, without requiring a special browser build.",
   "devDependencies": {
     "chai": "^3.5.0",
@@ -58969,6 +58991,13 @@ module.exports={
     "webpack": "^2.6.1",
     "webpack-dev-server": "2.7.1"
   },
+  "directories": {},
+  "dist": {
+    "integrity": "sha512-m7jhJHjFcUYPyPSNeGmly7a2h/cP7bARz0OZMoUn5SueVXEKeZ4P7bzbAUDBDvvqCsa5gHgM3PFIhYe13bqaWw==",
+    "shasum": "2cfa0ec0e0cc6ba7238c73a09cba4952fff59a63",
+    "tarball": "https://registry.npmjs.org/webvr-polyfill/-/webvr-polyfill-0.9.40.tgz"
+  },
+  "gitHead": "45828ffdb8c3e0f9bb90296d6039d3cc7909ba8e",
   "homepage": "https://github.com/googlevr/webvr-polyfill",
   "keywords": [
     "vr",
@@ -58976,7 +59005,23 @@ module.exports={
   ],
   "license": "Apache-2.0",
   "main": "src/node-entry",
+  "maintainers": [
+    {
+      "name": "jsantell",
+      "email": "jsantell@gmail.com"
+    },
+    {
+      "name": "toji",
+      "email": "tojiro@gmail.com"
+    },
+    {
+      "name": "smus",
+      "email": "boris@smus.com"
+    }
+  ],
   "name": "webvr-polyfill",
+  "optionalDependencies": {},
+  "readme": "ERROR: No README data found!",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/googlevr/webvr-polyfill.git"
@@ -68298,6 +68343,7 @@ registerShader('portal', {
 var registerComponent = _dereq_('../core/component').registerComponent;
 var THREE = _dereq_('../lib/three');
 var bind = _dereq_('../utils/bind');
+var PolyfillControls = _dereq_('../utils').device.PolyfillControls;
 
 // To avoid recalculation at every mouse movement tick
 var GRABBING_CLASS = 'a-grabbing';
@@ -68325,6 +68371,8 @@ module.exports.Component = registerComponent('look-controls', {
     this.hmdEuler = new THREE.Euler();
     this.patchGetCamera = this.patchGetCamera.bind(this);
     this.position = new THREE.Vector3();
+    this.polyfillObject = new THREE.Object3D();
+    this.polyfillControls = new PolyfillControls(this.polyfillObject);
     this.rotation = {};
     this.deltaRotation = {};
     this.setupMouseControls();
@@ -68352,6 +68400,13 @@ module.exports.Component = registerComponent('look-controls', {
       this.pitchObject.rotation.set(0, 0, 0);
       this.yawObject.rotation.set(0, 0, 0);
     }
+  },
+
+  tick: function (t) {
+    var data = this.data;
+    if (!data.enabled || this.el.sceneEl.is('vr-mode')) { return; }
+    this.updatePosition();
+    this.updateOrientation();
   },
 
   updatePose: function (camera) {
@@ -68456,42 +68511,30 @@ module.exports.Component = registerComponent('look-controls', {
    * Mouse-drag only enabled if HMD is not active.
    */
   updateOrientation: function () {
-    var currentRotation;
     var hmdEuler = this.hmdEuler;
-    var deltaRotation = this.deltaRotation;
     var pitchObject = this.pitchObject;
     var yawObject = this.yawObject;
     var sceneEl = this.el.sceneEl;
     var rotation = this.rotation;
     var object3D = this.el.object3D;
 
-    // Calculate HMD quaternion.
-    hmdEuler.setFromQuaternion(object3D.quaternion, 'YXZ');
-
-    if (sceneEl.isMobile) {
-      // On mobile, do camera rotation with touch events and sensors.
-      rotation.x = radToDeg(hmdEuler.x) + radToDeg(pitchObject.rotation.x);
-      rotation.y = radToDeg(hmdEuler.y) + radToDeg(yawObject.rotation.y);
-      rotation.z = 0;
-    } else if (!sceneEl.is('vr-mode')) {
-      // Mouse drag if WebVR not active (not connected, no incoming sensor data).
-      currentRotation = this.el.getAttribute('rotation');
-      this.calculateDeltaRotation();
-      if (this.data.reverseMouseDrag) {
-        rotation.x = currentRotation.x - deltaRotation.x;
-        rotation.y = currentRotation.y - deltaRotation.y;
-        rotation.z = currentRotation.z;
-      } else {
-        rotation.x = radToDeg(hmdEuler.x) + currentRotation.x + deltaRotation.x;
-        rotation.y = currentRotation.y + deltaRotation.y;
-        rotation.z = currentRotation.z;
-      }
-    } else {
+    if (sceneEl.is('vr-mode')) {
+      // Calculate HMD quaternion.
+      hmdEuler.setFromQuaternion(object3D.quaternion, 'YXZ');
       // Mouse rotation ignored with an active headset. Use headset rotation.
       rotation.x = radToDeg(hmdEuler.x);
       rotation.y = radToDeg(hmdEuler.y);
       rotation.z = radToDeg(hmdEuler.z);
+    } else {
+      // Calculate polyfilled HMD quaternion.
+      this.polyfillControls.update();
+      hmdEuler.setFromQuaternion(this.polyfillObject.quaternion, 'YXZ');
+      // On mobile, do camera rotation with touch events and sensors.
+      rotation.x = radToDeg(hmdEuler.x) + radToDeg(pitchObject.rotation.x);
+      rotation.y = radToDeg(hmdEuler.y) + radToDeg(yawObject.rotation.y);
+      rotation.z = 0;
     }
+
     this.el.setAttribute('rotation', rotation);
   },
 
@@ -68667,7 +68710,7 @@ module.exports.Component = registerComponent('look-controls', {
   }
 });
 
-},{"../core/component":124,"../lib/three":172,"../utils/bind":188}],90:[function(_dereq_,module,exports){
+},{"../core/component":124,"../lib/three":172,"../utils":194,"../utils/bind":188}],90:[function(_dereq_,module,exports){
 /* global Promise */
 var utils = _dereq_('../utils/');
 var component = _dereq_('../core/component');
@@ -75912,48 +75955,45 @@ module.exports.AScene = registerElement('a-scene', {
      */
     enterVR: {
       value: function (fromExternal) {
-				// FORCE WRAPPING
-				this.renderer.xr.startPresenting();
-				// ORIGINAL METHOD
-        // var self = this;
-        // var vrDisplay = utils.device.getVRDisplay();
-        // // Don't enter VR if already in VR.
-        // if (this.is('vr-mode')) { return Promise.resolve('Already in VR.'); }
-        // // Enter VR via WebVR API.
-        // if (!fromExternal && (self.checkHeadsetConnected() || self.isMobile)) {
-        //   self.renderer.vr.setDevice(vrDisplay);
-        //   self.renderer.vr.enabled = true;
-        //   return vrDisplay.requestPresent([{source: this.canvas}]).then(enterVRSuccess, enterVRFailure);
-        // }
-        // enterVRSuccess();
-        // return Promise.resolve();
+        var self = this;
+        var vrDisplay = utils.device.getVRDisplay();
+        // Don't enter VR if already in VR.
+        if (this.is('vr-mode')) { return Promise.resolve('Already in VR.'); }
+        // Enter VR via WebVR API.
+        if (!fromExternal && (self.checkHeadsetConnected() || self.isMobile)) {
+          self.renderer.vr.setDevice(vrDisplay);
+          self.renderer.vr.enabled = true;
+          return vrDisplay.requestPresent([{source: this.canvas}]).then(enterVRSuccess, enterVRFailure);
+        }
+        enterVRSuccess();
+        return Promise.resolve();
 
-        // function enterVRSuccess () {
-        //   self.addState('vr-mode');
-        //   self.emit('enter-vr', {target: self});
-        //   // Lock to landscape orientation on mobile.
-        //   if (self.isMobile && screen.orientation && screen.orientation.lock) {
-        //     screen.orientation.lock('landscape');
-        //   }
-        //   self.addFullScreenStyles();
+        function enterVRSuccess () {
+          self.addState('vr-mode');
+          self.emit('enter-vr', {target: self});
+          // Lock to landscape orientation on mobile.
+          if (self.isMobile && screen.orientation && screen.orientation.lock) {
+            screen.orientation.lock('landscape');
+          }
+          self.addFullScreenStyles();
 
-        //   // On mobile, the polyfill handles fullscreen.
-        //   // TODO: 07/16 Chromium builds break when `requestFullscreen`ing on a canvas
-        //   // that we are also `requestPresent`ing. Until then, don't fullscreen if headset
-        //   // connected.
-        //   if (!self.isMobile && !self.checkHeadsetConnected()) {
-        //     requestFullscreen(self.canvas);
-        //   }
-        //   self.resize();
-        // }
+          // On mobile, the polyfill handles fullscreen.
+          // TODO: 07/16 Chromium builds break when `requestFullscreen`ing on a canvas
+          // that we are also `requestPresent`ing. Until then, don't fullscreen if headset
+          // connected.
+          if (!self.isMobile && !self.checkHeadsetConnected()) {
+            requestFullscreen(self.canvas);
+          }
+          self.resize();
+        }
 
-        // function enterVRFailure (err) {
-        //   if (err && err.message) {
-        //     throw new Error('Failed to enter VR mode (`requestPresent`): ' + err.message);
-        //   } else {
-        //     throw new Error('Failed to enter VR mode (`requestPresent`).');
-        //   }
-        // }
+        function enterVRFailure (err) {
+          if (err && err.message) {
+            throw new Error('Failed to enter VR mode (`requestPresent`): ' + err.message);
+          } else {
+            throw new Error('Failed to enter VR mode (`requestPresent`).');
+          }
+        }
       },
       writable: window.debug
     },
@@ -75967,38 +76007,35 @@ module.exports.AScene = registerElement('a-scene', {
      */
     exitVR: {
       value: function (fromExternal) {
-				// FORCE WRAPPING
-				this.renderer.xr.stopPresenting();
-				// ORIGINAL METHOD
-        // var self = this;
+        var self = this;
 
-        // // Don't exit VR if not in VR.
-        // if (!this.is('vr-mode')) { return Promise.resolve('Not in VR.'); }
+        // Don't exit VR if not in VR.
+        if (!this.is('vr-mode')) { return Promise.resolve('Not in VR.'); }
 
-        // exitFullscreen();
+        exitFullscreen();
 
-        // // Handle exiting VR if not yet already and in a headset or polyfill.
-        // if (!fromExternal && (this.checkHeadsetConnected() || this.isMobile)) {
-        //   this.renderer.vr.enabled = false;
-        // }
+        // Handle exiting VR if not yet already and in a headset or polyfill.
+        if (!fromExternal && (this.checkHeadsetConnected() || this.isMobile)) {
+          this.renderer.vr.enabled = false;
+        }
 
-        // // Handle exiting VR in all other cases (2D fullscreen, external exit VR event).
-        // exitVRSuccess();
+        // Handle exiting VR in all other cases (2D fullscreen, external exit VR event).
+        exitVRSuccess();
 
-        // return Promise.resolve();
+        return Promise.resolve();
 
-        // function exitVRSuccess () {
-        //   self.removeState('vr-mode');
-        //   // Lock to landscape orientation on mobile.
-        //   if (self.isMobile && screen.orientation && screen.orientation.unlock) {
-        //     screen.orientation.unlock();
-        //   }
-        //   // Exiting VR in embedded mode, no longer need fullscreen styles.
-        //   if (self.hasAttribute('embedded')) { self.removeFullScreenStyles(); }
-        //   self.resize();
-        //   if (self.isIOS) { utils.forceCanvasResizeSafariMobile(this.canvas); }
-        //   self.emit('exit-vr', {target: self});
-        // }
+        function exitVRSuccess () {
+          self.removeState('vr-mode');
+          // Lock to landscape orientation on mobile.
+          if (self.isMobile && screen.orientation && screen.orientation.unlock) {
+            screen.orientation.unlock();
+          }
+          // Exiting VR in embedded mode, no longer need fullscreen styles.
+          if (self.hasAttribute('embedded')) { self.removeFullScreenStyles(); }
+          self.resize();
+          if (self.isIOS) { utils.forceCanvasResizeSafariMobile(this.canvas); }
+          self.emit('exit-vr', {target: self});
+        }
       },
       writable: window.debug
     },
@@ -76119,38 +76156,24 @@ module.exports.AScene = registerElement('a-scene', {
 
     resize: {
       value: function () {
-				// FORCE WRAPPING
-				if(this.renderer.xr && !this.renderer.xr.sessionActive){
-					// Update camera.
-					var camera = this.camera;
-					var canvas = this.canvas;
-					var embedded = this.getAttribute('embedded') && !this.is('vr-mode');
-					var size;
-					size = getCanvasSize(canvas, embedded);
-					camera.aspect = size.width / size.height;
-					camera.updateProjectionMatrix();
-					// Notify renderer of size change.
-					this.renderer.setSize(size.width, size.height, false);
-				}
-				// ORIGINAL METHOD
-        // var camera = this.camera;
-        // var canvas = this.canvas;
-        // var embedded = this.getAttribute('embedded') && !this.is('vr-mode');
-        // var size;
-        // var vrDevice = this.renderer.vr.getDevice();
-        // var isVRPresenting = this.renderer.vr.enabled && vrDevice && vrDevice.isPresenting;
-        // // Do not update renderer, if a camera or a canvas have not been injected.
-        // // In VR mode, three handles canvas resize based on the dimensions returned by
-        // // the getEyeParameters function of the WebVR API. These dimensions are independent of
-        // // the window size, therefore should not be overwritten with the window's width and height,
-        // // except when in fullscreen mode.
-        // if (!camera || !canvas || (this.is('vr-mode') && (this.isMobile || isVRPresenting))) { return; }
-        // // Update camera.
-        // size = getCanvasSize(canvas, embedded);
-        // camera.aspect = size.width / size.height;
-        // camera.updateProjectionMatrix();
-        // // Notify renderer of size change.
-        // this.renderer.setSize(size.width, size.height, false);
+        var camera = this.camera;
+        var canvas = this.canvas;
+        var embedded = this.getAttribute('embedded') && !this.is('vr-mode');
+        var size;
+        var vrDevice = this.renderer.vr.getDevice();
+        var isVRPresenting = this.renderer.vr.enabled && vrDevice && vrDevice.isPresenting;
+        // Do not update renderer, if a camera or a canvas have not been injected.
+        // In VR mode, three handles canvas resize based on the dimensions returned by
+        // the getEyeParameters function of the WebVR API. These dimensions are independent of
+        // the window size, therefore should not be overwritten with the window's width and height,
+        // except when in fullscreen mode.
+        if (!camera || !canvas || (this.is('vr-mode') && (this.isMobile || isVRPresenting))) { return; }
+        // Update camera.
+        size = getCanvasSize(canvas, embedded);
+        camera.aspect = size.width / size.height;
+        camera.updateProjectionMatrix();
+        // Notify renderer of size change.
+        this.renderer.setSize(size.width, size.height, false);
       },
       writable: window.debug
     },
@@ -76287,30 +76310,16 @@ module.exports.AScene = registerElement('a-scene', {
      */
     render: {
       value: function () {
-				// FORCE WRAPPING
-				var delta = this.clock.getDelta() * 1000;
+        var delta = this.clock.getDelta() * 1000;
         var renderer = this.renderer;
         this.time = this.clock.elapsedTime * 1000;
 
         if (this.isPlaying) { this.tick(this.time, delta); }
 
-				renderer.animate(this.render);
-				if(this.renderer.xr && (!this.renderer.xr.session ||this.renderer.xr.session && !this.renderer.xr.sessionActive)){
-					renderer.render(this.object3D, this.camera, this.renderTarget);
-				}
+        renderer.animate(this.render);
+        renderer.render(this.object3D, this.camera, this.renderTarget);
 
-				if (this.isPlaying) { this.tock(this.time, delta); }
-				// ORIGINAL METHOD
-        // var delta = this.clock.getDelta() * 1000;
-        // var renderer = this.renderer;
-        // this.time = this.clock.elapsedTime * 1000;
-
-        // if (this.isPlaying) { this.tick(this.time, delta); }
-
-				// renderer.animate(this.render);
-				// renderer.render(this.object3D, this.camera, this.renderTarget);
-
-        // if (this.isPlaying) { this.tock(this.time, delta); }
+        if (this.isPlaying) { this.tock(this.time, delta); }
       },
       writable: true
     }
@@ -78042,6 +78051,20 @@ registerGeometry('triangle', {
 });
 
 },{"../core/geometry":125,"../lib/three":172}],170:[function(_dereq_,module,exports){
+// Check before the polyfill runs.
+window.hasNativeWebVRImplementation = !!window.navigator.getVRDisplays || !!window.navigator.getVRDevices;
+
+window.WebVRConfig = window.WebVRConfig || {
+  BUFFER_SCALE: 1,
+  CARDBOARD_UI_DISABLED: true,
+  ROTATE_INSTRUCTIONS_DISABLED: true,
+  TOUCH_PANNER_DISABLED: true,
+  MOUSE_KEYBOARD_CONTROLS_DISABLED: true
+};
+
+// WebVR polyfill
+_dereq_('webvr-polyfill');
+
 var utils = _dereq_('./utils/');
 
 var debug = utils.debug;
@@ -78067,25 +78090,11 @@ if (window.location.protocol === 'file:') {
 // Polyfill `Promise`.
 window.Promise = window.Promise || _dereq_('promise-polyfill');
 
-// Check before the polyfill runs.
-window.hasNativeWebVRImplementation = !!window.navigator.getVRDisplays || !!window.navigator.getVRDevices;
-
-window.WebVRConfig = window.WebVRConfig || {
-  BUFFER_SCALE: 1,
-  CARDBOARD_UI_DISABLED: true,
-  ROTATE_INSTRUCTIONS_DISABLED: true,
-  TOUCH_PANNER_DISABLED: true,
-  MOUSE_KEYBOARD_CONTROLS_DISABLED: true
-};
-
 // Workaround for iOS Safari canvas sizing issues in stereo (webvr-polyfill/issues/102).
 // Only for iOS on versions older than 10.
 if (utils.device.isIOSOlderThan10(window.navigator.userAgent)) {
   window.WebVRConfig.BUFFER_SCALE = 1 / window.devicePixelRatio;
 }
-
-// WebVR polyfill
-_dereq_('webvr-polyfill');
 
 _dereq_('present'); // Polyfill `performance.now()`.
 
@@ -78127,7 +78136,7 @@ _dereq_('./core/a-mixin');
 _dereq_('./extras/components/');
 _dereq_('./extras/primitives/');
 
-console.log('A-Frame Version: 0.7.0 (Date 30-10-2017, Commit #8bdcf258)');
+console.log('A-Frame Version: 0.7.0 (Date 31-10-2017, Commit #c031e63)');
 console.log('three Version:', pkg.dependencies['three']);
 console.log('WebVR Polyfill Version:', pkg.dependencies['webvr-polyfill']);
 
@@ -78714,9 +78723,9 @@ function getMaterialData (data) {
 }
 
 },{"../core/shader":133,"../lib/three":172,"../utils/":194}],179:[function(_dereq_,module,exports){
-var css = ".a-html{bottom:0;left:0;position:fixed;right:0;top:0}.a-body{height:100%;margin:0;overflow:hidden;padding:0;width:100%}:-webkit-full-screen{background-color:transparent}.a-hidden{display:none!important}.a-canvas{height:100%;left:0;position:absolute;top:0;width:100%}.a-canvas.a-grab-cursor:hover{cursor:grab;cursor:-moz-grab;cursor:-webkit-grab}.a-canvas.a-grab-cursor:active,.a-grabbing{cursor:grabbing;cursor:-moz-grabbing;cursor:-webkit-grabbing}// Class is removed when doing <a-scene embedded>. a-scene.fullscreen .a-canvas{width:100%!important;height:100%!important;top:0!important;left:0!important;right:0!important;bottom:0!important;z-index:999999!important;position:fixed!important}.a-inspector-loader{background-color:#ed3160;position:fixed;left:3px;top:3px;padding:6px 10px;color:#fff;text-decoration:none;font-size:12px;font-family:Roboto,sans-serif;text-align:center;z-index:99999;width:204px}@keyframes dots-1{from{opacity:0}25%{opacity:1}}@keyframes dots-2{from{opacity:0}50%{opacity:1}}@keyframes dots-3{from{opacity:0}75%{opacity:1}}@-webkit-keyframes dots-1{from{opacity:0}25%{opacity:1}}@-webkit-keyframes dots-2{from{opacity:0}50%{opacity:1}}@-webkit-keyframes dots-3{from{opacity:0}75%{opacity:1}}.a-inspector-loader .dots span{animation:dots-1 2s infinite steps(1);-webkit-animation:dots-1 2s infinite steps(1)}.a-inspector-loader .dots span:first-child+span{animation-name:dots-2;-webkit-animation-name:dots-2}.a-inspector-loader .dots span:first-child+span+span{animation-name:dots-3;-webkit-animation-name:dots-3}a-scene{display:block;position:relative;height:100%;width:100%}a-assets,a-scene audio,a-scene img,a-scene video{display:none}.a-enter-vr-modal,.a-orientation-modal{font-family:Consolas,Andale Mono,Courier New,monospace}.a-enter-vr-modal a{border-bottom:1px solid #fff;padding:2px 0;text-decoration:none;transition:.1s color ease-in}.a-enter-vr-modal a:hover{background-color:#fff;color:#111;padding:2px 4px;position:relative;left:-4px}.a-enter-vr{font-family:sans-serif,monospace;font-size:13px;width:100%;font-weight:200;line-height:16px;position:absolute;right:20px;bottom:20px}.a-enter-vr.embedded{right:5px;bottom:5px}.a-enter-vr-button,.a-enter-vr-modal,.a-enter-vr-modal a{color:#fff}.a-enter-vr-button{background:url(data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20245.82%20141.73%22%3E%3Cdefs%3E%3Cstyle%3E.a%7Bfill%3A%23fff%3Bfill-rule%3Aevenodd%3B%7D%3C%2Fstyle%3E%3C%2Fdefs%3E%3Ctitle%3Emask%3C%2Ftitle%3E%3Cpath%20class%3D%22a%22%20d%3D%22M175.56%2C111.37c-22.52%2C0-40.77-18.84-40.77-42.07S153%2C27.24%2C175.56%2C27.24s40.77%2C18.84%2C40.77%2C42.07S198.08%2C111.37%2C175.56%2C111.37ZM26.84%2C69.31c0-23.23%2C18.25-42.07%2C40.77-42.07s40.77%2C18.84%2C40.77%2C42.07-18.26%2C42.07-40.77%2C42.07S26.84%2C92.54%2C26.84%2C69.31ZM27.27%2C0C11.54%2C0%2C0%2C12.34%2C0%2C28.58V110.9c0%2C16.24%2C11.54%2C30.83%2C27.27%2C30.83H99.57c2.17%2C0%2C4.19-1.83%2C5.4-3.7L116.47%2C118a8%2C8%2C0%2C0%2C1%2C12.52-.18l11.51%2C20.34c1.2%2C1.86%2C3.22%2C3.61%2C5.39%2C3.61h72.29c15.74%2C0%2C27.63-14.6%2C27.63-30.83V28.58C245.82%2C12.34%2C233.93%2C0%2C218.19%2C0H27.27Z%22%2F%3E%3C%2Fsvg%3E) 50% 50%/70% 70% no-repeat rgba(0,0,0,.35);border:0;bottom:0;cursor:pointer;min-width:50px;min-height:30px;padding-right:5%;padding-top:4%;position:absolute;right:0;transition:background-color .05s ease;-webkit-transition:background-color .05s ease;z-index:9999}.a-enter-vr-button:active,.a-enter-vr-button:hover{background-color:#666}[data-a-enter-vr-no-webvr] .a-enter-vr-button{border-color:#666;opacity:.65}[data-a-enter-vr-no-webvr] .a-enter-vr-button:active,[data-a-enter-vr-no-webvr] .a-enter-vr-button:hover{background-color:rgba(0,0,0,.35);cursor:not-allowed}.a-enter-vr-modal{background-color:#666;border-radius:0;display:none;min-height:32px;margin-right:70px;padding:9px;width:280px;right:2%;position:absolute}.a-enter-vr-modal:after{border-bottom:10px solid transparent;border-left:10px solid #666;border-top:10px solid transparent;display:inline-block;content:'';position:absolute;right:-5px;top:5px;width:0;height:0}.a-enter-vr-modal a,.a-enter-vr-modal p{display:inline}.a-enter-vr-modal p{margin:0}.a-enter-vr-modal p:after{content:' '}[data-a-enter-vr-no-headset].a-enter-vr:hover .a-enter-vr-modal,[data-a-enter-vr-no-webvr].a-enter-vr:hover .a-enter-vr-modal{display:block}.a-orientation-modal{background:url(data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20xmlns%3Axlink%3D%22http%3A//www.w3.org/1999/xlink%22%20version%3D%221.1%22%20x%3D%220px%22%20y%3D%220px%22%20viewBox%3D%220%200%2090%2090%22%20enable-background%3D%22new%200%200%2090%2090%22%20xml%3Aspace%3D%22preserve%22%3E%3Cpolygon%20points%3D%220%2C0%200%2C0%200%2C0%20%22%3E%3C/polygon%3E%3Cg%3E%3Cpath%20d%3D%22M71.545%2C48.145h-31.98V20.743c0-2.627-2.138-4.765-4.765-4.765H18.456c-2.628%2C0-4.767%2C2.138-4.767%2C4.765v42.789%20%20%20c0%2C2.628%2C2.138%2C4.766%2C4.767%2C4.766h5.535v0.959c0%2C2.628%2C2.138%2C4.765%2C4.766%2C4.765h42.788c2.628%2C0%2C4.766-2.137%2C4.766-4.765V52.914%20%20%20C76.311%2C50.284%2C74.173%2C48.145%2C71.545%2C48.145z%20M18.455%2C16.935h16.344c2.1%2C0%2C3.808%2C1.708%2C3.808%2C3.808v27.401H37.25V22.636%20%20%20c0-0.264-0.215-0.478-0.479-0.478H16.482c-0.264%2C0-0.479%2C0.214-0.479%2C0.478v36.585c0%2C0.264%2C0.215%2C0.478%2C0.479%2C0.478h7.507v7.644%20%20%20h-5.534c-2.101%2C0-3.81-1.709-3.81-3.81V20.743C14.645%2C18.643%2C16.354%2C16.935%2C18.455%2C16.935z%20M16.96%2C23.116h19.331v25.031h-7.535%20%20%20c-2.628%2C0-4.766%2C2.139-4.766%2C4.768v5.828h-7.03V23.116z%20M71.545%2C73.064H28.757c-2.101%2C0-3.81-1.708-3.81-3.808V52.914%20%20%20c0-2.102%2C1.709-3.812%2C3.81-3.812h42.788c2.1%2C0%2C3.809%2C1.71%2C3.809%2C3.812v16.343C75.354%2C71.356%2C73.645%2C73.064%2C71.545%2C73.064z%22%3E%3C/path%3E%3Cpath%20d%3D%22M28.919%2C58.424c-1.466%2C0-2.659%2C1.193-2.659%2C2.66c0%2C1.466%2C1.193%2C2.658%2C2.659%2C2.658c1.468%2C0%2C2.662-1.192%2C2.662-2.658%20%20%20C31.581%2C59.617%2C30.387%2C58.424%2C28.919%2C58.424z%20M28.919%2C62.786c-0.939%2C0-1.703-0.764-1.703-1.702c0-0.939%2C0.764-1.704%2C1.703-1.704%20%20%20c0.94%2C0%2C1.705%2C0.765%2C1.705%2C1.704C30.623%2C62.022%2C29.858%2C62.786%2C28.919%2C62.786z%22%3E%3C/path%3E%3Cpath%20d%3D%22M69.654%2C50.461H33.069c-0.264%2C0-0.479%2C0.215-0.479%2C0.479v20.288c0%2C0.264%2C0.215%2C0.478%2C0.479%2C0.478h36.585%20%20%20c0.263%2C0%2C0.477-0.214%2C0.477-0.478V50.939C70.131%2C50.676%2C69.917%2C50.461%2C69.654%2C50.461z%20M69.174%2C51.417V70.75H33.548V51.417H69.174z%22%3E%3C/path%3E%3Cpath%20d%3D%22M45.201%2C30.296c6.651%2C0%2C12.233%2C5.351%2C12.551%2C11.977l-3.033-2.638c-0.193-0.165-0.507-0.142-0.675%2C0.048%20%20%20c-0.174%2C0.198-0.153%2C0.501%2C0.045%2C0.676l3.883%2C3.375c0.09%2C0.075%2C0.198%2C0.115%2C0.312%2C0.115c0.141%2C0%2C0.273-0.061%2C0.362-0.166%20%20%20l3.371-3.877c0.173-0.2%2C0.151-0.502-0.047-0.675c-0.194-0.166-0.508-0.144-0.676%2C0.048l-2.592%2C2.979%20%20%20c-0.18-3.417-1.629-6.605-4.099-9.001c-2.538-2.461-5.877-3.817-9.404-3.817c-0.264%2C0-0.479%2C0.215-0.479%2C0.479%20%20%20C44.72%2C30.083%2C44.936%2C30.296%2C45.201%2C30.296z%22%3E%3C/path%3E%3C/g%3E%3C/svg%3E) center/50% 50% no-repeat rgba(244,244,244,1);bottom:0;font-size:14px;font-weight:600;left:0;line-height:20px;right:0;position:fixed;top:0;z-index:9999999}.a-orientation-modal:after{color:#666;content:\"Insert phone into Cardboard holder.\";display:block;position:absolute;text-align:center;top:70%;transform:translateY(-70%);width:100%}.a-orientation-modal button{background:url(data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20xmlns%3Axlink%3D%22http%3A//www.w3.org/1999/xlink%22%20version%3D%221.1%22%20x%3D%220px%22%20y%3D%220px%22%20viewBox%3D%220%200%20100%20100%22%20enable-background%3D%22new%200%200%20100%20100%22%20xml%3Aspace%3D%22preserve%22%3E%3Cpath%20fill%3D%22%23000000%22%20d%3D%22M55.209%2C50l17.803-17.803c1.416-1.416%2C1.416-3.713%2C0-5.129c-1.416-1.417-3.713-1.417-5.129%2C0L50.08%2C44.872%20%20L32.278%2C27.069c-1.416-1.417-3.714-1.417-5.129%2C0c-1.417%2C1.416-1.417%2C3.713%2C0%2C5.129L44.951%2C50L27.149%2C67.803%20%20c-1.417%2C1.416-1.417%2C3.713%2C0%2C5.129c0.708%2C0.708%2C1.636%2C1.062%2C2.564%2C1.062c0.928%2C0%2C1.856-0.354%2C2.564-1.062L50.08%2C55.13l17.803%2C17.802%20%20c0.708%2C0.708%2C1.637%2C1.062%2C2.564%2C1.062s1.856-0.354%2C2.564-1.062c1.416-1.416%2C1.416-3.713%2C0-5.129L55.209%2C50z%22%3E%3C/path%3E%3C/svg%3E) no-repeat;border:none;height:50px;text-indent:-9999px;width:50px}"; (_dereq_("browserify-css").createStyle(css, { "href": "src/style/aframe.css"})); module.exports = css;
+var css = ".a-html{bottom:0;left:0;position:fixed;right:0;top:0}.a-body{height:100%;margin:0;overflow:hidden;padding:0;width:100%}:-webkit-full-screen{background-color:transparent}.a-hidden{display:none!important}.a-canvas{height:100%;left:0;position:absolute;top:0;width:100%}.a-canvas.a-grab-cursor:hover{cursor:grab;cursor:-moz-grab;cursor:-webkit-grab}.a-canvas.a-grab-cursor:active,.a-grabbing{cursor:grabbing;cursor:-moz-grabbing;cursor:-webkit-grabbing}// Class is removed when doing <a-scene embedded>. a-scene.fullscreen .a-canvas{width:100%!important;height:100%!important;top:0!important;left:0!important;right:0!important;bottom:0!important;z-index:999999!important;position:fixed!important}.a-inspector-loader{background-color:#ed3160;position:fixed;left:3px;top:3px;padding:6px 10px;color:#fff;text-decoration:none;font-size:12px;font-family:Roboto,sans-serif;text-align:center;z-index:99999;width:204px}@keyframes dots-1{from{opacity:0}25%{opacity:1}}@keyframes dots-2{from{opacity:0}50%{opacity:1}}@keyframes dots-3{from{opacity:0}75%{opacity:1}}@-webkit-keyframes dots-1{from{opacity:0}25%{opacity:1}}@-webkit-keyframes dots-2{from{opacity:0}50%{opacity:1}}@-webkit-keyframes dots-3{from{opacity:0}75%{opacity:1}}.a-inspector-loader .dots span{animation:dots-1 2s infinite steps(1);-webkit-animation:dots-1 2s infinite steps(1)}.a-inspector-loader .dots span:first-child+span{animation-name:dots-2;-webkit-animation-name:dots-2}.a-inspector-loader .dots span:first-child+span+span{animation-name:dots-3;-webkit-animation-name:dots-3}a-scene{display:block;position:relative;height:100%;width:100%}a-assets,a-scene audio,a-scene img,a-scene video{display:none}.a-enter-vr-modal,.a-orientation-modal{font-family:Consolas,Andale Mono,Courier New,monospace}.a-enter-vr-modal a{border-bottom:1px solid #fff;padding:2px 0;text-decoration:none;transition:.1s color ease-in}.a-enter-vr-modal a:hover{background-color:#fff;color:#111;padding:2px 4px;position:relative;left:-4px}.a-enter-vr{font-family:sans-serif,monospace;font-size:13px;width:100%;font-weight:200;line-height:16px;position:absolute;right:20px;bottom:20px}.a-enter-vr.embedded{right:5px;bottom:5px}.a-enter-vr-button,.a-enter-vr-modal,.a-enter-vr-modal a{color:#fff}.a-enter-vr-button{background:url(data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20245.82%20141.73%22%3E%3Cdefs%3E%3Cstyle%3E.a%7Bfill%3A%23fff%3Bfill-rule%3Aevenodd%3B%7D%3C%2Fstyle%3E%3C%2Fdefs%3E%3Ctitle%3Emask%3C%2Ftitle%3E%3Cpath%20class%3D%22a%22%20d%3D%22M175.56%2C111.37c-22.52%2C0-40.77-18.84-40.77-42.07S153%2C27.24%2C175.56%2C27.24s40.77%2C18.84%2C40.77%2C42.07S198.08%2C111.37%2C175.56%2C111.37ZM26.84%2C69.31c0-23.23%2C18.25-42.07%2C40.77-42.07s40.77%2C18.84%2C40.77%2C42.07-18.26%2C42.07-40.77%2C42.07S26.84%2C92.54%2C26.84%2C69.31ZM27.27%2C0C11.54%2C0%2C0%2C12.34%2C0%2C28.58V110.9c0%2C16.24%2C11.54%2C30.83%2C27.27%2C30.83H99.57c2.17%2C0%2C4.19-1.83%2C5.4-3.7L116.47%2C118a8%2C8%2C0%2C0%2C1%2C12.52-.18l11.51%2C20.34c1.2%2C1.86%2C3.22%2C3.61%2C5.39%2C3.61h72.29c15.74%2C0%2C27.63-14.6%2C27.63-30.83V28.58C245.82%2C12.34%2C233.93%2C0%2C218.19%2C0H27.27Z%22%2F%3E%3C%2Fsvg%3E) 50% 50%/70% 70% no-repeat rgba(0,0,0,.35);border:0;bottom:0;cursor:pointer;min-width:50px;min-height:30px;padding-right:5%;padding-top:4%;position:absolute;right:0;transition:background-color .05s ease;-webkit-transition:background-color .05s ease;z-index:9999}.a-enter-vr-button:active,.a-enter-vr-button:hover{background-color:#666}[data-a-enter-vr-no-webvr] .a-enter-vr-button{border-color:#666;opacity:.65}[data-a-enter-vr-no-webvr] .a-enter-vr-button:active,[data-a-enter-vr-no-webvr] .a-enter-vr-button:hover{background-color:rgba(0,0,0,.35);cursor:not-allowed}.a-enter-vr-modal{background-color:#666;border-radius:0;display:none;min-height:32px;margin-right:70px;padding:9px;width:280px;right:2%;position:absolute}.a-enter-vr-modal:after{border-bottom:10px solid transparent;border-left:10px solid #666;border-top:10px solid transparent;display:inline-block;content:'';position:absolute;right:-5px;top:5px;width:0;height:0}.a-enter-vr-modal a,.a-enter-vr-modal p{display:inline}.a-enter-vr-modal p{margin:0}.a-enter-vr-modal p:after{content:' '}[data-a-enter-vr-no-headset].a-enter-vr:hover .a-enter-vr-modal,[data-a-enter-vr-no-webvr].a-enter-vr:hover .a-enter-vr-modal{display:block}.a-orientation-modal{background:url(data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20xmlns%3Axlink%3D%22http%3A//www.w3.org/1999/xlink%22%20version%3D%221.1%22%20x%3D%220px%22%20y%3D%220px%22%20viewBox%3D%220%200%2090%2090%22%20enable-background%3D%22new%200%200%2090%2090%22%20xml%3Aspace%3D%22preserve%22%3E%3Cpolygon%20points%3D%220%2C0%200%2C0%200%2C0%20%22%3E%3C/polygon%3E%3Cg%3E%3Cpath%20d%3D%22M71.545%2C48.145h-31.98V20.743c0-2.627-2.138-4.765-4.765-4.765H18.456c-2.628%2C0-4.767%2C2.138-4.767%2C4.765v42.789%20%20%20c0%2C2.628%2C2.138%2C4.766%2C4.767%2C4.766h5.535v0.959c0%2C2.628%2C2.138%2C4.765%2C4.766%2C4.765h42.788c2.628%2C0%2C4.766-2.137%2C4.766-4.765V52.914%20%20%20C76.311%2C50.284%2C74.173%2C48.145%2C71.545%2C48.145z%20M18.455%2C16.935h16.344c2.1%2C0%2C3.808%2C1.708%2C3.808%2C3.808v27.401H37.25V22.636%20%20%20c0-0.264-0.215-0.478-0.479-0.478H16.482c-0.264%2C0-0.479%2C0.214-0.479%2C0.478v36.585c0%2C0.264%2C0.215%2C0.478%2C0.479%2C0.478h7.507v7.644%20%20%20h-5.534c-2.101%2C0-3.81-1.709-3.81-3.81V20.743C14.645%2C18.643%2C16.354%2C16.935%2C18.455%2C16.935z%20M16.96%2C23.116h19.331v25.031h-7.535%20%20%20c-2.628%2C0-4.766%2C2.139-4.766%2C4.768v5.828h-7.03V23.116z%20M71.545%2C73.064H28.757c-2.101%2C0-3.81-1.708-3.81-3.808V52.914%20%20%20c0-2.102%2C1.709-3.812%2C3.81-3.812h42.788c2.1%2C0%2C3.809%2C1.71%2C3.809%2C3.812v16.343C75.354%2C71.356%2C73.645%2C73.064%2C71.545%2C73.064z%22%3E%3C/path%3E%3Cpath%20d%3D%22M28.919%2C58.424c-1.466%2C0-2.659%2C1.193-2.659%2C2.66c0%2C1.466%2C1.193%2C2.658%2C2.659%2C2.658c1.468%2C0%2C2.662-1.192%2C2.662-2.658%20%20%20C31.581%2C59.617%2C30.387%2C58.424%2C28.919%2C58.424z%20M28.919%2C62.786c-0.939%2C0-1.703-0.764-1.703-1.702c0-0.939%2C0.764-1.704%2C1.703-1.704%20%20%20c0.94%2C0%2C1.705%2C0.765%2C1.705%2C1.704C30.623%2C62.022%2C29.858%2C62.786%2C28.919%2C62.786z%22%3E%3C/path%3E%3Cpath%20d%3D%22M69.654%2C50.461H33.069c-0.264%2C0-0.479%2C0.215-0.479%2C0.479v20.288c0%2C0.264%2C0.215%2C0.478%2C0.479%2C0.478h36.585%20%20%20c0.263%2C0%2C0.477-0.214%2C0.477-0.478V50.939C70.131%2C50.676%2C69.917%2C50.461%2C69.654%2C50.461z%20M69.174%2C51.417V70.75H33.548V51.417H69.174z%22%3E%3C/path%3E%3Cpath%20d%3D%22M45.201%2C30.296c6.651%2C0%2C12.233%2C5.351%2C12.551%2C11.977l-3.033-2.638c-0.193-0.165-0.507-0.142-0.675%2C0.048%20%20%20c-0.174%2C0.198-0.153%2C0.501%2C0.045%2C0.676l3.883%2C3.375c0.09%2C0.075%2C0.198%2C0.115%2C0.312%2C0.115c0.141%2C0%2C0.273-0.061%2C0.362-0.166%20%20%20l3.371-3.877c0.173-0.2%2C0.151-0.502-0.047-0.675c-0.194-0.166-0.508-0.144-0.676%2C0.048l-2.592%2C2.979%20%20%20c-0.18-3.417-1.629-6.605-4.099-9.001c-2.538-2.461-5.877-3.817-9.404-3.817c-0.264%2C0-0.479%2C0.215-0.479%2C0.479%20%20%20C44.72%2C30.083%2C44.936%2C30.296%2C45.201%2C30.296z%22%3E%3C/path%3E%3C/g%3E%3C/svg%3E) center/50% 50% no-repeat rgba(244,244,244,1);bottom:0;font-size:14px;font-weight:600;left:0;line-height:20px;right:0;position:fixed;top:0;z-index:9999999}.a-orientation-modal:after{color:#666;content:\"Insert phone into Cardboard holder.\";display:block;position:absolute;text-align:center;top:70%;transform:translateY(-70%);width:100%}.a-orientation-modal button{background:url(data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20xmlns%3Axlink%3D%22http%3A//www.w3.org/1999/xlink%22%20version%3D%221.1%22%20x%3D%220px%22%20y%3D%220px%22%20viewBox%3D%220%200%20100%20100%22%20enable-background%3D%22new%200%200%20100%20100%22%20xml%3Aspace%3D%22preserve%22%3E%3Cpath%20fill%3D%22%23000000%22%20d%3D%22M55.209%2C50l17.803-17.803c1.416-1.416%2C1.416-3.713%2C0-5.129c-1.416-1.417-3.713-1.417-5.129%2C0L50.08%2C44.872%20%20L32.278%2C27.069c-1.416-1.417-3.714-1.417-5.129%2C0c-1.417%2C1.416-1.417%2C3.713%2C0%2C5.129L44.951%2C50L27.149%2C67.803%20%20c-1.417%2C1.416-1.417%2C3.713%2C0%2C5.129c0.708%2C0.708%2C1.636%2C1.062%2C2.564%2C1.062c0.928%2C0%2C1.856-0.354%2C2.564-1.062L50.08%2C55.13l17.803%2C17.802%20%20c0.708%2C0.708%2C1.637%2C1.062%2C2.564%2C1.062s1.856-0.354%2C2.564-1.062c1.416-1.416%2C1.416-3.713%2C0-5.129L55.209%2C50z%22%3E%3C/path%3E%3C/svg%3E) no-repeat;border:none;height:50px;text-indent:-9999px;width:50px}"; (_dereq_("browserify-css").createStyle(css, { "href": "src\\style\\aframe.css"})); module.exports = css;
 },{"browserify-css":5}],180:[function(_dereq_,module,exports){
-var css = ".rs-base{background-color:#333;color:#fafafa;border-radius:0;font:10px monospace;left:5px;line-height:1em;opacity:.85;overflow:hidden;padding:10px;position:fixed;top:5px;width:300px;z-index:10000}.rs-base div.hidden{display:none}.rs-base h1{color:#fff;cursor:pointer;font-size:1.4em;font-weight:300;margin:0 0 5px;padding:0}.rs-group{display:-webkit-box;display:-webkit-flex;display:flex;-webkit-flex-direction:column-reverse;flex-direction:column-reverse;margin-bottom:5px}.rs-group:last-child{margin-bottom:0}.rs-counter-base{align-items:center;display:-webkit-box;display:-webkit-flex;display:flex;height:10px;-webkit-justify-content:space-between;justify-content:space-between;margin:2px 0}.rs-counter-base.alarm{color:#b70000;text-shadow:0 0 0 #b70000,0 0 1px #fff,0 0 1px #fff,0 0 2px #fff,0 0 2px #fff,0 0 3px #fff,0 0 3px #fff,0 0 4px #fff,0 0 4px #fff}.rs-counter-id{font-weight:300;-webkit-box-ordinal-group:0;-webkit-order:0;order:0;width:54px}.rs-counter-value{font-weight:300;-webkit-box-ordinal-group:1;-webkit-order:1;order:1;text-align:right;width:35px}.rs-canvas{-webkit-box-ordinal-group:2;-webkit-order:2;order:2}@media (min-width:480px){.rs-base{left:20px;top:20px}}"; (_dereq_("browserify-css").createStyle(css, { "href": "src/style/rStats.css"})); module.exports = css;
+var css = ".rs-base{background-color:#333;color:#fafafa;border-radius:0;font:10px monospace;left:5px;line-height:1em;opacity:.85;overflow:hidden;padding:10px;position:fixed;top:5px;width:300px;z-index:10000}.rs-base div.hidden{display:none}.rs-base h1{color:#fff;cursor:pointer;font-size:1.4em;font-weight:300;margin:0 0 5px;padding:0}.rs-group{display:-webkit-box;display:-webkit-flex;display:flex;-webkit-flex-direction:column-reverse;flex-direction:column-reverse;margin-bottom:5px}.rs-group:last-child{margin-bottom:0}.rs-counter-base{align-items:center;display:-webkit-box;display:-webkit-flex;display:flex;height:10px;-webkit-justify-content:space-between;justify-content:space-between;margin:2px 0}.rs-counter-base.alarm{color:#b70000;text-shadow:0 0 0 #b70000,0 0 1px #fff,0 0 1px #fff,0 0 2px #fff,0 0 2px #fff,0 0 3px #fff,0 0 3px #fff,0 0 4px #fff,0 0 4px #fff}.rs-counter-id{font-weight:300;-webkit-box-ordinal-group:0;-webkit-order:0;order:0;width:54px}.rs-counter-value{font-weight:300;-webkit-box-ordinal-group:1;-webkit-order:1;order:1;text-align:right;width:35px}.rs-canvas{-webkit-box-ordinal-group:2;-webkit-order:2;order:2}@media (min-width:480px){.rs-base{left:20px;top:20px}}"; (_dereq_("browserify-css").createStyle(css, { "href": "src\\style\\rStats.css"})); module.exports = css;
 },{"browserify-css":5}],181:[function(_dereq_,module,exports){
 var bind = _dereq_('../utils/bind');
 var constants = _dereq_('../constants/');
@@ -79804,10 +79813,13 @@ module.exports = debug;
 },{"_process":6,"debug":10,"object-assign":26}],191:[function(_dereq_,module,exports){
 (function (process){
 var vrDisplay;
+var polyfilledVRDisplay;
+var POLYFILL_VRDISPLAY_ID = 'Cardboard VRDisplay (webvr-polyfill)';
 
 if (navigator.getVRDisplays) {
   navigator.getVRDisplays().then(function (displays) {
     vrDisplay = displays.length && displays[0];
+    polyfilledVRDisplay = vrDisplay.displayName === POLYFILL_VRDISPLAY_ID;
   });
 }
 
@@ -79905,6 +79917,29 @@ module.exports.isBrowserEnvironment = !!(!process || process.browser);
  * Check if running in node on the server.
  */
 module.exports.isNodeEnvironment = !module.exports.isBrowserEnvironment;
+
+/**
+ * Update an Object3D pose if a polyfilled vrDisplay is present.
+ */
+module.exports.PolyfillControls = function PolyfillControls (object) {
+  var frameData;
+  if (window.VRFrameData) { frameData = new window.VRFrameData(); }
+  this.update = function () {
+    var pose;
+    if (!vrDisplay || !polyfilledVRDisplay) { return; }
+    vrDisplay.getFrameData(frameData);
+    pose = frameData.pose;
+    if (pose.orientation !== null) {
+      object.quaternion.fromArray(pose.orientation);
+    }
+    if (pose.position !== null) {
+      object.position.fromArray(pose.position);
+    } else {
+      object.position.set(0, 0, 0);
+    }
+  };
+};
+
 
 }).call(this,_dereq_('_process'))
 
