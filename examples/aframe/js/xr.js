@@ -39,7 +39,15 @@ AFRAME.registerSystem('xr', {
         var camera = this.camera;
         var canvas = this.canvas;
         var embedded = this.getAttribute('embedded') && !this.is('vr-mode');
-        var size = getCanvasSize(canvas, embedded);
+        // var size = this.getCanvasSize(canvas, embedded);
+        var size = {
+          height: window.innerHeight,
+          width: window.innerWidth
+        };
+        if (embedded) {
+          size.height = canvasEl.parentElement.offsetHeight;
+          size.width = canvasEl.parentElement.offsetWidth;
+        }
         camera.aspect = size.width / size.height;
         camera.updateProjectionMatrix();
         // Notify renderer of size change.
@@ -53,9 +61,8 @@ AFRAME.registerSystem('xr', {
       this.time = this.clock.elapsedTime * 1000;
 
       if (this.isPlaying) { this.tick(this.time, delta); }
-
-      renderer.animate(this.render);
-      if(this.renderer.xr && (!this.renderer.xr.session ||this.renderer.xr.session && !this.renderer.xr.sessionActive)){
+      renderer.animate(this.render.bind(this));
+      if (this.renderer.xr && (!this.renderer.xr.session ||this.renderer.xr.session && !this.renderer.xr.sessionActive)) {
         renderer.render(this.object3D, this.camera, this.renderTarget);
       }
 
