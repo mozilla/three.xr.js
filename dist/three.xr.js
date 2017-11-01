@@ -122,6 +122,9 @@ THREE.WebXRManager = function (xrDisplays, renderer, camera, scene, updateCallba
 	function handleFrame(frame) {
 		var _this = this;
 
+		if (!this.renderer.xr.sessionActive) {
+			return;
+		}
 		var nextFrameRequest = this.session.requestFrame(boundHandleFrame);
 		var headPose = frame.getViewPose(frame.getCoordinateSystem(XRCoordinateSystem.HEAD_MODEL));
 
@@ -198,7 +201,7 @@ THREE.WebXRManager = function (xrDisplays, renderer, camera, scene, updateCallba
 				// Set up the renderer to the XRView's viewport and then render
 				this.renderer.clearDepth();
 				var viewport = view.getViewport(this.session.baseLayer);
-				this.renderer.setViewport(viewport.x, viewport.y, viewport.width / window.devicePixelRatio, viewport.height / window.devicePixelRatio);
+				this.renderer.setViewport(viewport.x / window.devicePixelRatio, viewport.y / window.devicePixelRatio, viewport.width / window.devicePixelRatio, viewport.height / window.devicePixelRatio);
 				this.doRender();
 			}
 		} catch (err) {
@@ -238,42 +241,41 @@ THREE.WebXRManager = function (xrDisplays, renderer, camera, scene, updateCallba
 		var sessionInitParamers = {
 			exclusive: createVirtualReality,
 			type: createVirtualReality ? XRSession.REALITY : XRSession.AUGMENTATION
-		};
-		var _iteratorNormalCompletion3 = true;
-		var _didIteratorError3 = false;
-		var _iteratorError3 = undefined;
 
-		try {
-			for (var _iterator3 = displays[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
-				var displayObj = _step3.value;
+			// Hack to receive WebVR 1.1 display info
+		};setTimeout(function () {
+			var _iteratorNormalCompletion3 = true;
+			var _didIteratorError3 = false;
+			var _iteratorError3 = undefined;
 
-				if (displayObj.supportsSession(sessionInitParamers)) {
-					display = displayObj;
-					break;
-				}
-			}
-		} catch (err) {
-			_didIteratorError3 = true;
-			_iteratorError3 = err;
-		} finally {
 			try {
-				if (!_iteratorNormalCompletion3 && _iterator3.return) {
-					_iterator3.return();
+				for (var _iterator3 = displays[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+					var displayObj = _step3.value;
+
+					if (displayObj.supportsSession(sessionInitParamers)) {
+						display = displayObj;
+						break;
+					}
 				}
+			} catch (err) {
+				_didIteratorError3 = true;
+				_iteratorError3 = err;
 			} finally {
-				if (_didIteratorError3) {
-					throw _iteratorError3;
+				try {
+					if (!_iteratorNormalCompletion3 && _iterator3.return) {
+						_iterator3.return();
+					}
+				} finally {
+					if (_didIteratorError3) {
+						throw _iteratorError3;
+					}
 				}
 			}
-		}
 
-		if (display === null) {
-			console.error('Could not find a display for this type of session');
-			return;
-		}
-
-		// Hack to receive WebVR 1.1 display info
-		setTimeout(function () {
+			if (display === null) {
+				console.error('Could not find a display for this type of session');
+				return;
+			}
 			display.requestSession(sessionInitParamers).then(function (session) {
 				_this2.session = session;
 				_this2.session.depthNear = 0.05;
@@ -334,8 +336,9 @@ THREE.WebXRManager = function (xrDisplays, renderer, camera, scene, updateCallba
 			console.error('Can not start presenting without a session');
 			throw new Error('Can not start presenting without a session');
 		}
-
+		this.renderer.xr.sessionActive = true;
 		// Set the session's base layer into which the app will render
+		console.log('start');
 		this.session.baseLayer = new XRWebGLLayer(this.session, renderer.context);
 
 		// Handle layer focus events
@@ -347,6 +350,30 @@ THREE.WebXRManager = function (xrDisplays, renderer, camera, scene, updateCallba
 		});
 
 		this.session.requestFrame(boundHandleFrame);
+	};
+
+	this.stopPresenting = function () {
+		// Added this parameter until End session will be implemented on the WebXR-polyfill
+		this.renderer.xr.sessionActive = false;
+
+		this.renderer.autoClear = false;
+		this.renderer.setSize(window.innerWidth, window.innerHeight);
+		this.renderer.clear();
+		if (this.camera.parent && this.camera.parent.type !== 'Scene') {
+			this.camera.parent.matrixAutoUpdate = false;
+			this.camera.parent.matrix = new THREE.Matrix4();
+			this.camera.parent.updateMatrixWorld(true);
+		} else {
+			this.camera.matrixAutoUpdate = false;
+			// Each XRView has its own projection matrix, so set the camera to use that
+			this.camera.projectionMatrix = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
+			this.camera.matrix = new THREE.Matrix4();
+			this.camera.updateMatrixWorld(true);
+		}
+
+		// Set up the renderer to the XRView's viewport and then render
+		this.renderer.clearDepth();
+		this.renderer.setViewport(0, 0, window.innerWidth, window.innerHeight);
 	};
 
 	this.doRender = function () {

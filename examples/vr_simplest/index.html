@@ -14,18 +14,19 @@
         user-select: none;
       }
       #target {
-				width: 100%;
-				height: 100%;
-				position: absolute;
-			}
-			.enter-vr-button {
-				position: absolute;
-				bottom: 20px;
-				left: 50%;
-				transform: translate(-50%, -50%);
-				font-size: 2em;
-				padding: 10px;
-			}
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        z-index: 100;
+      }
+      .enter-vr-button {
+        position: absolute;
+        bottom: 20px;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 2em;
+        padding: 10px;
+      }
     </style>
   </head>
   <body>
@@ -38,9 +39,11 @@
 
       var container;
       var renderer, camera, scene;
-      var xrDisplays, xr;
+      var xrDisplays;
 
       var cube;
+
+      var enterVRButton = document.createElement('button');
 
       THREE.WebXRUtils.getDisplays().then(init);
 
@@ -69,8 +72,8 @@
         window.addEventListener( 'resize', onWindowResize, false );
         onWindowResize();
 
-        xr = new THREE.WebXRManager(xrDisplays, renderer, camera, scene, update);
-        xr.startSession( true, false );
+        renderer.xr = new THREE.WebXRManager(xrDisplays, renderer, camera, scene, update);
+        renderer.xr.startSession( true, false );
       }
 
       function onWindowResize() {
@@ -84,15 +87,24 @@
         cube.rotation.y += delta * 0.01;
       }
 
+      window.addEventListener('vrdisplaypresentchange', (evt) => {
+          // Polyfill places display inside the detail property
+          var display = evt.display || evt.detail.display;
+          if (!display.isPresenting) {
+            // Exiting VR.
+            renderer.xr.stopPresenting();
+            document.getElementById('target').style.display = 'block';
+          }
+      });
+
       window.addEventListener('DOMContentLoaded', () => {
         // HMDs require the call to start presenting to occur due to a user input event, so make a button to trigger that
-        let enterVRButton = document.createElement('button');
         enterVRButton.setAttribute('class', 'enter-vr-button');
         document.getElementById('target').appendChild(enterVRButton);
         enterVRButton.innerHTML = 'Enter VR';
         enterVRButton.addEventListener('click', ev => {
-          xr.startPresenting();
-          document.getElementById('target').remove(enterVRButton);
+          renderer.xr.startPresenting();
+          document.getElementById('target').style.display = 'none';
         })
       });
     </script>

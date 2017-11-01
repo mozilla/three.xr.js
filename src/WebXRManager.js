@@ -50,24 +50,43 @@ THREE.WebXRManager = function( xrDisplays, renderer, camera, scene, updateCallba
 		this.renderer.setSize(window.innerWidth, window.innerHeight);
 		this.renderer.clear();
 
-		// Render each view into this.session.baseLayer.context
-		for(const view of frame.views){
+		if(this.renderer.xr.sessionActive) {
+			// Render each view into this.session.baseLayer.context
+			for(const view of frame.views){
+				this.camera.projectionMatrix.fromArray(view.projectionMatrix);
+				if(this.camera.parent && this.camera.parent.type !== 'Scene'){
+					this.camera.parent.matrixAutoUpdate = false;
+					this.camera.parent.matrix.fromArray(headPose.poseModelMatrix);
+					this.camera.parent.updateMatrixWorld(true);
+				}else{
+					this.camera.matrixAutoUpdate = false;
+					// Each XRView has its own projection matrix, so set the camera to use that
+					this.camera.matrix.fromArray(headPose.poseModelMatrix);
+					this.camera.updateMatrixWorld(true);
+				}
+
+				// Set up the renderer to the XRView's viewport and then render
+				this.renderer.clearDepth();
+				const viewport = view.getViewport(this.session.baseLayer);
+				this.renderer.setViewport(viewport.x / window.devicePixelRatio, viewport.y / window.devicePixelRatio, viewport.width / window.devicePixelRatio, viewport.height / window.devicePixelRatio);
+				this.doRender();
+			}
+		}else{
 			if(this.camera.parent && this.camera.parent.type !== 'Scene'){
 				this.camera.parent.matrixAutoUpdate = false;
-				this.camera.parent.matrix.fromArray(headPose.poseModelMatrix);
+				this.camera.parent.matrix = new THREE.Matrix4();
 				this.camera.parent.updateMatrixWorld(true);
 			}else{
-				this.camera.matrixAutoUpdate = false;
-				// Each XRView has its own projection matrix, so set the camera to use that
-				this.camera.projectionMatrix.fromArray(view.projectionMatrix);
-				this.camera.matrix.fromArray(headPose.poseModelMatrix);
+				// this.camera.matrixAutoUpdate = false;
+				// // Each XRView has its own projection matrix, so set the camera to use that
+				// this.camera.projectionMatrix = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
+				this.camera.matrix = new THREE.Matrix4();
 				this.camera.updateMatrixWorld(true);
 			}
 
 			// Set up the renderer to the XRView's viewport and then render
 			this.renderer.clearDepth();
-			const viewport = view.getViewport(this.session.baseLayer);
-			this.renderer.setViewport(viewport.x / window.devicePixelRatio, viewport.y / window.devicePixelRatio, viewport.width / window.devicePixelRatio, viewport.height / window.devicePixelRatio);
+			this.renderer.setViewport(0, 0, window.innerWidth, window.innerHeight);
 			this.doRender();
 		}
 	}
@@ -156,15 +175,20 @@ THREE.WebXRManager = function( xrDisplays, renderer, camera, scene, updateCallba
 			console.error('Can not start presenting without a session');
 			throw new Error('Can not start presenting without a session');
 		}
-
+		this.renderer.xr.sessionActive = true;
 		// Set the session's base layer into which the app will render
 		this.session.baseLayer = new XRWebGLLayer(this.session, renderer.context);
-
+		
 		// Handle layer focus events
-		this.session.baseLayer.addEventListener('focus', ev => { this.handleLayerFocus(ev) })
-		this.session.baseLayer.addEventListener('blur', ev => { this.handleLayerBlur(ev) })
+		this.session.baseLayer.addEventListener('focus', ev => { this.handleLayerFocus(ev) });
+		this.session.baseLayer.addEventListener('blur', ev => { this.handleLayerBlur(ev) });
 
 		this.session.requestFrame(boundHandleFrame);
+	}
+
+	this.stopPresenting = function () {
+		// Added this parameter until End session will be implemented on the WebXR-polyfill
+		this.renderer.xr.sessionActive = false;
 	}
 
 	this.doRender = function () {
