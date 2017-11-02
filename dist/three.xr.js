@@ -1,1 +1,5986 @@
-!function(e){function t(r){if(n[r])return n[r].exports;var i=n[r]={i:r,l:!1,exports:{}};return e[r].call(i.exports,i,i.exports,t),i.l=!0,i.exports}var n={};t.m=e,t.c=n,t.d=function(e,n,r){t.o(e,n)||Object.defineProperty(e,n,{configurable:!1,enumerable:!0,get:r})},t.n=function(e){var n=e&&e.__esModule?function(){return e.default}:function(){return e};return t.d(n,"a",n),n},t.o=function(e,t){return Object.prototype.hasOwnProperty.call(e,t)},t.p="",t(t.s=0)}([function(e,t,n){"use strict";function r(e){return e&&e.__esModule?e:{default:e}}Object.defineProperty(t,"__esModule",{value:!0}),t.WebXRUtils=t.WebXRManager=void 0;var i=n(1),o=r(i),a=n(2),s=r(a);n(3),t.WebXRManager=o.default,t.WebXRUtils=s.default},function(e,t,n){"use strict";Object.defineProperty(t,"__esModule",{value:!0}),THREE.WebXRManager=function(e,t,n,r,i){function o(e){var t=this,n=(this.session.requestFrame(a),e.getViewPose(e.getCoordinateSystem(XRCoordinateSystem.HEAD_MODEL)));!1===l&&(l=!0,e.findFloorAnchor("first-floor-anchor").then(function(e){if(null===e)return void console.error("could not find the floor anchor");t.addAnchoredNode(e,c)}).catch(function(e){console.error("error finding the floor anchor",e)}));var r=!0,o=!1,s=void 0;try{for(var u,h=f[Symbol.iterator]();!(r=(u=h.next()).done);r=!0){var d=u.value;this.updateNodeFromAnchorOffset(e,d.node,d.anchorOffset)}}catch(e){o=!0,s=e}finally{try{!r&&h.return&&h.return()}finally{if(o)throw s}}if(this.updateScene(i,e),this.renderer.autoClear=!1,this.renderer.setSize(window.innerWidth,window.innerHeight),this.renderer.clear(),this.renderer.xr.sessionActive){var _=!0,y=!1,p=void 0;try{for(var v,w=e.views[Symbol.iterator]();!(_=(v=w.next()).done);_=!0){var m=v.value;this.camera.projectionMatrix.fromArray(m.projectionMatrix),this.camera.parent&&"Scene"!==this.camera.parent.type?(this.camera.parent.matrixAutoUpdate=!1,this.camera.parent.matrix.fromArray(n.poseModelMatrix),this.camera.parent.updateMatrixWorld(!0)):(this.camera.matrixAutoUpdate=!1,this.camera.matrix.fromArray(n.poseModelMatrix),this.camera.updateMatrixWorld(!0)),this.renderer.clearDepth();var b=m.getViewport(this.session.baseLayer);this.renderer.setViewport(b.x/window.devicePixelRatio,b.y/window.devicePixelRatio,b.width/window.devicePixelRatio,b.height/window.devicePixelRatio),this.doRender()}}catch(e){y=!0,p=e}finally{try{!_&&w.return&&w.return()}finally{if(y)throw p}}}else this.camera.parent&&"Scene"!==this.camera.parent.type?(this.camera.parent.matrixAutoUpdate=!1,this.camera.parent.matrix=new THREE.Matrix4,this.camera.parent.updateMatrixWorld(!0)):(this.camera.matrix=new THREE.Matrix4,this.camera.updateMatrixWorld(!0)),this.renderer.clearDepth(),this.renderer.setViewport(0,0,window.innerWidth,window.innerHeight),this.doRender()}this.renderer=t,this.camera=n,this.scene=r;var a=o.bind(this),s=e,u=null,l=!1,c=new THREE.Group,f=[];this.getDisplays=function(){return s},this.getDisplay=function(){return u},this.session=null,this.startSession=function(){var e=this,t=!(arguments.length>0&&void 0!==arguments[0])||arguments[0],n=!(arguments.length>1&&void 0!==arguments[1])||arguments[1],r={exclusive:t,type:t?XRSession.REALITY:XRSession.AUGMENTATION};setTimeout(function(){var t=!0,i=!1,o=void 0;try{for(var a,l=s[Symbol.iterator]();!(t=(a=l.next()).done);t=!0){var c=a.value;if(c.supportsSession(r)){u=c;break}}}catch(e){i=!0,o=e}finally{try{!t&&l.return&&l.return()}finally{if(i)throw o}}if(null===u)return void console.error("Could not find a display for this type of session");u.requestSession(r).then(function(t){e.session=t,e.session.depthNear=.05,e.session.depthFar=1e3,e.session.addEventListener("focus",function(t){e.handleSessionFocus(t)}),e.session.addEventListener("blur",function(t){e.handleSessionBlur(t)}),e.session.addEventListener("end",function(t){e.handleSessionEnded(t)}),n&&e.startPresenting()}).catch(function(e){console.error("Error requesting session",e)})},1e3)},this.handleSessionFocus=function(e){console.log("handleSessionFocus")},this.handleSessionBlur=function(e){console.log("handleSessionBlur")},this.handleSessionEnded=function(e){console.log("handleSessionEnded")},this.handleLayerFocus=function(e){console.log("handleLayerFocus")},this.handleLayerBlur=function(e){console.log("handleLayerBlur")},this.updateScene=function(e,t){e(t)},this.startPresenting=function(){var e=this;if(null===this.session)throw console.error("Can not start presenting without a session"),new Error("Can not start presenting without a session");this.renderer.xr.sessionActive=!0,this.session.baseLayer=new XRWebGLLayer(this.session,t.context),this.session.baseLayer.addEventListener("focus",function(t){e.handleLayerFocus(t)}),this.session.baseLayer.addEventListener("blur",function(t){e.handleLayerBlur(t)}),this.session.requestFrame(a)},this.stopPresenting=function(){this.renderer.xr.sessionActive=!1},this.doRender=function(){this.renderer.render(this.scene,this.camera)},this.addAnchoredNode=function(e,t){f.push({anchorOffset:e,node:t}),this.scene.add(t)},this.updateNodeFromAnchorOffset=function(e,t,n){var r=e.getAnchor(n.anchorUID);if(null===r)return void console.error("Unknown anchor uid",n.anchorUID);t.matrixAutoUpdate=!1;var i=n.getTransformedCoordinates(r);i.coordinateSystem.type===XRCoordinateSystem.TRACKER?t.matrix.fromArray(i.poseMatrix):t.matrix.fromArray(i.getTransformedCoordinates(e.getCoordinateSystem(XRCoordinateSystem.TRACKER)).poseMatrix),t.updateMatrixWorld(!0)}},t.default=THREE.WebXRManager},function(e,t,n){"use strict";Object.defineProperty(t,"__esModule",{value:!0}),THREE.WebXRUtils={getDisplays:function(){return new Promise(function(e,t){if(!navigator.XR)return console.log("WebXR polyfill is not found"),void e(null);navigator.XR.getDisplays().then(function(t){if(0==t.length)return console.log("No displays are available"),void e(null);e(t)}).catch(function(t){console.error("Error getting XR displays",t),e(null)})})}},t.default=THREE.WebXRUtils},function(e,t,n){"use strict";var r="function"==typeof Symbol&&"symbol"==typeof Symbol.iterator?function(e){return typeof e}:function(e){return e&&"function"==typeof Symbol&&e.constructor===Symbol&&e!==Symbol.prototype?"symbol":typeof e};!function(e){function t(r){if(n[r])return n[r].exports;var i=n[r]={i:r,l:!1,exports:{}};return e[r].call(i.exports,i,i.exports,t),i.l=!0,i.exports}var n={};t.m=e,t.c=n,t.d=function(e,n,r){t.o(e,n)||Object.defineProperty(e,n,{configurable:!1,enumerable:!0,get:r})},t.n=function(e){var n=e&&e.__esModule?function(){return e.default}:function(){return e};return t.d(n,"a",n),n},t.o=function(e,t){return Object.prototype.hasOwnProperty.call(e,t)},t.p="",t(t.s=17)}([function(e,t,n){function r(e,t){if(!(e instanceof t))throw new TypeError("Cannot call a class as a function")}Object.defineProperty(t,"__esModule",{value:!0});var i=function(){function e(e,t){for(var n=0;n<t.length;n++){var r=t[n];r.enumerable=r.enumerable||!1,r.configurable=!0,"value"in r&&(r.writable=!0),Object.defineProperty(e,r.key,r)}}return function(t,n,r){return n&&e(t.prototype,n),r&&e(t,r),t}}(),o=n(1),a=function(e){return e&&e.__esModule?e:{default:e}}(o),s=function(){function e(){r(this,e)}return i(e,null,[{key:"mat4_generateIdentity",value:function(){return new Float32Array([1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1])}},{key:"mat4_get_position",value:function(e,t){return e[0]=t[12],e[1]=t[13],e[2]=t[14],e}},{key:"mat4_get_rotation",value:function(e,t){var n=new a.default;return n.setFromRotationMatrix(t),e[0]=n.x,e[1]=n.y,e[2]=n.z,e[3]=n.w,e}},{key:"mat4_eyeView",value:function(t,n){var r=arguments.length>2&&void 0!==arguments[2]?arguments[2]:new Float32Array([0,0,0]);e.mat4_translate(t,n,r),e.mat4_invert(t,t)}},{key:"mat4_perspectiveFromFieldOfView",value:function(t,n,r,i){var o=Math.tan(n.upDegrees*e.PI_OVER_180),a=Math.tan(n.downDegrees*e.PI_OVER_180),s=Math.tan(n.leftDegrees*e.PI_OVER_180),u=Math.tan(n.rightDegrees*e.PI_OVER_180),l=2/(s+u),c=2/(o+a);return t[0]=l,t[1]=0,t[2]=0,t[3]=0,t[4]=0,t[5]=c,t[6]=0,t[7]=0,t[8]=-(s-u)*l*.5,t[9]=(o-a)*c*.5,t[10]=i/(r-i),t[11]=-1,t[12]=0,t[13]=0,t[14]=i*r/(r-i),t[15]=0,t}},{key:"mat4_fromRotationTranslation",value:function(e){var t=arguments.length>1&&void 0!==arguments[1]?arguments[1]:[0,0,0,1],n=arguments.length>2&&void 0!==arguments[2]?arguments[2]:[0,0,0],r=t[0],i=t[1],o=t[2],a=t[3],s=r+r,u=i+i,l=o+o,c=r*s,f=r*u,h=r*l,d=i*u,_=i*l,y=o*l,p=a*s,v=a*u,w=a*l;return e[0]=1-(d+y),e[1]=f+w,e[2]=h-v,e[3]=0,e[4]=f-w,e[5]=1-(c+y),e[6]=_+p,e[7]=0,e[8]=h+v,e[9]=_-p,e[10]=1-(c+d),e[11]=0,e[12]=n[0],e[13]=n[1],e[14]=n[2],e[15]=1,e}},{key:"mat4_translate",value:function(e,t,n){var r=n[0],i=n[1],o=n[2],a=void 0,s=void 0,u=void 0,l=void 0,c=void 0,f=void 0,h=void 0,d=void 0,_=void 0,y=void 0,p=void 0,v=void 0;return t===e?(e[12]=t[0]*r+t[4]*i+t[8]*o+t[12],e[13]=t[1]*r+t[5]*i+t[9]*o+t[13],e[14]=t[2]*r+t[6]*i+t[10]*o+t[14],e[15]=t[3]*r+t[7]*i+t[11]*o+t[15]):(a=t[0],s=t[1],u=t[2],l=t[3],c=t[4],f=t[5],h=t[6],d=t[7],_=t[8],y=t[9],p=t[10],v=t[11],e[0]=a,e[1]=s,e[2]=u,e[3]=l,e[4]=c,e[5]=f,e[6]=h,e[7]=d,e[8]=_,e[9]=y,e[10]=p,e[11]=v,e[12]=a*r+c*i+_*o+t[12],e[13]=s*r+f*i+y*o+t[13],e[14]=u*r+h*i+p*o+t[14],e[15]=l*r+d*i+v*o+t[15]),e}},{key:"mat4_invert",value:function(e,t){var n=t[0],r=t[1],i=t[2],o=t[3],a=t[4],s=t[5],u=t[6],l=t[7],c=t[8],f=t[9],h=t[10],d=t[11],_=t[12],y=t[13],p=t[14],v=t[15],w=n*s-r*a,m=n*u-i*a,b=n*l-o*a,g=r*u-i*s,E=r*l-o*s,T=i*l-o*u,x=c*y-f*_,A=c*p-h*_,R=c*v-d*_,k=f*p-h*y,O=f*v-d*y,P=h*v-d*p,M=w*P-m*O+b*k+g*R-E*A+T*x;return M?(M=1/M,e[0]=(s*P-u*O+l*k)*M,e[1]=(i*O-r*P-o*k)*M,e[2]=(y*T-p*E+v*g)*M,e[3]=(h*E-f*T-d*g)*M,e[4]=(u*R-a*P-l*A)*M,e[5]=(n*P-i*R+o*A)*M,e[6]=(p*b-_*T-v*m)*M,e[7]=(c*T-h*b+d*m)*M,e[8]=(a*O-s*R+l*x)*M,e[9]=(r*R-n*O-o*x)*M,e[10]=(_*E-y*b+v*w)*M,e[11]=(f*b-c*E-d*w)*M,e[12]=(s*A-a*k-u*x)*M,e[13]=(n*k-r*A+i*x)*M,e[14]=(y*m-_*g-p*w)*M,e[15]=(c*g-f*m+h*w)*M,e):null}},{key:"mat4_multiply",value:function(e,t,n){var r=t[0],i=t[4],o=t[8],a=t[12],s=t[1],u=t[5],l=t[9],c=t[13],f=t[2],h=t[6],d=t[10],_=t[14],y=t[3],p=t[7],v=t[11],w=t[15],m=n[0],b=n[4],g=n[8],E=n[12],T=n[1],x=n[5],A=n[9],R=n[13],k=n[2],O=n[6],P=n[10],M=n[14],S=n[3],C=n[7],N=n[11],I=n[15];return e[0]=r*m+i*T+o*k+a*S,e[4]=r*b+i*x+o*O+a*C,e[8]=r*g+i*A+o*P+a*N,e[12]=r*E+i*R+o*M+a*I,e[1]=s*m+u*T+l*k+c*S,e[5]=s*b+u*x+l*O+c*C,e[9]=s*g+u*A+l*P+c*N,e[13]=s*E+u*R+l*M+c*I,e[2]=f*m+h*T+d*k+_*S,e[6]=f*b+h*x+d*O+_*C,e[10]=f*g+h*A+d*P+_*N,e[14]=f*E+h*R+d*M+_*I,e[3]=y*m+p*T+v*k+w*S,e[7]=y*b+p*x+v*O+w*C,e[11]=y*g+p*A+v*P+w*N,e[15]=y*E+p*R+v*M+w*I,e}}]),e}();t.default=s,s.PI_OVER_180=Math.PI/180},function(e,t,n){function r(e,t){if(!(e instanceof t))throw new TypeError("Cannot call a class as a function")}Object.defineProperty(t,"__esModule",{value:!0});var i=function(){function e(e,t){for(var n=0;n<t.length;n++){var r=t[n];r.enumerable=r.enumerable||!1,r.configurable=!0,"value"in r&&(r.writable=!0),Object.defineProperty(e,r.key,r)}}return function(t,n,r){return n&&e(t.prototype,n),r&&e(t,r),t}}(),o=function(){function e(){var t=arguments.length>0&&void 0!==arguments[0]?arguments[0]:0,n=arguments.length>1&&void 0!==arguments[1]?arguments[1]:0,i=arguments.length>2&&void 0!==arguments[2]?arguments[2]:0,o=arguments.length>3&&void 0!==arguments[3]?arguments[3]:1;r(this,e),this.x=t,this.y=n,this.z=i,this.w=o}return i(e,[{key:"set",value:function(e,t,n,r){return this.x=e,this.y=t,this.z=n,this.w=r,this}},{key:"toArray",value:function(){return[this.x,this.y,this.z,this.w]}},{key:"copy",value:function(e){return this.x=e.x,this.y=e.y,this.z=e.z,this.w=e.w,this}},{key:"setFromRotationMatrix",value:function(e){var t=e[0],n=e[4],r=e[8],i=e[1],o=e[5],a=e[9],s=e[2],u=e[6],l=e[10],c=t+o+l;if(c>0){var f=.5/Math.sqrt(c+1);this.w=.25/f,this.x=(u-a)*f,this.y=(r-s)*f,this.z=(i-n)*f}else if(t>o&&t>l){var h=2*Math.sqrt(1+t-o-l);this.w=(u-a)/h,this.x=.25*h,this.y=(n+i)/h,this.z=(r+s)/h}else if(o>l){var d=2*Math.sqrt(1+o-t-l);this.w=(r-s)/d,this.x=(n+i)/d,this.y=.25*d,this.z=(a+u)/d}else{var _=2*Math.sqrt(1+l-t-o);this.w=(i-n)/_,this.x=(r+s)/_,this.y=(a+u)/_,this.z=.25*_}return this}},{key:"setFromEuler",value:function(e,t,n){var r=arguments.length>3&&void 0!==arguments[3]?arguments[3]:"XYZ",i=Math.cos,o=Math.sin,a=i(e/2),s=i(t/2),u=i(n/2),l=o(e/2),c=o(t/2),f=o(n/2);"XYZ"===r?(this.x=l*s*u+a*c*f,this.y=a*c*u-l*s*f,this.z=a*s*f+l*c*u,this.w=a*s*u-l*c*f):"YXZ"===r?(this.x=l*s*u+a*c*f,this.y=a*c*u-l*s*f,this.z=a*s*f-l*c*u,this.w=a*s*u+l*c*f):"ZXY"===r?(this.x=l*s*u-a*c*f,this.y=a*c*u+l*s*f,this.z=a*s*f+l*c*u,this.w=a*s*u-l*c*f):"ZYX"===r?(this.x=l*s*u-a*c*f,this.y=a*c*u+l*s*f,this.z=a*s*f-l*c*u,this.w=a*s*u+l*c*f):"YZX"===r?(this.x=l*s*u+a*c*f,this.y=a*c*u+l*s*f,this.z=a*s*f-l*c*u,this.w=a*s*u-l*c*f):"XZY"===r&&(this.x=l*s*u-a*c*f,this.y=a*c*u-l*s*f,this.z=a*s*f+l*c*u,this.w=a*s*u+l*c*f)}},{key:"setFromAxisAngle",value:function(e,t){var n=t/2,r=Math.sin(n);return this.x=e.x*r,this.y=e.y*r,this.z=e.z*r,this.w=Math.cos(n),this}},{key:"multiply",value:function(e){return this.multiplyQuaternions(this,e)}},{key:"multiplyQuaternions",value:function(e,t){var n=e.x,r=e.y,i=e.z,o=e.w,a=t.x,s=t.y,u=t.z,l=t.w;return this.x=n*l+o*a+r*u-i*s,this.y=r*l+o*s+i*a-n*u,this.z=i*l+o*u+n*s-r*a,this.w=o*l-n*a-r*s-i*u,this}},{key:"inverse",value:function(){return this.x*=-1,this.y*=-1,this.z*=-1,this.normalize(),this}},{key:"normalize",value:function(){var e=Math.sqrt(this.x*this.x+this.y*this.y+this.z*this.z+this.w*this.w);return 0===e?(this.x=0,this.y=0,this.z=0,this.w=1):(e=1/e,this.x=this.x*e,this.y=this.y*e,this.z=this.z*e,this.w=this.w*e),this}},{key:"slerp",value:function(e,t){if(0===t)return this;if(1===t)return this.copy(e);var n=this.x,r=this.y,i=this.z,o=this.w,a=o*e.w+n*e.x+r*e.y+i*e.z;if(a<0?(this.w=-e.w,this.x=-e.x,this.y=-e.y,this.z=-e.z,a=-a):this.copy(e),a>=1)return this.w=o,this.x=n,this.y=r,this.z=i,this;var s=Math.acos(a),u=Math.sqrt(1-a*a);if(Math.abs(u)<.001)return this.w=.5*(o+this.w),this.x=.5*(n+this.x),this.y=.5*(r+this.y),this.z=.5*(i+this.z),this;var l=Math.sin((1-t)*s)/u,c=Math.sin(t*s)/u;return this.w=o*l+this.w*c,this.x=n*l+this.x*c,this.y=r*l+this.y*c,this.z=i*l+this.z*c,this}}]),e}();t.default=o},function(e,t,n){function r(e,t){if(!(e instanceof t))throw new TypeError("Cannot call a class as a function")}Object.defineProperty(t,"__esModule",{value:!0});var i=function(){function e(e,t){for(var n=0;n<t.length;n++){var r=t[n];r.enumerable=r.enumerable||!1,r.configurable=!0,"value"in r&&(r.writable=!0),Object.defineProperty(e,r.key,r)}}return function(t,n,r){return n&&e(t.prototype,n),r&&e(t,r),t}}(),o=function(){function e(){r(this,e),this._listeners=new Map}return i(e,[{key:"addEventListener",value:function(e,t){var n=this._listeners.get(e);!1===Array.isArray(n)&&(n=[],this._listeners.set(e,n)),n.push(t)}},{key:"removeEventListener",value:function(e,t){var n=this._listeners.get(e);if(!1!==Array.isArray(n))for(var r=0;r<n.length;r++)if(n[r]===t)return void n.splice(r,1)}},{key:"dispatchEvent",value:function(e){var t=this._listeners.get(e.type);if(!1!==Array.isArray(t)){var n=!0,r=!1,i=void 0;try{for(var o,a=t[Symbol.iterator]();!(n=(o=a.next()).done);n=!0){(0,o.value)(e)}}catch(e){r=!0,i=e}finally{try{!n&&a.return&&a.return()}finally{if(r)throw i}}}}}]),e}();t.default=o},function(e,t,n){function r(e,t){if(!(e instanceof t))throw new TypeError("Cannot call a class as a function")}Object.defineProperty(t,"__esModule",{value:!0});var i=function(){function e(e,t){for(var n=0;n<t.length;n++){var r=t[n];r.enumerable=r.enumerable||!1,r.configurable=!0,"value"in r&&(r.writable=!0),Object.defineProperty(e,r.key,r)}}return function(t,n,r){return n&&e(t.prototype,n),r&&e(t,r),t}}(),o=function(){function e(t){var n=arguments.length>1&&void 0!==arguments[1]?arguments[1]:null;r(this,e),this._uid=null==n?e._generateUID():n,this._coordinates=t}return i(e,[{key:"uid",get:function(){return this._uid}},{key:"coordinates",get:function(){return this._coordinates},set:function(e){this._coordinates=e}}],[{key:"_generateUID",value:function(){return"anchor-"+(new Date).getTime()+"-"+Math.floor(Math.random()*Number.MAX_SAFE_INTEGER)}}]),e}();t.default=o},function(e,t,n){function r(e){return e&&e.__esModule?e:{default:e}}function i(e,t){if(!(e instanceof t))throw new TypeError("Cannot call a class as a function")}Object.defineProperty(t,"__esModule",{value:!0});var o=function(){function e(e,t){for(var n=0;n<t.length;n++){var r=t[n];r.enumerable=r.enumerable||!1,r.configurable=!0,"value"in r&&(r.writable=!0),Object.defineProperty(e,r.key,r)}}return function(t,n,r){return n&&e(t.prototype,n),r&&e(t,r),t}}(),a=n(0),s=r(a),u=n(1),l=r(u),c=n(13),f=r(c),h=function(){function e(t,n){var r=arguments.length>2&&void 0!==arguments[2]?arguments[2]:[0,0,0],o=arguments.length>3&&void 0!==arguments[3]?arguments[3]:[0,0,0,1];i(this,e),this._display=t,this._coordinateSystem=n,this._poseMatrix=new Float32Array(16),s.default.mat4_fromRotationTranslation(this._poseMatrix,o,r)}return o(e,[{key:"getTransformedCoordinates",value:function(t){if(this._coordinateSystem.type===f.default.GEOSPATIAL||t.type===f.default.GEOSPATIAL)return console.error("This polyfill does not yet support geospatial coordinate systems"),null;var n=this._coordinateSystem.getTransformTo(t);if(null===n)return console.error("Could not get a transform between",this._coordinateSystem,t),null;var r=new e(this._display,t);return s.default.mat4_multiply(r._poseMatrix,n,this._poseMatrix),r}},{key:"coordinateSystem",get:function(){return this._coordinateSystem}},{key:"poseMatrix",get:function(){return this._poseMatrix},set:function(e){for(var t=0;t<16;t++)this._poseMatrix[t]=e[t]}},{key:"position",get:function(){return new Float32Array([this._poseMatrix[12],this._poseMatrix[13],this._poseMatrix[14]])}},{key:"orientation",get:function(){var e=new l.default;return e.setFromRotationMatrix(this._poseMatrix),e.toArray()}}]),e}();t.default=h},function(e,t,n){function i(e){return e&&e.__esModule?e:{default:e}}function o(e,t){if(!(e instanceof t))throw new TypeError("Cannot call a class as a function")}function a(e,t){if(!e)throw new ReferenceError("this hasn't been initialised - super() hasn't been called");return!t||"object"!==(void 0===t?"undefined":r(t))&&"function"!=typeof t?e:t}function s(e,t){if("function"!=typeof t&&null!==t)throw new TypeError("Super expression must either be null or a function, not "+(void 0===t?"undefined":r(t)));e.prototype=Object.create(t&&t.prototype,{constructor:{value:e,enumerable:!1,writable:!0,configurable:!0}}),t&&(Object.setPrototypeOf?Object.setPrototypeOf(e,t):e.__proto__=t)}Object.defineProperty(t,"__esModule",{value:!0});var u=function(){function e(e,t){for(var n=0;n<t.length;n++){var r=t[n];r.enumerable=r.enumerable||!1,r.configurable=!0,"value"in r&&(r.writable=!0),Object.defineProperty(e,r.key,r)}}return function(t,n,r){return n&&e(t.prototype,n),r&&e(t,r),t}}(),l=n(2),c=i(l),f=n(18),h=i(f),d=n(19),_=i(d),y=function(e){function t(e,n,r,i){o(this,t);var s=a(this,(t.__proto__||Object.getPrototypeOf(t)).call(this));s._xr=e,s._displayName=n,s._isExternal=r,s._reality=i,s._headModelCoordinateSystem=new XRCoordinateSystem(s,XRCoordinateSystem.HEAD_MODEL),s._eyeLevelCoordinateSystem=new XRCoordinateSystem(s,XRCoordinateSystem.EYE_LEVEL),s._trackerCoordinateSystem=new XRCoordinateSystem(s,XRCoordinateSystem.TRACKER),s._headPose=new XRViewPose([0,XRViewPose.SITTING_EYE_HEIGHT,0]),s._eyeLevelPose=new XRViewPose([0,XRViewPose.SITTING_EYE_HEIGHT,0]),s._trackerPoseModelMatrix=new Float32Array([1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1]);return s._fov=new h.default(25,25,25,25),s._depthNear=.1,s._depthFar=1e3,s._views=[],s}return s(t,e),u(t,[{key:"supportsSession",value:function(e){return this._supportedCreationParameters(e)}},{key:"requestSession",value:function(e){var t=this;return new Promise(function(n,r){if(!1===t._supportedCreationParameters(e))return void r();e.type===XRSession.REALITY&&(t._reality=new _.default,t._xr._privateRealities.push(t._reality)),n(t._createSession(e))})}},{key:"_requestAnimationFrame",value:function(e){return window.requestAnimationFrame(e)}},{key:"_cancelAnimationFrame",value:function(e){return window.cancelAnimationFrame(e)}},{key:"_createSession",value:function(e){return new XRSession(this._xr,this,e)}},{key:"_supportedCreationParameters",value:function(e){throw"Should be implemented by extending class"}},{key:"_handleNewFrame",value:function(e){}},{key:"_handleAfterFrame",value:function(e){}},{key:"_handleNewBaseLayer",value:function(e){}},{key:"displayName",get:function(){return this._displayName}},{key:"isExternal",get:function(){return this._isExternal}}]),t}(c.default);t.default=y},function(e,t,n){function i(e,t){if(!(e instanceof t))throw new TypeError("Cannot call a class as a function")}function o(e,t){if(!e)throw new ReferenceError("this hasn't been initialised - super() hasn't been called");return!t||"object"!==(void 0===t?"undefined":r(t))&&"function"!=typeof t?e:t}function a(e,t){if("function"!=typeof t&&null!==t)throw new TypeError("Super expression must either be null or a function, not "+(void 0===t?"undefined":r(t)));e.prototype=Object.create(t&&t.prototype,{constructor:{value:e,enumerable:!1,writable:!0,configurable:!0}}),t&&(Object.setPrototypeOf?Object.setPrototypeOf(e,t):e.__proto__=t)}Object.defineProperty(t,"__esModule",{value:!0});var s=function(){function e(e,t){for(var n=0;n<t.length;n++){var r=t[n];r.enumerable=r.enumerable||!1,r.configurable=!0,"value"in r&&(r.writable=!0),Object.defineProperty(e,r.key,r)}}return function(t,n,r){return n&&e(t.prototype,n),r&&e(t,r),t}}(),u=n(2),l=function(e){return e&&e.__esModule?e:{default:e}}(u),c=function(e){function t(e,n,r,a){i(this,t);var s=o(this,(t.__proto__||Object.getPrototypeOf(t)).call(this));return s._xr=e,s._name=n,s._isShared=r,s._isPassthrough=a,s._anchors=new Map,s}return a(t,e),s(t,[{key:"getCoordinateSystem",value:function(){throw new Error("Not implemented")}},{key:"_start",value:function(){throw new Error("Exending classes should implement _start")}},{key:"_stop",value:function(){throw new Error("Exending classes should implement _stop")}},{key:"_handleNewFrame",value:function(){}},{key:"_addAnchor",value:function(e,t){throw new Error("Exending classes should implement _addAnchor")}},{key:"_findAnchor",value:function(e,t,n){throw new Error("Exending classes should implement _findAnchor")}},{key:"_findFloorAnchor",value:function(e){var t=this,n=arguments.length>1&&void 0!==arguments[1]?arguments[1]:null,r=new Float32Array(e._headPose.poseModelMatrix);return new Promise(function(i,o){var a=new XRCoordinates(e,e._trackerCoordinateSystem);r[13]=0,a.poseMatrix=r;var s=new XRAnchor(a,n);t._addAnchor(s,e),i(new XRAnchorOffset(s.uid))})}},{key:"_getAnchor",value:function(e){return this._anchors.get(e)||null}},{key:"_removeAnchor",value:function(e){throw new Error("Exending classes should implement _removeAnchor")}},{key:"name",get:function(){return this._name}},{key:"isShared",get:function(){return this._isShared}},{key:"isPassthrough",get:function(){return this._isPassthrough}}]),t}(l.default);t.default=c},function(e,t,n){function i(e,t){if(!(e instanceof t))throw new TypeError("Cannot call a class as a function")}function o(e,t){if(!e)throw new ReferenceError("this hasn't been initialised - super() hasn't been called");return!t||"object"!==(void 0===t?"undefined":r(t))&&"function"!=typeof t?e:t}function a(e,t){if("function"!=typeof t&&null!==t)throw new TypeError("Super expression must either be null or a function, not "+(void 0===t?"undefined":r(t)));e.prototype=Object.create(t&&t.prototype,{constructor:{value:e,enumerable:!1,writable:!0,configurable:!0}}),t&&(Object.setPrototypeOf?Object.setPrototypeOf(e,t):e.__proto__=t)}Object.defineProperty(t,"__esModule",{value:!0});var s=function(){function e(e,t){for(var n=0;n<t.length;n++){var r=t[n];r.enumerable=r.enumerable||!1,r.configurable=!0,"value"in r&&(r.writable=!0),Object.defineProperty(e,r.key,r)}}return function(t,n,r){return n&&e(t.prototype,n),r&&e(t,r),t}}(),u=n(2),l=function(e){return e&&e.__esModule?e:{default:e}}(u),c=function(e){function t(e,n,r){i(this,t);var a=o(this,(t.__proto__||Object.getPrototypeOf(t)).call(this,e));return a._xr=e,a._display=n,a._createParameters=r,a._baseLayer=null,a._stageBounds=null,a}return a(t,e),s(t,[{key:"requestFrame",value:function(e){var t=this;if("function"!=typeof e)throw"Invalid callback";return this._display._requestAnimationFrame(function(){var n=t._createPresentationFrame();t._display._reality._handleNewFrame(n),t._display._handleNewFrame(n),e(n),t._display._handleAfterFrame(n)})}},{key:"cancelFrame",value:function(e){return this._display._cancelAnimationFrame(e)}},{key:"end",value:function(){throw"Not implemented"}},{key:"_createPresentationFrame",value:function(){return new XRPresentationFrame(this)}},{key:"_getCoordinateSystem",value:function(){for(var e=arguments.length,t=Array(e),n=0;n<e;n++)t[n]=arguments[n];var r=!0,i=!1,o=void 0;try{for(var a,s=t[Symbol.iterator]();!(r=(a=s.next()).done);r=!0){switch(a.value){case XRCoordinateSystem.HEAD_MODEL:return this._display._headModelCoordinateSystem;case XRCoordinateSystem.EYE_LEVEL:return this._display._eyeLevelCoordinateSystem;case XRCoordinateSystem.TRACKER:return this._display._trackerCoordinateSystem;case XRCoordinateSystem.GEOSPATIAL:default:continue}}}catch(e){i=!0,o=e}finally{try{!r&&s.return&&s.return()}finally{if(i)throw o}}return null}},{key:"display",get:function(){return this._display}},{key:"createParameters",get:function(){return this._parameters}},{key:"realities",get:function(){return this._xr._sharedRealities}},{key:"reality",get:function(){return this._display._reality}},{key:"baseLayer",get:function(){return this._baseLayer},set:function(e){this._baseLayer=e,this._display._handleNewBaseLayer(this._baseLayer)}},{key:"depthNear",get:function(){this._display._depthNear},set:function(e){this._display._depthNear=e}},{key:"depthFar",get:function(){this._display._depthFar},set:function(e){this._display._depthFar=e}},{key:"hasStageBounds",get:function(){this._stageBounds}},{key:"stageBounds",get:function(){return this._stageBounds}}]),t}(l.default);t.default=c,c.REALITY="reality",c.AUGMENTATION="augmentation",c.TYPES=[c.REALITY,c.AUGMENTATION]},function(e,t,n){function r(e){return e&&e.__esModule?e:{default:e}}function i(e,t){if(!(e instanceof t))throw new TypeError("Cannot call a class as a function")}Object.defineProperty(t,"__esModule",{value:!0});var o=function(){function e(e,t){for(var n=0;n<t.length;n++){var r=t[n];r.enumerable=r.enumerable||!1,r.configurable=!0,"value"in r&&(r.writable=!0),Object.defineProperty(e,r.key,r)}}return function(t,n,r){return n&&e(t.prototype,n),r&&e(t,r),t}}(),a=n(14),s=r(a),u=n(0),l=r(u),c=function(){function e(t,n,r){var o=arguments.length>3&&void 0!==arguments[3]?arguments[3]:null;i(this,e),this._fov=t,this._depthNear=n,this._depthFar=r,this._eye=o,this._viewport=new s.default(0,0,1,1),this._projectionMatrix=new Float32Array(16),l.default.mat4_perspectiveFromFieldOfView(this._projectionMatrix,this._fov,this._depthNear,this._depthFar)}return o(e,[{key:"setProjectionMatrix",value:function(e){for(var t=0;t<16;t++)this._projectionMatrix[t]=e[t]}},{key:"getViewport",value:function(t){return this._eye===e.LEFT?(this._viewport.x=0,this._viewport.y=0,this._viewport.width=t.framebufferWidth/2,this._viewport.height=t.framebufferHeight):this._eye===e.RIGHT?(this._viewport.x=t.framebufferWidth/2,this._viewport.y=0,this._viewport.width=t.framebufferWidth/2,this._viewport.height=t.framebufferHeight):(this._viewport.x=0,this._viewport.y=0,this._viewport.width=t.framebufferWidth,this._viewport.height=t.framebufferHeight),this._viewport}},{key:"eye",get:function(){return this._eye}},{key:"projectionMatrix",get:function(){return this._projectionMatrix}}]),e}();t.default=c,c.LEFT="left",c.RIGHT="right",c.EYES=[c.LEFT,c.RIGHT]},function(e,t,n){function r(e){return e&&e.__esModule?e:{default:e}}function i(e,t){if(!(e instanceof t))throw new TypeError("Cannot call a class as a function")}Object.defineProperty(t,"__esModule",{value:!0});var o=function(){function e(e,t){for(var n=0;n<t.length;n++){var r=t[n];r.enumerable=r.enumerable||!1,r.configurable=!0,"value"in r&&(r.writable=!0),Object.defineProperty(e,r.key,r)}}return function(t,n,r){return n&&e(t.prototype,n),r&&e(t,r),t}}(),a=n(0),s=r(a),u=n(1),l=r(u),c=function(){function e(){var t=arguments.length>0&&void 0!==arguments[0]?arguments[0]:[0,0,0],n=arguments.length>1&&void 0!==arguments[1]?arguments[1]:[0,0,0,1];i(this,e),this._poseModelMatrix=new Float32Array(16),s.default.mat4_fromRotationTranslation(this._poseModelMatrix,n,t)}return o(e,[{key:"_setPoseModelMatrix",value:function(e){for(var t=0;t<16;t++)this._poseModelMatrix[t]=e[t]}},{key:"_translate",value:function(e){this._poseModelMatrix[12]+=e[0],this._poseModelMatrix[13]+=e[1],this._poseModelMatrix[14]+=e[2]}},{key:"getViewMatrix",value:function(e){var t=arguments.length>1&&void 0!==arguments[1]?arguments[1]:null;return null===t&&(t=new Float32Array(16)),s.default.mat4_eyeView(t,this._poseModelMatrix),t}},{key:"poseModelMatrix",get:function(){return this._poseModelMatrix}},{key:"_position",get:function(){return[this._poseModelMatrix[12],this._poseModelMatrix[13],this._poseModelMatrix[14]]},set:function(e){this._poseModelMatrix[12]=e[0],this._poseModelMatrix[13]=e[1],this._poseModelMatrix[14]=e[2]}},{key:"_orientation",get:function(){var e=new l.default;return e.setFromRotationMatrix(this._poseModelMatrix),e.toArray()},set:function(e){s.default.mat4_fromRotationTranslation(this._poseModelMatrix,e,this._position)}}]),e}();t.default=c,c.SITTING_EYE_HEIGHT=1.1},function(e,t,n){function r(e,t){if(!(e instanceof t))throw new TypeError("Cannot call a class as a function")}Object.defineProperty(t,"__esModule",{value:!0});var i=function(){function e(e,t){for(var n=0;n<t.length;n++){var r=t[n];r.enumerable=r.enumerable||!1,r.configurable=!0,"value"in r&&(r.writable=!0),Object.defineProperty(e,r.key,r)}}return function(t,n,r){return n&&e(t.prototype,n),r&&e(t,r),t}}(),o=function(){function e(){var t=arguments.length>0&&void 0!==arguments[0]?arguments[0]:0,n=arguments.length>1&&void 0!==arguments[1]?arguments[1]:0,i=arguments.length>2&&void 0!==arguments[2]?arguments[2]:0;r(this,e),this.x=t,this.y=n,this.z=i}return i(e,[{key:"set",value:function(e,t,n){return this.x=e,this.y=t,this.z=n,this}},{key:"copy",value:function(e){return this.x=e.x,this.y=e.y,this.z=e.z,this}},{key:"toArray",value:function(){return[this.x,this.y,this.z]}},{key:"length",value:function(){return Math.sqrt(this.x*this.x+this.y*this.y+this.z*this.z)}},{key:"add",value:function(e,t,n){this.x+=e,this.y+=t,this.z+=n}},{key:"normalize",value:function(){var e=this.length();return 0!==e?this.multiplyScalar(1/e):(this.x=0,this.y=0,this.z=0),this}},{key:"multiplyScalar",value:function(e){this.x*=e,this.y*=e,this.z*=e}},{key:"applyQuaternion",value:function(e){var t=this.x,n=this.y,r=this.z,i=e.x,o=e.y,a=e.z,s=e.w,u=s*t+o*r-a*n,l=s*n+a*t-i*r,c=s*r+i*n-o*t,f=-i*t-o*n-a*r;return this.x=u*s+f*-i+l*-a-c*-o,this.y=l*s+f*-o+c*-i-u*-a,this.z=c*s+f*-a+u*-o-l*-i,this}},{key:"applyMatrix4",value:function(e){var t=this.x,n=this.y,r=this.z,i=1/(e[3]*t+e[7]*n+e[11]*r+e[15]);return this.x=(e[0]*t+e[4]*n+e[8]*r+e[12])*i,this.y=(e[1]*t+e[5]*n+e[9]*r+e[13])*i,this.z=(e[2]*t+e[6]*n+e[10]*r+e[14])*i,this}},{key:"dot",value:function(e){return this.x*e.x+this.y*e.y+this.z*e.z}},{key:"crossVectors",value:function(e,t){var n=e.x,r=e.y,i=e.z,o=t.x,a=t.y,s=t.z;return this.x=r*s-i*a,this.y=i*o-n*s,this.z=n*a-r*o,this}}]),e}();t.default=o},function(e,t,n){function i(e,t){if(!(e instanceof t))throw new TypeError("Cannot call a class as a function")}function o(e,t){if(!e)throw new ReferenceError("this hasn't been initialised - super() hasn't been called");return!t||"object"!==(void 0===t?"undefined":r(t))&&"function"!=typeof t?e:t}function a(e,t){if("function"!=typeof t&&null!==t)throw new TypeError("Super expression must either be null or a function, not "+(void 0===t?"undefined":r(t)));e.prototype=Object.create(t&&t.prototype,{constructor:{value:e,enumerable:!1,writable:!0,configurable:!0}}),t&&(Object.setPrototypeOf?Object.setPrototypeOf(e,t):e.__proto__=t)}Object.defineProperty(t,"__esModule",{value:!0});var s="function"==typeof Symbol&&"symbol"===r(Symbol.iterator)?function(e){return void 0===e?"undefined":r(e)}:function(e){return e&&"function"==typeof Symbol&&e.constructor===Symbol&&e!==Symbol.prototype?"symbol":void 0===e?"undefined":r(e)},u=function(){function e(e,t){for(var n=0;n<t.length;n++){var r=t[n];r.enumerable=r.enumerable||!1,r.configurable=!0,"value"in r&&(r.writable=!0),Object.defineProperty(e,r.key,r)}}return function(t,n,r){return n&&e(t.prototype,n),r&&e(t,r),t}}(),l=n(2),c=function(e){return e&&e.__esModule?e:{default:e}}(l),f=function(e){function t(){i(this,t);var e=o(this,(t.__proto__||Object.getPrototypeOf(t)).call(this));if(!1===t.HasARKit())throw"ARKitWrapper will only work in Mozilla's ARDemo test app";if(void 0!==t.GLOBAL_INSTANCE)throw"ARKitWrapper is a singleton. Use ARKitWrapper.GetOrCreate() to get the global instance.";e._deviceId=null,e._isWatching=!1,e._isInitialized=!1,e._rawARData=null,e._globalCallbacksMap={};for(var n=["onInit","onWatch"],r=0;r<n.length;r++)e._generateGlobalCallback(n[r],r);for(var a=[["arkitStartRecording",t.RECORD_START_EVENT],["arkitStopRecording",t.RECORD_STOP_EVENT],["arkitDidMoveBackground",t.DID_MOVE_BACKGROUND_EVENT],["arkitWillEnterForeground",t.WILL_ENTER_FOREGROUND_EVENT],["arkitInterrupted",t.INTERRUPTED_EVENT],["arkitInterruptionEnded",t.INTERRUPTION_ENDED_EVENT],["arkitShowDebug",t.SHOW_DEBUG_EVENT]],s=0;s<a.length;s++)!function(t){window[a[t][0]]=function(n){n=n||null,e.dispatchEvent(new CustomEvent(a[t][1],{source:e,detail:n}))}}(s);return e}return a(t,e),u(t,[{key:"waitForInit",value:function(){var e=this;return new Promise(function(n,r){if(e._isInitialized)return void n();var i=function r(){e.removeEventListener(t.INIT_EVENT,r,!1),n()};e.addEventListener(t.INIT_EVENT,i,!1)})}},{key:"getData",value:function(){var e=arguments.length>0&&void 0!==arguments[0]?arguments[0]:null;return null===e?this._rawARData:this._rawARData&&void 0!==this._rawARData[e]?this._rawARData[e]:null}},{key:"getObject",value:function(e){if(!this._isInitialized)return null;var t=this.getKey("objects");if(null===t)return null;var n=!0,r=!1,i=void 0;try{for(var o,a=t[Symbol.iterator]();!(n=(o=a.next()).done);n=!0){var s=o.value;if(s.uuid===e)return s}}catch(e){r=!0,i=e}finally{try{!n&&a.return&&a.return()}finally{if(r)throw i}}return null}},{key:"hitTest",value:function(e,n){var r=this,i=arguments.length>2&&void 0!==arguments[2]?arguments[2]:t.HIT_TEST_TYPE_ALL;return new Promise(function(t,o){if(!r._isInitialized)return void o(new Error("ARKit is not initialized"));window.webkit.messageHandlers.hitTest.postMessage({x:e,y:n,type:i,callback:r._createPromiseCallback("hitTest",t)})})}},{key:"addAnchor",value:function(e,t){var n=this;return new Promise(function(r,i){if(!n._isInitialized)return void i(new Error("ARKit is not initialized"));window.webkit.messageHandlers.addAnchor.postMessage({uuid:e,transform:t,callback:n._createPromiseCallback("addAnchor",r)})})}},{key:"stop",value:function(){var e=this;return new Promise(function(t,n){if(!e._isWatching)return void t();window.webkit.messageHandlers.stopAR.postMessage({callback:e._createPromiseCallback("stop",t)})})}},{key:"watch",value:function(){var e=arguments.length>0&&void 0!==arguments[0]?arguments[0]:null;if(!this._isInitialized)return!1;if(this._isWatching)return!0;this._isWatching=!0,null===e&&(e={location:!0,camera:!0,objects:!0,light_intensity:!0});var t={options:e,callback:this._globalCallbacksMap.onWatch};return window.webkit.messageHandlers.watchAR.postMessage(t),!0}},{key:"setUIOptions",value:function(e){window.webkit.messageHandlers.setUIOptions.postMessage(e)}},{key:"_sendInit",value:function(e){window.webkit.messageHandlers.initAR.postMessage({options:e,callback:this._globalCallbacksMap.onInit})}},{key:"_onInit",value:function(e){this._deviceId=e,this._isInitialized=!0,this.dispatchEvent(new CustomEvent(t.INIT_EVENT,{source:this}))}},{key:"_onWatch",value:function(e){this._rawARData=e,this.dispatchEvent(new CustomEvent(t.WATCH_EVENT,{source:this,detail:this._rawARData}))}},{key:"_onStop",value:function(){this._isWatching=!1}},{key:"_createPromiseCallback",value:function(e,t){var n=this,r=this._generateCallbackUID(e);return window[r]=function(i){delete window[r];var o="_on"+e[0].toUpperCase()+e.slice(1);"function"==typeof n[o]&&n[o](i),t(i)},r}},{key:"_generateCallbackUID",value:function(e){return"arkitCallback_"+e+"_"+(new Date).getTime()+"_"+Math.floor(Math.random()*Number.MAX_SAFE_INTEGER)}},{key:"_generateGlobalCallback",value:function(e,t){var n="arkitCallback"+t;this._globalCallbacksMap[e]=n;var r=this;window[n]=function(t){r["_"+e](t)}}},{key:"deviceId",get:function(){return this._deviceId}},{key:"isWatching",get:function(){return this._isWatching}},{key:"isInitialized",get:function(){return this._isInitialized}},{key:"hasData",get:function(){return null!==this._rawARData}}],[{key:"GetOrCreate",value:function(){var e=arguments.length>0&&void 0!==arguments[0]?arguments[0]:null;if(void 0===t.GLOBAL_INSTANCE){t.GLOBAL_INSTANCE=new t,e=e&&"object"==(void 0===e?"undefined":s(e))?e:{};var n={browser:!0,points:!0,focus:!1,rec:!0,rec_time:!0,mic:!1,build:!1,plane:!0,warnings:!0,anchors:!1,debug:!0,statistics:!1},r="object"==s(e.ui)?e.ui:{};e.ui=Object.assign(n,r),t.GLOBAL_INSTANCE._sendInit(e)}return t.GLOBAL_INSTANCE}},{key:"HasARKit",value:function(){return void 0!==window.webkit}}]),t}(c.default);t.default=f,f.INIT_EVENT="arkit-init",f.WATCH_EVENT="arkit-watch",f.RECORD_START_EVENT="arkit-record-start",f.RECORD_STOP_EVENT="arkit-record-stop",f.DID_MOVE_BACKGROUND_EVENT="arkit-did-move-background",f.WILL_ENTER_FOREGROUND_EVENT="arkit-will-enter-foreground",f.INTERRUPTED_EVENT="arkit-interrupted",f.INTERRUPTION_ENDED_EVENT="arkit-interruption-ended",f.SHOW_DEBUG_EVENT="arkit-show-debug",f.HIT_TEST_TYPE_FEATURE_POINT=1,f.HIT_TEST_TYPE_EXISTING_PLANE=8,f.HIT_TEST_TYPE_ESTIMATED_HORIZONTAL_PLANE=2,f.HIT_TEST_TYPE_EXISTING_PLANE_USING_EXTENT=16,f.HIT_TEST_TYPE_ALL=f.HIT_TEST_TYPE_FEATURE_POINT|f.HIT_TEST_TYPE_EXISTING_PLANE|f.HIT_TEST_TYPE_ESTIMATED_HORIZONTAL_PLANE|f.HIT_TEST_TYPE_EXISTING_PLANE_USING_EXTENT,f.HIT_TEST_TYPE_EXISTING_PLANES=f.HIT_TEST_TYPE_EXISTING_PLANE|f.HIT_TEST_TYPE_EXISTING_PLANE_USING_EXTENT},function(e,t,n){function r(e){return e&&e.__esModule?e:{default:e}}function i(e,t){if(!(e instanceof t))throw new TypeError("Cannot call a class as a function")}Object.defineProperty(t,"__esModule",{value:!0});var o=function(){function e(e,t){for(var n=0;n<t.length;n++){var r=t[n];r.enumerable=r.enumerable||!1,r.configurable=!0,"value"in r&&(r.writable=!0),Object.defineProperty(e,r.key,r)}}return function(t,n,r){return n&&e(t.prototype,n),r&&e(t,r),t}}(),a=n(0),s=r(a),u=n(1),l=r(u),c=n(3),f=(r(c),n(4)),h=r(f),d=function(){function e(t){var n=arguments.length>1&&void 0!==arguments[1]?arguments[1]:null;i(this,e),this._anchorUID=t,this._poseMatrix=n||s.default.mat4_generateIdentity()}return o(e,[{key:"getTransformedCoordinates",value:function(e){var t=new h.default(e.coordinates._display,e.coordinates.coordinateSystem);return s.default.mat4_multiply(t.poseMatrix,this._poseMatrix,e.coordinates.poseMatrix),t}},{key:"anchorUID",get:function(){return this._anchorUID}},{key:"poseMatrix",get:function(){return this._poseMatrix},set:function(e){for(var t=0;t<16;t++)this._poseMatrix[t]=e[t]}},{key:"position",get:function(){return new Float32Array([this._poseMatrix[12],this._poseMatrix[13],this._poseMatrix[14]])}},{key:"orientation",get:function(){var e=new l.default;return e.setFromRotationMatrix(this._poseMatrix),e.toArray()}}]),e}();t.default=d},function(e,t,n){function r(e){return e&&e.__esModule?e:{default:e}}function i(e,t){if(!(e instanceof t))throw new TypeError("Cannot call a class as a function")}Object.defineProperty(t,"__esModule",{value:!0});var o=function(){function e(e,t){for(var n=0;n<t.length;n++){var r=t[n];r.enumerable=r.enumerable||!1,r.configurable=!0,"value"in r&&(r.writable=!0),Object.defineProperty(e,r.key,r)}}return function(t,n,r){return n&&e(t.prototype,n),r&&e(t,r),t}}(),a=n(0),s=r(a),u=n(4),l=r(u),c=function(){function e(t,n){var r=arguments.length>2&&void 0!==arguments[2]?arguments[2]:null;i(this,e),this._display=t,this._type=n,this._cartographicCoordinates=r}return o(e,[{key:"getCoordinates",value:function(){var e=arguments.length>0&&void 0!==arguments[0]?arguments[0]:[0,0,0],t=arguments.length>1&&void 0!==arguments[1]?arguments[1]:[0,0,0,1];return new l.default(this._display,this,e,t)}},{key:"getTransformTo",value:function(e){var t=new Float32Array([1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1]),n=new Float32Array(16);return s.default.mat4_invert(n,e._poseModelMatrix),s.default.mat4_multiply(t,n,t),s.default.mat4_multiply(t,this._poseModelMatrix,t),t}},{key:"cartographicCoordinates",get:function(){return this._cartographicCoordinates}},{key:"type",get:function(){return this._type}},{key:"_poseModelMatrix",get:function(){switch(this._type){case e.HEAD_MODEL:return this._display._headPose.poseModelMatrix;case e.EYE_LEVEL:return this._display._eyeLevelPose.poseModelMatrix;case e.TRACKER:return this._display._trackerPoseModelMatrix;case e.GEOSPATIAL:throw"This polyfill does not yet handle geospatial coordinate systems";default:throw"Unknown coordinate system type: "+this._type}}}]),e}();t.default=c,c.HEAD_MODEL="headModel",c.EYE_LEVEL="eyeLevel",c.TRACKER="tracker",c.GEOSPATIAL="geospatial",c.TYPES=[c.HEAD_MODEL,c.EYE_LEVEL,c.TRACKER,c.GEOSPATIAL]},function(e,t,n){function r(e,t){if(!(e instanceof t))throw new TypeError("Cannot call a class as a function")}Object.defineProperty(t,"__esModule",{value:!0});var i=function(){function e(e,t){for(var n=0;n<t.length;n++){var r=t[n];r.enumerable=r.enumerable||!1,r.configurable=!0,"value"in r&&(r.writable=!0),Object.defineProperty(e,r.key,r)}}return function(t,n,r){return n&&e(t.prototype,n),r&&e(t,r),t}}(),o=function(){function e(t,n,i,o){r(this,e),this._x=t,this._y=n,this._width=i,this._height=o}return i(e,[{key:"x",get:function(){return this._x},set:function(e){this._x=e}},{key:"y",get:function(){return this._y},set:function(e){this._y=e}},{key:"width",get:function(){return this._width},set:function(e){this._width=e}},{key:"height",get:function(){return this._height},set:function(e){this._height=e}}]),e}();t.default=o},function(e,t,n){function i(e,t){if(!(e instanceof t))throw new TypeError("Cannot call a class as a function")}function o(e,t){if(!e)throw new ReferenceError("this hasn't been initialised - super() hasn't been called");return!t||"object"!==(void 0===t?"undefined":r(t))&&"function"!=typeof t?e:t}function a(e,t){if("function"!=typeof t&&null!==t)throw new TypeError("Super expression must either be null or a function, not "+(void 0===t?"undefined":r(t)));e.prototype=Object.create(t&&t.prototype,{constructor:{value:e,enumerable:!1,writable:!0,configurable:!0}}),t&&(Object.setPrototypeOf?Object.setPrototypeOf(e,t):e.__proto__=t)}Object.defineProperty(t,"__esModule",{value:!0});var s=n(2),u=function(e){return e&&e.__esModule?e:{default:e}}(s),l=function(e){function t(){return i(this,t),o(this,(t.__proto__||Object.getPrototypeOf(t)).apply(this,arguments))}return a(t,e),t}(u.default);t.default=l},function(e,t,n){function i(e){return e&&e.__esModule?e:{default:e}}function o(e,t){if(!(e instanceof t))throw new TypeError("Cannot call a class as a function")}function a(e,t){if(!e)throw new ReferenceError("this hasn't been initialised - super() hasn't been called");return!t||"object"!==(void 0===t?"undefined":r(t))&&"function"!=typeof t?e:t}function s(e,t){if("function"!=typeof t&&null!==t)throw new TypeError("Super expression must either be null or a function, not "+(void 0===t?"undefined":r(t)));e.prototype=Object.create(t&&t.prototype,{constructor:{value:e,enumerable:!1,writable:!0,configurable:!0}}),t&&(Object.setPrototypeOf?Object.setPrototypeOf(e,t):e.__proto__=t)}Object.defineProperty(t,"__esModule",{value:!0});var u=function(){function e(e,t){for(var n=0;n<t.length;n++){var r=t[n];r.enumerable=r.enumerable||!1,r.configurable=!0,"value"in r&&(r.writable=!0),Object.defineProperty(e,r.key,r)}}return function(t,n,r){return n&&e(t.prototype,n),r&&e(t,r),t}}(),l=n(2),c=i(l),f=n(10),h=i(f),d=n(1),_=i(d),y=n(30),p=i(y),v=function(e){function t(){o(this,t);var e=a(this,(t.__proto__||Object.getPrototypeOf(t)).call(this));return e._deviceOrientation=null,e._windowOrientation=0,window.addEventListener("orientationchange",function(){e._windowOrientation=window.orientation||0},!1),window.addEventListener("deviceorientation",function(n){e._deviceOrientation=n,e.dispatchEvent(new CustomEvent(t.ORIENTATION_UPDATE_EVENT,{deviceOrientation:e._deviceOrientation,windowOrientation:e._windowOrientation}))},!1),e}return s(t,e),u(t,[{key:"getOrientation",value:function(e){return null===this._deviceOrientation?(e.set(0,0,0,1),!1):(t.WORKING_EULER.set(this._deviceOrientation.beta*t.DEG_TO_RAD,this._deviceOrientation.alpha*t.DEG_TO_RAD,-1*this._deviceOrientation.gamma*t.DEG_TO_RAD,"YXZ"),e.setFromEuler(t.WORKING_EULER.x,t.WORKING_EULER.y,t.WORKING_EULER.z,t.WORKING_EULER.order),e.multiply(t.HALF_PI_AROUND_X),e.multiply(t.WORKING_QUATERNION.setFromAxisAngle(t.Z_AXIS,-this._windowOrientation*t.DEG_TO_RAD)),!0)}}]),t}(c.default);t.default=v,v.ORIENTATION_UPDATE_EVENT="orientation-update",v.Z_AXIS=new h.default(0,0,1),v.WORKING_EULER=new p.default,v.WORKING_QUATERNION=new _.default,v.HALF_PI_AROUND_X=new _.default(-Math.sqrt(.5),0,0,Math.sqrt(.5)),v.DEG_TO_RAD=Math.PI/180},function(e,t,n){function i(e){return e&&e.__esModule?e:{default:e}}function o(e,t){if(!(e instanceof t))throw new TypeError("Cannot call a class as a function")}function a(e,t){if(!e)throw new ReferenceError("this hasn't been initialised - super() hasn't been called");return!t||"object"!==(void 0===t?"undefined":r(t))&&"function"!=typeof t?e:t}function s(e,t){if("function"!=typeof t&&null!==t)throw new TypeError("Super expression must either be null or a function, not "+(void 0===t?"undefined":r(t)));e.prototype=Object.create(t&&t.prototype,{constructor:{value:e,enumerable:!1,writable:!0,configurable:!0}}),t&&(Object.setPrototypeOf?Object.setPrototypeOf(e,t):e.__proto__=t)}var u=function(){function e(e,t){for(var n=0;n<t.length;n++){var r=t[n];r.enumerable=r.enumerable||!1,r.configurable=!0,"value"in r&&(r.writable=!0),Object.defineProperty(e,r.key,r)}}return function(t,n,r){return n&&e(t.prototype,n),r&&e(t,r),t}}(),l=n(5),c=i(l),f=n(7),h=i(f),d=n(20),_=i(d),y=n(6),p=i(y),v=n(21),w=i(v),m=n(22),b=i(m),g=n(3),E=i(g),T=n(23),x=i(T),A=n(12),R=i(A),k=n(24),O=i(k),P=n(25),M=i(P),S=n(26),C=i(S),N=n(8),I=i(N),D=n(14),F=i(D),j=n(27),L=i(j),W=n(13),X=i(W),z=n(4),H=i(z),G=n(9),U=i(G),V=n(15),B=i(V),Y=n(28),K=i(Y),q=n(2),Z=i(q),Q=n(29),J=i(Q),$=n(31),ee=i($),te=n(32),ne=i(te),re=function(e){function t(){o(this,t);var e=a(this,(t.__proto__||Object.getPrototypeOf(t)).call(this));window.XRDisplay=c.default,window.XRSession=h.default,window.XRSessionCreateParameters=_.default,window.Reality=p.default,window.XRPointCloud=w.default,window.XRLightEstimate=b.default,window.XRAnchor=E.default,window.XRPlaneAnchor=x.default,window.XRAnchorOffset=R.default,window.XRStageBounds=O.default,window.XRStageBoundsPoint=M.default,window.XRPresentationFrame=C.default,window.XRView=I.default,window.XRViewport=F.default,window.XRCartographicCoordinates=L.default,window.XRCoordinateSystem=X.default,window.XRCoordinates=H.default,window.XRViewPose=U.default,window.XRLayer=B.default,window.XRWebGLLayer=K.default,e._sharedRealities=[new ne.default(e)],e._privateRealities=[],e._displays=[new J.default(e,e._sharedRealities[0])],"function"==typeof navigator.getVRDisplays&&navigator.getVRDisplays().then(function(t){var n=!0,r=!1,i=void 0;try{for(var o,a=t[Symbol.iterator]();!(n=(o=a.next()).done);n=!0){var s=o.value;null!==s&&(s.capabilities.canPresent&&e._displays.push(new ee.default(e,e._sharedRealities[0],s)))}}catch(e){r=!0,i=e}finally{try{!n&&a.return&&a.return()}finally{if(r)throw i}}}),e._sessionEls=document.createElement("div"),e._sessionEls.setAttribute("class","webxr-sessions"),e._realityEls=document.createElement("div"),e._realityEls.setAttribute("class","webxr-realities");for(var n=[e._sessionEls,e._realityEls],r=0;r<n.length;r++){var i=n[r];i.style.position="absolute",i.style.width="100%",i.style.height="100%"}return document.addEventListener("DOMContentLoaded",function(){document.body.style.width="100%",document.body.style.height="100%",document.body.prepend(e._sessionEls),document.body.prepend(e._realityEls)}),e}return s(t,e),u(t,[{key:"getDisplays",value:function(){var e=this;return new Promise(function(t,n){t(e._displays)})}}]),t}(Z.default);void 0===navigator.XR&&(navigator.XR=new re)},function(e,t,n){function r(e,t){if(!(e instanceof t))throw new TypeError("Cannot call a class as a function")}Object.defineProperty(t,"__esModule",{value:!0});var i=function(){function e(e,t){for(var n=0;n<t.length;n++){var r=t[n];r.enumerable=r.enumerable||!1,r.configurable=!0,"value"in r&&(r.writable=!0),Object.defineProperty(e,r.key,r)}}return function(t,n,r){return n&&e(t.prototype,n),r&&e(t,r),t}}(),o=function(){function e(t,n,i,o){r(this,e),this._upDegrees=t,this._downDegrees=n,this._leftDegrees=i,this._rightDegrees=o}return i(e,[{key:"upDegrees",get:function(){return this._upDegrees}},{key:"downDegrees",get:function(){return this._downDegrees}},{key:"leftDegrees",get:function(){return this._leftDegrees}},{key:"rightDegrees",get:function(){return this._rightDegrees}}]),e}();t.default=o},function(e,t,n){function i(e,t){if(!(e instanceof t))throw new TypeError("Cannot call a class as a function")}function o(e,t){if(!e)throw new ReferenceError("this hasn't been initialised - super() hasn't been called");return!t||"object"!==(void 0===t?"undefined":r(t))&&"function"!=typeof t?e:t}function a(e,t){if("function"!=typeof t&&null!==t)throw new TypeError("Super expression must either be null or a function, not "+(void 0===t?"undefined":r(t)));e.prototype=Object.create(t&&t.prototype,{constructor:{value:e,enumerable:!1,writable:!0,configurable:!0}}),t&&(Object.setPrototypeOf?Object.setPrototypeOf(e,t):e.__proto__=t)}Object.defineProperty(t,"__esModule",{value:!0});var s=function(){function e(e,t){for(var n=0;n<t.length;n++){var r=t[n];r.enumerable=r.enumerable||!1,r.configurable=!0,"value"in r&&(r.writable=!0),Object.defineProperty(e,r.key,r)}}return function(t,n,r){return n&&e(t.prototype,n),r&&e(t,r),t}}(),u=n(6),l=function(e){return e&&e.__esModule?e:{default:e}}(u),c=function(e){function t(e){return i(this,t),o(this,(t.__proto__||Object.getPrototypeOf(t)).call(this,e,"Virtual",!1,!1))}return a(t,e),s(t,[{key:"_start",value:function(){}},{key:"_stop",value:function(){}},{key:"_handleNewFrame",value:function(){}},{key:"_addAnchor",value:function(e,t){return this._anchors.set(e.uid,e),e.uid}},{key:"_findAnchor",value:function(e,t,n){return new Promise(function(e,t){e(null)})}},{key:"_removeAnchor",value:function(e){this._anchors.delete(e)}}]),t}(l.default);t.default=c},function(e,t,n){function r(e,t){if(!(e instanceof t))throw new TypeError("Cannot call a class as a function")}Object.defineProperty(t,"__esModule",{value:!0});var i=function(){function e(e,t){for(var n=0;n<t.length;n++){var r=t[n];r.enumerable=r.enumerable||!1,r.configurable=!0,"value"in r&&(r.writable=!0),Object.defineProperty(e,r.key,r)}}return function(t,n,r){return n&&e(t.prototype,n),r&&e(t,r),t}}(),o=function(){function e(){r(this,e)}return i(e,[{key:"exclusive",get:function(){throw"Not implemented"}},{key:"type",get:function(){throw"Not implemented"}}]),e}();t.default=o},function(e,t,n){function r(e,t){if(!(e instanceof t))throw new TypeError("Cannot call a class as a function")}Object.defineProperty(t,"__esModule",{value:!0});var i=function(){function e(e,t){for(var n=0;n<t.length;n++){var r=t[n];r.enumerable=r.enumerable||!1,r.configurable=!0,"value"in r&&(r.writable=!0),Object.defineProperty(e,r.key,r)}}return function(t,n,r){return n&&e(t.prototype,n),r&&e(t,r),t}}(),o=function(){function e(){r(this,e)}return i(e,[{key:"points",get:function(){throw new Error("Not implemented")}}]),e}();t.default=o},function(e,t,n){function r(e,t){if(!(e instanceof t))throw new TypeError("Cannot call a class as a function")}Object.defineProperty(t,"__esModule",{value:!0});var i=function(){function e(e,t){for(var n=0;n<t.length;n++){var r=t[n];r.enumerable=r.enumerable||!1,r.configurable=!0,"value"in r&&(r.writable=!0),Object.defineProperty(e,r.key,r)}}return function(t,n,r){return n&&e(t.prototype,n),r&&e(t,r),t}}(),o=function(){function e(){r(this,e)}return i(e,[{key:"getAmbientColorTemperature",value:function(){throw new Error("Not implemented")}},{key:"ambientIntensity",get:function(){throw new Error("Not implemented")}}]),e}();t.default=o},function(e,t,n){function i(e,t){if(!(e instanceof t))throw new TypeError("Cannot call a class as a function")}function o(e,t){if(!e)throw new ReferenceError("this hasn't been initialised - super() hasn't been called");return!t||"object"!==(void 0===t?"undefined":r(t))&&"function"!=typeof t?e:t}function a(e,t){if("function"!=typeof t&&null!==t)throw new TypeError("Super expression must either be null or a function, not "+(void 0===t?"undefined":r(t)));e.prototype=Object.create(t&&t.prototype,{constructor:{value:e,enumerable:!1,writable:!0,configurable:!0}}),t&&(Object.setPrototypeOf?Object.setPrototypeOf(e,t):e.__proto__=t)}Object.defineProperty(t,"__esModule",{value:!0});var s=function(){function e(e,t){for(var n=0;n<t.length;n++){var r=t[n];r.enumerable=r.enumerable||!1,r.configurable=!0,"value"in r&&(r.writable=!0),Object.defineProperty(e,r.key,r)}}return function(t,n,r){return n&&e(t.prototype,n),r&&e(t,r),t}}(),u=n(3),l=function(e){return e&&e.__esModule?e:{default:e}}(u),c=function(e){function t(){return i(this,t),o(this,(t.__proto__||Object.getPrototypeOf(t)).apply(this,arguments))}return a(t,e),s(t,[{key:"width",get:function(){throw"Not implemented"}},{key:"length",get:function(){throw"Not implemented"}}]),t}(l.default);t.default=c},function(e,t,n){function r(e,t){if(!(e instanceof t))throw new TypeError("Cannot call a class as a function")}Object.defineProperty(t,"__esModule",{value:!0});var i=function(){function e(e,t){for(var n=0;n<t.length;n++){var r=t[n];r.enumerable=r.enumerable||!1,r.configurable=!0,"value"in r&&(r.writable=!0),Object.defineProperty(e,r.key,r)}}return function(t,n,r){return n&&e(t.prototype,n),r&&e(t,r),t}}(),o=function(){function e(){r(this,e)}return i(e,[{key:"center",get:function(){throw new Error("Not implemented")}},{key:"geometry",get:function(){throw new Error("Not implemented")}}]),e}();t.default=o},function(e,t,n){function r(e,t){if(!(e instanceof t))throw new TypeError("Cannot call a class as a function")}Object.defineProperty(t,"__esModule",{value:!0});var i=function(){function e(e,t){for(var n=0;n<t.length;n++){var r=t[n];r.enumerable=r.enumerable||!1,r.configurable=!0,"value"in r&&(r.writable=!0),Object.defineProperty(e,r.key,r)}}return function(t,n,r){return n&&e(t.prototype,n),r&&e(t,r),t}}(),o=function(){function e(){r(this,e)}return i(e,[{key:"x",get:function(){throw new Error("Not implemented")}},{key:"y",get:function(){throw new Error("Not implemented")}}]),e}();t.default=o},function(e,t,n){function r(e,t){if(!(e instanceof t))throw new TypeError("Cannot call a class as a function")}Object.defineProperty(t,"__esModule",{value:!0});var i=function(){function e(e,t){for(var n=0;n<t.length;n++){var r=t[n];r.enumerable=r.enumerable||!1,r.configurable=!0,"value"in r&&(r.writable=!0),Object.defineProperty(e,r.key,r)}}return function(t,n,r){return n&&e(t.prototype,n),r&&e(t,r),t}}(),o=n(3),a=(function(e){e&&e.__esModule}(o),function(){function e(t){r(this,e),this._session=t}return i(e,[{key:"addAnchor",value:function(e){return this._session.reality._addAnchor(e,this._session.display)}},{key:"findAnchor",value:function(e,t){return this._session.reality._findAnchor(e,t,this._session.display)}},{key:"findFloorAnchor",value:function(){var e=arguments.length>0&&void 0!==arguments[0]?arguments[0]:null;return this._session.reality._findFloorAnchor(this._session.display,e)}},{key:"removeAnchor",value:function(e){return this._session.reality._removeAnchor(e)}},{key:"getAnchor",value:function(e){return this._session.reality._getAnchor(e)}},{key:"getCoordinateSystem",value:function(){var e;return(e=this._session)._getCoordinateSystem.apply(e,arguments)}},{key:"getViewPose",value:function(e){switch(e.type){case XRCoordinateSystem.HEAD_MODEL:return this._session._display._headPose;case XRCoordinateSystem.EYE_LEVEL:return this._session._display._eyeLevelPose;default:return null}}},{key:"session",get:function(){return this._session}},{key:"views",get:function(){return this._session._display._views}},{key:"hasPointCloud",get:function(){return!1}},{key:"pointCloud",get:function(){return null}},{key:"hasLightEstimate",get:function(){return!1}},{key:"lightEstimate",get:function(){return null}},{key:"anchors",get:function(){var e=[],t=!0,n=!1,r=void 0;try{for(var i,o=this._session.reality._anchors.values()[Symbol.iterator]();!(t=(i=o.next()).done);t=!0){var a=i.value;e.push(a)}}catch(e){n=!0,r=e}finally{try{!t&&o.return&&o.return()}finally{if(n)throw r}}return e}}]),e}());t.default=a},function(e,t,n){function r(e,t){if(!(e instanceof t))throw new TypeError("Cannot call a class as a function")}Object.defineProperty(t,"__esModule",{value:!0});var i=function(){function e(e,t){for(var n=0;n<t.length;n++){var r=t[n];r.enumerable=r.enumerable||!1,r.configurable=!0,"value"in r&&(r.writable=!0),Object.defineProperty(e,r.key,r)}}return function(t,n,r){return n&&e(t.prototype,n),r&&e(t,r),t}}(),o=function(){function e(){r(this,e)}return i(e,[{key:"geodeticFrame",get:function(){throw new Error("Not implemented")}},{key:"latitude",get:function(){throw new Error("Not implemented")}},{key:"longitude",get:function(){throw new Error("Not implemented")}},{key:"positionAccuracy",get:function(){throw new Error("Not implemented")}},{key:"altitude",get:function(){throw new Error("Not implemented")}},{key:"altitudeAccuracy",get:function(){throw new Error("Not implemented")}},{key:"orientation",get:function(){throw new Error("Not implemented")}}]),e}();t.default=o,o.WGS84="WGS84",o.GEODETIC_FRAMES=[o.WGS84]},function(e,t,n){function i(e,t){if(!(e instanceof t))throw new TypeError("Cannot call a class as a function")}function o(e,t){if(!e)throw new ReferenceError("this hasn't been initialised - super() hasn't been called");return!t||"object"!==(void 0===t?"undefined":r(t))&&"function"!=typeof t?e:t}function a(e,t){if("function"!=typeof t&&null!==t)throw new TypeError("Super expression must either be null or a function, not "+(void 0===t?"undefined":r(t)));e.prototype=Object.create(t&&t.prototype,{constructor:{value:e,enumerable:!1,writable:!0,configurable:!0}}),t&&(Object.setPrototypeOf?Object.setPrototypeOf(e,t):e.__proto__=t)}Object.defineProperty(t,"__esModule",{value:!0});var s=function(){function e(e,t){for(var n=0;n<t.length;n++){var r=t[n];r.enumerable=r.enumerable||!1,r.configurable=!0,"value"in r&&(r.writable=!0),Object.defineProperty(e,r.key,r)}}return function(t,n,r){return n&&e(t.prototype,n),r&&e(t,r),t}}(),u=n(15),l=function(e){return e&&e.__esModule?e:{default:e}}(u),c=function(e){function t(e,n){i(this,t);var r=o(this,(t.__proto__||Object.getPrototypeOf(t)).call(this));return r._session=e,r._context=n,r._framebuffer=null,r}return a(t,e),s(t,[{key:"requestViewportScaling",value:function(e){throw"Not implemented"}},{key:"context",get:function(){return this._context}},{key:"antialias",get:function(){throw"Not implemented"}},{key:"depth",get:function(){throw"Not implemented"}},{key:"stencil",get:function(){throw"Not implemented"}},{key:"alpha",get:function(){throw"Not implemented"}},{key:"multiview",get:function(){throw"Not implemented"}},{key:"framebuffer",get:function(){return this._framebuffer}},{key:"framebufferWidth",get:function(){return this._context.drawingBufferWidth}},{key:"framebufferHeight",get:function(){return this._context.drawingBufferHeight}}]),t}(l.default);t.default=c},function(e,t,n){function i(e){return e&&e.__esModule?e:{default:e}}function o(e){if(Array.isArray(e)){for(var t=0,n=Array(e.length);t<e.length;t++)n[t]=e[t];return n}return Array.from(e)}function a(e,t){if(!(e instanceof t))throw new TypeError("Cannot call a class as a function")}function s(e,t){if(!e)throw new ReferenceError("this hasn't been initialised - super() hasn't been called");return!t||"object"!==(void 0===t?"undefined":r(t))&&"function"!=typeof t?e:t}function u(e,t){if("function"!=typeof t&&null!==t)throw new TypeError("Super expression must either be null or a function, not "+(void 0===t?"undefined":r(t)));e.prototype=Object.create(t&&t.prototype,{constructor:{value:e,enumerable:!1,writable:!0,configurable:!0}}),t&&(Object.setPrototypeOf?Object.setPrototypeOf(e,t):e.__proto__=t)}Object.defineProperty(t,"__esModule",{value:!0});var l=function(){function e(e,t){for(var n=0;n<t.length;n++){var r=t[n];r.enumerable=r.enumerable||!1,r.configurable=!0,"value"in r&&(r.writable=!0),Object.defineProperty(e,r.key,r)}}return function(t,n,r){return n&&e(t.prototype,n),r&&e(t,r),t}}(),c=function e(t,n,r){null===t&&(t=Function.prototype);var i=Object.getOwnPropertyDescriptor(t,n);if(void 0===i){var o=Object.getPrototypeOf(t);return null===o?void 0:e(o,n,r)}if("value"in i)return i.value;var a=i.get;if(void 0!==a)return a.call(r)},f=n(5),h=i(f),d=n(8),_=i(d),y=n(7),p=i(y),v=n(0),w=i(v),m=n(1),b=i(m),g=n(10),E=i(g),T=n(16),x=i(T),A=n(11),R=i(A),k=function(e){function t(e,n){a(this,t);var r=s(this,(t.__proto__||Object.getPrototypeOf(t)).call(this,e,"Flat",!1,n));return r._started=!1,r._initialized=!1,r._arKitWrapper=null,r._vrFrameData=null,r._deviceOrientationTracker=null,r._deviceOrientation=null,r._devicePosition=null,r._deviceWorldMatrix=null,r._views.push(new _.default(r._fov,r._depthNear,r._depthFar)),r}return u(t,e),l(t,[{key:"_start",value:function(){var e=this;this._reality._vrDisplay?null===this._vrFrameData&&(this._vrFrameData=new VRFrameData,this._views[0]._depthNear=this._reality._vrDisplay.depthNear,this._views[0]._depthFar=this._reality._vrDisplay.depthFar,this._deviceOrientation=new b.default,this._devicePosition=new E.default,this._deviceWorldMatrix=new Float32Array(16)):R.default.HasARKit()?!1===this._initialized?(this._initialized=!0,this._arKitWrapper=R.default.GetOrCreate(),this._arKitWrapper.addEventListener(R.default.INIT_EVENT,this._handleARKitInit.bind(this)),this._arKitWrapper.addEventListener(R.default.WATCH_EVENT,this._handleARKitUpdate.bind(this)),this._arKitWrapper.waitForInit().then(function(){e._arKitWrapper.watch()})):this._arKitWrapper.watch():!1===this._initialized&&(this._initialized=!0,this._deviceOrientation=new b.default,this._devicePosition=new E.default,this._deviceWorldMatrix=new Float32Array(16),this._deviceOrientationTracker=new x.default,this._deviceOrientationTracker.addEventListener(x.default.ORIENTATION_UPDATE_EVENT,this._updateFromDeviceOrientationTracker.bind(this))),this.running=!0,this._reality._start()}},{key:"_stop",value:function(){}},{key:"_handleNewBaseLayer",value:function(e){e._context.canvas.width=window.innerWidth,e._context.canvas.height=window.innerHeight,this._xr._sessionEls.appendChild(e._context.canvas)}},{key:"_handleNewFrame",value:function(e){null!==this._vrFrameData&&this._updateFromVRDevice()}},{key:"_updateFromVRDevice",value:function(){var e,t;this._reality._vrDisplay.getFrameData(this._vrFrameData),this._views[0].setProjectionMatrix(this._vrFrameData.leftProjectionMatrix),(e=this._deviceOrientation).set.apply(e,o(this._vrFrameData.pose.orientation)),(t=this._devicePosition).set.apply(t,o(this._vrFrameData.pose.position)),this._devicePosition.add(0,XRViewPose.SITTING_EYE_HEIGHT,0),w.default.mat4_fromRotationTranslation(this._deviceWorldMatrix,this._deviceOrientation.toArray(),this._devicePosition.toArray()),this._headPose._setPoseModelMatrix(this._deviceWorldMatrix),this._eyeLevelPose._position=this._devicePosition.toArray()}},{key:"_updateFromDeviceOrientationTracker",value:function(){this._deviceOrientationTracker.getOrientation(this._deviceOrientation),this._devicePosition.set(this._headPose.poseModelMatrix[12],this._headPose.poseModelMatrix[13],this._headPose.poseModelMatrix[14]),this._devicePosition.add(0,XRViewPose.SITTING_EYE_HEIGHT,0),w.default.mat4_fromRotationTranslation(this._deviceWorldMatrix,this._deviceOrientation.toArray(),this._devicePosition.toArray()),this._headPose._setPoseModelMatrix(this._deviceWorldMatrix),this._eyeLevelPose._position=this._devicePosition.toArray()}},{key:"_handleARKitUpdate",value:function(){var e=this._arKitWrapper.getData("camera_transform");e?(this._headPose._setPoseModelMatrix(e),this._headPose._poseModelMatrix[13]+=XRViewPose.SITTING_EYE_HEIGHT,this._eyeLevelPose._position=this._headPose._position):console.log("no camera transform",this._arKitWrapper.rawARData);var t=this._arKitWrapper.getData("projection_camera");t?this._views[0].setProjectionMatrix(t):console.log("no projection camera",this._arKitWrapper.rawARData)}},{key:"_handleARKitInit",value:function(e){var t=this;setTimeout(function(){t._arKitWrapper.watch({location:!0,camera:!0,objects:!0,light_intensity:!0})},1e3)}},{key:"_createSession",value:function(e){return this._start(),c(t.prototype.__proto__||Object.getPrototypeOf(t.prototype),"_createSession",this).call(this,e)}},{key:"_supportedCreationParameters",value:function(e){return e.type===p.default.AUGMENTATION&&!1===e.exclusive}}]),t}(h.default);t.default=k},function(e,t,n){function r(e,t){if(!(e instanceof t))throw new TypeError("Cannot call a class as a function")}Object.defineProperty(t,"__esModule",{value:!0});var i=function(){function e(e,t){for(var n=0;n<t.length;n++){var r=t[n];r.enumerable=r.enumerable||!1,r.configurable=!0,"value"in r&&(r.writable=!0),Object.defineProperty(e,r.key,r)}}return function(t,n,r){return n&&e(t.prototype,n),r&&e(t,r),t}}(),o=function(){function e(t,n,i){var o=arguments.length>3&&void 0!==arguments[3]?arguments[3]:e.DefaultOrder;r(this,e),this.x=t,this.y=n,this.z=i,this.order=o}return i(e,[{key:"set",value:function(t,n,r){var i=arguments.length>3&&void 0!==arguments[3]?arguments[3]:e.DefaultOrder;this.x=t,this.y=n,this.z=r,this.order=i}},{key:"toArray",value:function(){return[this.x,this.y,this.z]}}]),e}();t.default=o,o.RotationOrders=["XYZ","YZX","ZXY","XZY","YXZ","ZYX"],o.DefaultOrder="XYZ"},function(e,t,n){function i(e){return e&&e.__esModule?e:{default:e}}function o(e){if(Array.isArray(e)){for(var t=0,n=Array(e.length);t<e.length;t++)n[t]=e[t];return n}return Array.from(e)}function a(e,t){if(!(e instanceof t))throw new TypeError("Cannot call a class as a function")}function s(e,t){if(!e)throw new ReferenceError("this hasn't been initialised - super() hasn't been called");return!t||"object"!==(void 0===t?"undefined":r(t))&&"function"!=typeof t?e:t}function u(e,t){if("function"!=typeof t&&null!==t)throw new TypeError("Super expression must either be null or a function, not "+(void 0===t?"undefined":r(t)));e.prototype=Object.create(t&&t.prototype,{constructor:{value:e,enumerable:!1,writable:!0,configurable:!0}}),t&&(Object.setPrototypeOf?Object.setPrototypeOf(e,t):e.__proto__=t)}Object.defineProperty(t,"__esModule",{value:!0});var l=function(){function e(e,t){for(var n=0;n<t.length;n++){var r=t[n];r.enumerable=r.enumerable||!1,r.configurable=!0,"value"in r&&(r.writable=!0),Object.defineProperty(e,r.key,r)}}return function(t,n,r){return n&&e(t.prototype,n),r&&e(t,r),t}}(),c=n(5),f=i(c),h=n(8),d=i(h),_=n(7),y=i(_),p=n(9),v=(i(p),n(0)),w=i(v),m=n(1),b=i(m),g=n(10),E=i(g),T=n(16),x=(i(T),n(11)),A=(i(x),function(e){function t(e,n,r){a(this,t);var i=s(this,(t.__proto__||Object.getPrototypeOf(t)).call(this,e,r.displayName,r.capabilities.hasExternalDisplay,n));return i._vrDisplay=r,i._vrFrameData=new VRFrameData,i._leftView=new d.default(i._fov,i._depthNear,i._depthFar,d.default.LEFT),i._rightView=new d.default(i._fov,i._depthNear,i._depthFar,d.default.RIGHT),i._views=[i._leftView,i._rightView],i._deviceOrientation=new b.default,i._devicePosition=new E.default,i._deviceWorldMatrix=new Float32Array(16),i}return u(t,e),l(t,[{key:"_requestAnimationFrame",value:function(e){this._vrDisplay.isPresenting?this._vrDisplay.requestAnimationFrame(e):window.requestAnimationFrame(e)}},{key:"_handleNewBaseLayer",value:function(e){var t=this;this._vrDisplay.requestPresent([{source:e._context.canvas}]).then(function(){var n=t._vrDisplay.getEyeParameters("left"),r=t._vrDisplay.getEyeParameters("right");e._context.canvas.width=2*Math.max(n.renderWidth,r.renderWidth),e._context.canvas.height=Math.max(n.renderHeight,r.renderHeight),e._context.canvas.style.position="absolute",e._context.canvas.style.bottom="1px",e._context.canvas.style.right="1px",document.body.appendChild(e._context.canvas)}).catch(function(e){console.error("Unable to init WebVR 1.1 display",e)})}},{key:"_handleNewFrame",value:function(e){this._vrDisplay.isPresenting&&this._updateFromVRFrameData()}},{key:"_handleAfterFrame",value:function(e){this._vrDisplay.isPresenting&&this._vrDisplay.submitFrame()}},{key:"_supportedCreationParameters",value:function(e){return e.type===y.default.REALITY&&!0===e.exclusive}},{key:"_updateFromVRFrameData",value:function(){if(this._vrDisplay.getFrameData(this._vrFrameData),this._leftView.setProjectionMatrix(this._vrFrameData.leftProjectionMatrix),this._rightView.setProjectionMatrix(this._vrFrameData.rightProjectionMatrix),this._vrFrameData.pose){if(this._vrFrameData.pose.orientation){var e;(e=this._deviceOrientation).set.apply(e,o(this._vrFrameData.pose.orientation))}if(this._vrFrameData.pose.position){var t;(t=this._devicePosition).set.apply(t,o(this._vrFrameData.pose.position))}w.default.mat4_fromRotationTranslation(this._deviceWorldMatrix,this._deviceOrientation.toArray(),this._devicePosition.toArray()),this._vrDisplay.stageParameters&&this._vrDisplay.stageParameters.sittingToStandingTransform&&w.default.mat4_multiply(this._deviceWorldMatrix,this._vrDisplay.stageParameters.sittingToStandingTransform,this._deviceWorldMatrix),this._headPose._setPoseModelMatrix(this._deviceWorldMatrix),this._eyeLevelPose.position=this._devicePosition.toArray()}}}]),t}(f.default));t.default=A},function(e,t,n){function i(e){return e&&e.__esModule?e:{default:e}}function o(e,t){if(!(e instanceof t))throw new TypeError("Cannot call a class as a function")}function a(e,t){if(!e)throw new ReferenceError("this hasn't been initialised - super() hasn't been called");return!t||"object"!==(void 0===t?"undefined":r(t))&&"function"!=typeof t?e:t}function s(e,t){if("function"!=typeof t&&null!==t)throw new TypeError("Super expression must either be null or a function, not "+(void 0===t?"undefined":r(t)));e.prototype=Object.create(t&&t.prototype,{constructor:{value:e,enumerable:!1,writable:!0,configurable:!0}}),t&&(Object.setPrototypeOf?Object.setPrototypeOf(e,t):e.__proto__=t)}Object.defineProperty(t,"__esModule",{value:!0});var u=function(){function e(e,t){for(var n=0;n<t.length;n++){var r=t[n];r.enumerable=r.enumerable||!1,r.configurable=!0,"value"in r&&(r.writable=!0),Object.defineProperty(e,r.key,r)}}return function(t,n,r){return n&&e(t.prototype,n),r&&e(t,r),t}}(),l=n(6),c=i(l),f=n(3),h=i(f),d=n(9),_=i(d),y=n(4),p=i(y),v=n(12),w=i(v),m=n(0),b=i(m),g=n(1),E=i(g),T=n(11),x=i(T),A=n(33),R=i(A),k=function(e){function t(e){o(this,t);var n=a(this,(t.__proto__||Object.getPrototypeOf(t)).call(this,e,"Camera",!0,!0));return n._initialized=!1,n._running=!1,n._arKitWrapper=null,n._mediaStream=null,n._videoEl=null,n._arCoreCameraRenderer=null,n._arCoreCanvas=null,n._elContext=null,n._vrDisplay=null,n._vrFrameData=null,"function"==typeof navigator.getVRDisplays&&navigator.getVRDisplays().then(function(e){var t=!0,r=!1,i=void 0;try{for(var o,a=e[Symbol.iterator]();!(t=(o=a.next()).done);t=!0){var s=o.value;if(null!==s&&s.capabilities.hasPassThroughCamera){if(n._vrDisplay=s,n._vrFrameData=new VRFrameData,n._arCoreCanvas=document.createElement("canvas"),n._xr._realityEls.appendChild(n._arCoreCanvas),n._arCoreCanvas.width=window.innerWidth,n._arCoreCanvas.height=window.innerHeight,n._elContext=n._arCoreCanvas.getContext("webgl"),null===n._elContext)throw"Could not create CameraReality GL context";window.addEventListener("resize",function(){n._arCoreCanvas.width=window.innerWidth,n._arCoreCanvas.height=window.innerHeight},!1);break}}}catch(e){r=!0,i=e}finally{try{!t&&a.return&&a.return()}finally{if(r)throw i}}}),n}return s(t,e),u(t,[{key:"_handleNewFrame",value:function(e){this._arCoreCameraRenderer&&(this._arCoreCameraRenderer.render(),this._vrDisplay.getFrameData(this._vrFrameData))}},{key:"_start",value:function(){var e=this;this._running||(this._running=!0,null!==this._vrDisplay?(this._arCoreCameraRenderer=new R.default(this._vrDisplay,this._elContext),this._initialized=!0):x.default.HasARKit()?!1===this._initialized?(this._initialized=!0,this._arKitWrapper=x.default.GetOrCreate(),this._arKitWrapper.addEventListener(x.default.WATCH_EVENT,this._handleARKitWatch.bind(this)),this._arKitWrapper.waitForInit().then(function(){e._arKitWrapper.watch()})):this._arKitWrapper.watch():!1===this._initialized?(this._initialized=!0,navigator.mediaDevices.getUserMedia({audio:!1,video:{facingMode:"environment"}}).then(function(t){e._videoEl=document.createElement("video"),e._xr._realityEls.appendChild(e._videoEl),e._videoEl.setAttribute("class","camera-reality-video"),e._videoEl.setAttribute("playsinline",!0),e._videoEl.style.width="100%",e._videoEl.style.height="100%",e._videoEl.srcObject=t,e._videoEl.play()}).catch(function(t){console.error("Could not set up video stream",t),e._initialized=!1,e._running=!1})):this._videoEl.play())}},{key:"_stop",value:function(){if(x.default.HasARKit()){if(null===this._arKitWrapper)return;this._arKitWrapper.stop()}else null!==this._videoEl&&this._videoEl.pause()}},{key:"_handleARKitWatch",value:function(e){if(e.detail&&e.detail.objects){var t=!0,n=!1,r=void 0;try{for(var i,o=e.detail.objects[Symbol.iterator]();!(t=(i=o.next()).done);t=!0){var a=i.value;this._updateAnchorFromARKitUpdate(a.uuid,a)}}catch(e){n=!0,r=e}finally{try{!t&&o.return&&o.return()}finally{if(n)throw r}}}}},{key:"_handleARKitAddObject",value:function(e){this._updateAnchorFromARKitUpdate(e.uuid,e)}},{key:"_updateAnchorFromARKitUpdate",value:function(e,t){var n=this._anchors.get(e)||null;if(null===n)return void console.log("unknown anchor",n);n.coordinates.poseMatrix=t.transform}},{key:"_addAnchor",value:function(e,t){var n=this;return e.coordinates=e.coordinates.getTransformedCoordinates(t._trackerCoordinateSystem),null!==this._arKitWrapper&&this._arKitWrapper.addAnchor(e.uid,e.coordinates.poseMatrix).then(function(e){return n._handleARKitAddObject(e)}),this._anchors.set(e.uid,e),e.uid}},{key:"_findAnchor",value:function(e,t,n){var r=this;return new Promise(function(i,o){if(null!==r._arKitWrapper)r._arKitWrapper.hitTest(e,t,x.default.HIT_TEST_TYPE_EXISTING_PLANES).then(function(e){if(0===e.length)return i(null),void console.log("miss");var t=r._pickARKitHit(e);t.anchor_transform[13]+=_.default.SITTING_EYE_HEIGHT,t.world_transform[13]+=_.default.SITTING_EYE_HEIGHT;var o=r._getAnchor(t.uuid);if(null===o){var a=new p.default(n,n._trackerCoordinateSystem);a.poseMatrix=t.anchor_transform,o=new h.default(a,t.uuid),r._anchors.set(o.uid,o)}var s=[t.world_transform[12]-t.anchor_transform[12],t.world_transform[13]-t.anchor_transform[13],t.world_transform[14]-t.anchor_transform[14]],u=(new E.default).setFromRotationMatrix(t.world_transform),l=(new E.default).setFromRotationMatrix(t.anchor_transform).inverse(),c=(new E.default).multiplyQuaternions(u,l),f=new w.default(o.uid);f.poseMatrix=b.default.mat4_fromRotationTranslation(new Float32Array(16),c.toArray(),s),i(f)});else if(null!==r._vrDisplay){var a=r._vrDisplay.hitTest(e,t);if(0==a.length)return void i(null);a.sort(function(e,t){return e.distance-t.distance});var s=r._getAnchor(a[0].uuid);if(null===s){var u=new p.default(n,n._trackerCoordinateSystem);u.poseMatrix=a[0].modelMatrix,u._poseMatrix[13]+=_.default.SITTING_EYE_HEIGHT,s=new h.default(u),r._anchors.set(s.uid,s)}i(new w.default(s.uid))}else i(null)})}},{key:"_removeAnchor",value:function(e){this._anchors.delete(e)}},{key:"_pickARKitHit",value:function(e){if(0===e.length)return null;var t=null,n=e.filter(function(e){return e.type!=x.default.HIT_TEST_TYPE_FEATURE_POINT}),r=n.filter(function(e){return e.type==x.default.HIT_TEST_TYPE_EXISTING_PLANE_USING_EXTENT}),i=n.filter(function(e){return e.type==x.default.HIT_TEST_TYPE_EXISTING_PLANE});return r.length?(r=r.sort(function(e,t){return e.distance-t.distance}),t=r[0]):i.length?(i=i.sort(function(e,t){return e.distance-t.distance}),t=i[0]):n.length?(n=n.sort(function(e,t){return e.distance-t.distance}),t=n[0]):t=e[0],t}}]),t}(c.default);t.default=k},function(e,t,n){function r(e,t){if(!(e instanceof t))throw new TypeError("Cannot call a class as a function")}function i(e,t,n){if("fragment"==n)var r=e.createShader(e.FRAGMENT_SHADER);else{if("vertex"!=n)return null;var r=e.createShader(e.VERTEX_SHADER)}return e.shaderSource(r,t),e.compileShader(r),e.getShaderParameter(r,e.COMPILE_STATUS)?r:(console.error(e.getShaderInfoLog(r)),null)}function o(e,t,n){var r=i(e,t,"vertex"),o=i(e,n,"fragment");if(!o)return null;var a=e.createProgram();return e.attachShader(a,r),e.attachShader(a,o),e.linkProgram(a),e.getProgramParameter(a,e.LINK_STATUS)||console.error("Could not initialise arview shaders"),a}function a(e,t){var n=0;switch(t){case 90:n=1;break;case 180:n=2;break;case 270:n=3;break;default:n=0}var r=0;switch(e){case 90:r=1;break;case 180:r=2;break;case 270:r=3;break;default:r=0}var i=r-n;return i<0&&(i+=4),i%4}Object.defineProperty(t,"__esModule",{value:!0});var s=function(){function e(e,t){for(var n=0;n<t.length;n++){var r=t[n];r.enumerable=r.enumerable||!1,r.configurable=!0,"value"in r&&(r.writable=!0),Object.defineProperty(e,r.key,r)}}return function(t,n,r){return n&&e(t.prototype,n),r&&e(t,r),t}}(),u="#extension GL_OES_EGL_image_external : require\n\nprecision mediump float;\n\nvarying vec2 vTextureCoord;\n\nuniform samplerExternalOES uSampler;\n\nvoid main(void) {\n  gl_FragColor = texture2D(uSampler, vTextureCoord);\n}",l="attribute vec3 aVertexPosition;\nattribute vec2 aTextureCoord;\n\nvarying vec2 vTextureCoord;\n\nvoid main(void) {\n  gl_Position = vec4(aVertexPosition, 1.0);\n  vTextureCoord = aTextureCoord;\n}",c=function(){function e(t,n){r(this,e),this.vrDisplay=t,this.gl=n,this.passThroughCamera=t.getPassThroughCamera(),this.program=o(n,l,u),n.useProgram(this.program),this.vertexPositionAttribute=n.getAttribLocation(this.program,"aVertexPosition"),this.textureCoordAttribute=n.getAttribLocation(this.program,"aTextureCoord"),this.samplerUniform=n.getUniformLocation(this.program,"uSampler"),this.vertexPositionBuffer=n.createBuffer(),n.bindBuffer(n.ARRAY_BUFFER,this.vertexPositionBuffer);var i=[-1,1,0,-1,-1,0,1,1,0,1,-1,0],s=new Float32Array(i);n.bufferData(n.ARRAY_BUFFER,s,n.STATIC_DRAW),this.vertexPositionBuffer.itemSize=3,this.vertexPositionBuffer.numItems=12,this.textureCoordBuffer=n.createBuffer(),n.bindBuffer(n.ARRAY_BUFFER,this.textureCoordBuffer);var c=null;if(this.vrDisplay){var f=this.passThroughCamera.width/this.passThroughCamera.textureWidth,h=this.passThroughCamera.height/this.passThroughCamera.textureHeight;c=[[0,0,0,h,f,0,f,h],[f,0,0,0,f,h,0,h],[f,h,f,0,0,h,0,0],[0,h,f,h,0,0,f,0]]}else c=[[0,0,0,1,1,0,1,1],[1,0,0,0,1,1,0,1],[1,1,1,0,0,1,0,0],[0,1,1,1,0,0,1,0]];this.f32TextureCoords=[];for(var d=0;d<c.length;d++)this.f32TextureCoords.push(new Float32Array(c[d]));this.combinedOrientation=a(screen.orientation.angle,this.passThroughCamera.orientation),n.bufferData(n.ARRAY_BUFFER,this.f32TextureCoords[this.combinedOrientation],n.STATIC_DRAW),this.textureCoordBuffer.itemSize=2,this.textureCoordBuffer.numItems=8,n.bindBuffer(n.ARRAY_BUFFER,null),this.indexBuffer=n.createBuffer(),n.bindBuffer(n.ELEMENT_ARRAY_BUFFER,this.indexBuffer);var _=[0,1,2,2,1,3],y=new Uint16Array(_);return n.bufferData(n.ELEMENT_ARRAY_BUFFER,y,n.STATIC_DRAW),this.indexBuffer.itemSize=1,this.indexBuffer.numItems=6,n.bindBuffer(n.ELEMENT_ARRAY_BUFFER,null),this.texture=n.createTexture(),n.useProgram(null),this.projectionMatrix=[1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1],this.mvMatrix=[1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1],this}return s(e,[{key:"render",value:function(){var e=this.gl;e.useProgram(this.program),e.bindBuffer(e.ARRAY_BUFFER,this.vertexPositionBuffer),e.enableVertexAttribArray(this.vertexPositionAttribute),e.vertexAttribPointer(this.vertexPositionAttribute,this.vertexPositionBuffer.itemSize,e.FLOAT,!1,0,0),e.bindBuffer(e.ARRAY_BUFFER,this.textureCoordBuffer);var t=a(screen.orientation.angle,this.passThroughCamera.orientation);t!==this.combinedOrientation&&(this.combinedOrientation=t,e.bufferData(e.ARRAY_BUFFER,this.f32TextureCoords[this.combinedOrientation],e.STATIC_DRAW)),e.enableVertexAttribArray(this.textureCoordAttribute),e.vertexAttribPointer(this.textureCoordAttribute,this.textureCoordBuffer.itemSize,e.FLOAT,!1,0,0),e.activeTexture(e.TEXTURE0),e.bindTexture(e.TEXTURE_EXTERNAL_OES,this.texture),e.texImage2D(e.TEXTURE_EXTERNAL_OES,0,e.RGB,e.RGB,e.UNSIGNED_BYTE,this.passThroughCamera),e.uniform1i(this.samplerUniform,0),e.bindBuffer(e.ELEMENT_ARRAY_BUFFER,this.indexBuffer),e.drawElements(e.TRIANGLES,this.indexBuffer.numItems,e.UNSIGNED_SHORT,0),e.bindTexture(e.TEXTURE_EXTERNAL_OES,null),e.disableVertexAttribArray(this.vertexPositionAttribute),e.disableVertexAttribArray(this.textureCoordAttribute),e.bindBuffer(e.ARRAY_BUFFER,null),e.bindBuffer(e.ELEMENT_ARRAY_BUFFER,null),e.useProgram(null)}}]),e}(),f=function(){function e(t,n){r(this,e),this.vrDisplay=t,this.gl=n,this.videoRenderer=new c(t,this.gl),this.width=window.innerWidth,this.height=window.innerHeight,window.addEventListener("resize",this.onWindowResize.bind(this),!1)}return s(e,[{key:"onWindowResize",value:function(){this.width=window.innerWidth,this.height=window.innerHeight}},{key:"render",value:function(){var e=this.gl,t=1*this.width,n=1*this.height;e.viewportWidth!==t&&(e.viewportWidth=t),e.viewportHeight!==n&&(e.viewportHeight=n),this.gl.viewport(0,0,e.viewportWidth,e.viewportHeight),this.videoRenderer.render()}}]),e}();t.default=f}])}]);
+/******/ (function(modules) { // webpackBootstrap
+/******/ 	// The module cache
+/******/ 	var installedModules = {};
+/******/
+/******/ 	// The require function
+/******/ 	function __webpack_require__(moduleId) {
+/******/
+/******/ 		// Check if module is in cache
+/******/ 		if(installedModules[moduleId]) {
+/******/ 			return installedModules[moduleId].exports;
+/******/ 		}
+/******/ 		// Create a new module (and put it into the cache)
+/******/ 		var module = installedModules[moduleId] = {
+/******/ 			i: moduleId,
+/******/ 			l: false,
+/******/ 			exports: {}
+/******/ 		};
+/******/
+/******/ 		// Execute the module function
+/******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
+/******/
+/******/ 		// Flag the module as loaded
+/******/ 		module.l = true;
+/******/
+/******/ 		// Return the exports of the module
+/******/ 		return module.exports;
+/******/ 	}
+/******/
+/******/
+/******/ 	// expose the modules object (__webpack_modules__)
+/******/ 	__webpack_require__.m = modules;
+/******/
+/******/ 	// expose the module cache
+/******/ 	__webpack_require__.c = installedModules;
+/******/
+/******/ 	// define getter function for harmony exports
+/******/ 	__webpack_require__.d = function(exports, name, getter) {
+/******/ 		if(!__webpack_require__.o(exports, name)) {
+/******/ 			Object.defineProperty(exports, name, {
+/******/ 				configurable: false,
+/******/ 				enumerable: true,
+/******/ 				get: getter
+/******/ 			});
+/******/ 		}
+/******/ 	};
+/******/
+/******/ 	// getDefaultExport function for compatibility with non-harmony modules
+/******/ 	__webpack_require__.n = function(module) {
+/******/ 		var getter = module && module.__esModule ?
+/******/ 			function getDefault() { return module['default']; } :
+/******/ 			function getModuleExports() { return module; };
+/******/ 		__webpack_require__.d(getter, 'a', getter);
+/******/ 		return getter;
+/******/ 	};
+/******/
+/******/ 	// Object.prototype.hasOwnProperty.call
+/******/ 	__webpack_require__.o = function(object, property) { return Object.prototype.hasOwnProperty.call(object, property); };
+/******/
+/******/ 	// __webpack_public_path__
+/******/ 	__webpack_require__.p = "";
+/******/
+/******/ 	// Load entry module and return exports
+/******/ 	return __webpack_require__(__webpack_require__.s = 0);
+/******/ })
+/************************************************************************/
+/******/ ([
+/* 0 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.WebXRUtils = exports.WebXRManager = undefined;
+
+var _WebXRManager = __webpack_require__(1);
+
+var _WebXRManager2 = _interopRequireDefault(_WebXRManager);
+
+var _WebXRUtils = __webpack_require__(2);
+
+var _WebXRUtils2 = _interopRequireDefault(_WebXRUtils);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+__webpack_require__(3);
+
+exports.WebXRManager = _WebXRManager2.default;
+exports.WebXRUtils = _WebXRUtils2.default;
+
+/***/ }),
+/* 1 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+
+THREE.WebXRManager = function (xrDisplays, renderer, camera, scene, updateCallback) {
+
+	this.renderer = renderer;
+	this.camera = camera;
+	this.scene = scene;
+
+	var scope = this;
+	var boundHandleFrame = handleFrame.bind(this); // Useful for setting up the requestAnimationFrame callback
+
+	var frameData = null;
+
+	var displays = xrDisplays;
+	var display = null;
+
+	var requestedFloor = false;
+	var floorGroup = new THREE.Group();
+
+	var devicePixelRatio = window.devicePixelRatio;
+
+	// an array of info that we'll use in _handleFrame to update the nodes using anchors
+	var anchoredNodes = []; // { XRAnchorOffset, Three.js Object3D }
+
+	function handleFrame(frame) {
+		var _this = this;
+
+		var nextFrameRequest = this.session.requestFrame(boundHandleFrame);
+		var headPose = frame.getViewPose(frame.getCoordinateSystem(XRCoordinateSystem.HEAD_MODEL));
+
+		// If we haven't already, request the floor anchor offset
+		if (requestedFloor === false) {
+			requestedFloor = true;
+			frame.findFloorAnchor('first-floor-anchor').then(function (anchorOffset) {
+				if (anchorOffset === null) {
+					console.error('could not find the floor anchor');
+					return;
+				}
+				_this.addAnchoredNode(anchorOffset, floorGroup);
+			}).catch(function (err) {
+				console.error('error finding the floor anchor', err);
+			});
+		}
+
+		// Update anchored node positions in the scene graph
+		var _iteratorNormalCompletion = true;
+		var _didIteratorError = false;
+		var _iteratorError = undefined;
+
+		try {
+			for (var _iterator = anchoredNodes[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+				var anchoredNode = _step.value;
+
+				this.updateNodeFromAnchorOffset(frame, anchoredNode.node, anchoredNode.anchorOffset);
+			}
+
+			// Let the extending class update the scene before each render
+		} catch (err) {
+			_didIteratorError = true;
+			_iteratorError = err;
+		} finally {
+			try {
+				if (!_iteratorNormalCompletion && _iterator.return) {
+					_iterator.return();
+				}
+			} finally {
+				if (_didIteratorError) {
+					throw _iteratorError;
+				}
+			}
+		}
+
+		this.updateScene(updateCallback, frame);
+
+		// Prep THREE.js for the render of each XRView
+		this.renderer.autoClear = false;
+		this.renderer.setSize(window.innerWidth, window.innerHeight);
+		this.renderer.clear();
+
+		if (this.renderer.xr.sessionActive) {
+			// Render each view into this.session.baseLayer.context
+			var _iteratorNormalCompletion2 = true;
+			var _didIteratorError2 = false;
+			var _iteratorError2 = undefined;
+
+			try {
+				for (var _iterator2 = frame.views[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+					var view = _step2.value;
+
+					this.camera.projectionMatrix.fromArray(view.projectionMatrix);
+					if (this.camera.parent && this.camera.parent.type !== 'Scene') {
+						this.camera.parent.matrixAutoUpdate = false;
+						this.camera.parent.matrix.fromArray(headPose.poseModelMatrix);
+						this.camera.parent.updateMatrixWorld(true);
+					} else {
+						this.camera.matrixAutoUpdate = false;
+						// Each XRView has its own projection matrix, so set the camera to use that
+						this.camera.matrix.fromArray(headPose.poseModelMatrix);
+						this.camera.updateMatrixWorld(true);
+					}
+
+					// Set up the renderer to the XRView's viewport and then render
+					this.renderer.clearDepth();
+					var viewport = view.getViewport(this.session.baseLayer);
+					this.renderer.setViewport(viewport.x / devicePixelRatio, viewport.y / devicePixelRatio, viewport.width / devicePixelRatio, viewport.height / devicePixelRatio);
+					console.log(this.renderer.context);
+					this.doRender();
+				}
+			} catch (err) {
+				_didIteratorError2 = true;
+				_iteratorError2 = err;
+			} finally {
+				try {
+					if (!_iteratorNormalCompletion2 && _iterator2.return) {
+						_iterator2.return();
+					}
+				} finally {
+					if (_didIteratorError2) {
+						throw _iteratorError2;
+					}
+				}
+			}
+		} else {
+			if (this.camera.parent && this.camera.parent.type !== 'Scene') {
+				this.camera.parent.matrixAutoUpdate = false;
+				this.camera.parent.matrix = new THREE.Matrix4();
+				this.camera.parent.updateMatrixWorld(true);
+			} else {
+				// this.camera.matrixAutoUpdate = false;
+				// // Each XRView has its own projection matrix, so set the camera to use that
+				// this.camera.projectionMatrix = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
+				this.camera.matrix = new THREE.Matrix4();
+				this.camera.updateMatrixWorld(true);
+			}
+
+			// Set up the renderer to the XRView's viewport and then render
+			this.renderer.clearDepth();
+			this.renderer.setViewport(0, 0, window.innerWidth, window.innerHeight);
+			this.doRender();
+		}
+	}
+
+	this.getDisplays = function () {
+
+		return displays;
+	};
+
+	this.getDisplay = function () {
+
+		return display;
+	};
+
+	this.session = null;
+
+	this.startSession = function () {
+		var _this2 = this;
+
+		var createVirtualReality = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
+		var shouldStartPresenting = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
+
+		var sessionInitParamers = {
+			exclusive: createVirtualReality,
+			type: createVirtualReality ? XRSession.REALITY : XRSession.AUGMENTATION
+
+			// Hack to receive WebVR 1.1 display info
+		};setTimeout(function () {
+			var _iteratorNormalCompletion3 = true;
+			var _didIteratorError3 = false;
+			var _iteratorError3 = undefined;
+
+			try {
+				for (var _iterator3 = displays[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+					var displayObj = _step3.value;
+
+					if (displayObj.supportsSession(sessionInitParamers)) {
+						display = displayObj;
+						break;
+					}
+				}
+			} catch (err) {
+				_didIteratorError3 = true;
+				_iteratorError3 = err;
+			} finally {
+				try {
+					if (!_iteratorNormalCompletion3 && _iterator3.return) {
+						_iterator3.return();
+					}
+				} finally {
+					if (_didIteratorError3) {
+						throw _iteratorError3;
+					}
+				}
+			}
+
+			if (display === null) {
+				console.error('Could not find a display for this type of session');
+				return;
+			}
+			display.requestSession(sessionInitParamers).then(function (session) {
+				_this2.session = session;
+				_this2.session.depthNear = 0.05;
+				_this2.session.depthFar = 1000.0;
+
+				// Handle session lifecycle events
+				_this2.session.addEventListener('focus', function (ev) {
+					_this2.handleSessionFocus(ev);
+				});
+				_this2.session.addEventListener('blur', function (ev) {
+					_this2.handleSessionBlur(ev);
+				});
+				_this2.session.addEventListener('end', function (ev) {
+					_this2.handleSessionEnded(ev);
+				});
+
+				if (shouldStartPresenting) {
+					// VR Displays need startPresenting called due to input events like a click
+					_this2.startPresenting();
+				}
+			}).catch(function (err) {
+				console.error('Error requesting session', err);
+			});
+		}, 1000);
+	};
+
+	this.handleSessionFocus = function (ev) {
+		console.log('handleSessionFocus');
+	};
+
+	this.handleSessionBlur = function (ev) {
+		console.log('handleSessionBlur');
+	};
+
+	this.handleSessionEnded = function (ev) {
+		console.log('handleSessionEnded');
+	};
+
+	this.handleLayerFocus = function (ev) {
+		console.log('handleLayerFocus');
+	};
+
+	this.handleLayerBlur = function (ev) {
+		console.log('handleLayerBlur');
+	};
+
+	/*
+ Extending classes that need to update the layer during each frame should override this method
+ */
+	this.updateScene = function (updateCallback, frame) {
+		updateCallback(frame);
+	};
+
+	this.startPresenting = function () {
+		var _this3 = this;
+
+		if (this.session === null) {
+			console.error('Can not start presenting without a session');
+			throw new Error('Can not start presenting without a session');
+		}
+
+		if (!this.renderer.xr.sessionActive) {
+			// Set the session's base layer into which the app will render
+			this.session.baseLayer = new XRWebGLLayer(this.session, renderer.context);
+
+			// Handle layer focus events
+			this.session.baseLayer.addEventListener('focus', function (ev) {
+				_this3.handleLayerFocus(ev);
+			});
+			this.session.baseLayer.addEventListener('blur', function (ev) {
+				_this3.handleLayerBlur(ev);
+			});
+
+			this.session.requestFrame(boundHandleFrame);
+		}
+		this.renderer.xr.sessionActive = true;
+	};
+
+	this.stopPresenting = function () {
+		// Added this parameter until End session will be implemented on the WebXR-polyfill
+		this.renderer.xr.sessionActive = false;
+	};
+
+	this.doRender = function () {
+		this.renderer.render(this.scene, this.camera);
+	};
+
+	/*
+ Add a node to the scene and keep its pose updated using the anchorOffset
+ */
+	this.addAnchoredNode = function (anchorOffset, node) {
+		anchoredNodes.push({
+			anchorOffset: anchorOffset,
+			node: node
+		});
+		this.scene.add(node);
+	};
+
+	/*
+ Get the anchor data from the frame and use it and the anchor offset to update the pose of the node, this must be an Object3D
+ */
+	this.updateNodeFromAnchorOffset = function (frame, node, anchorOffset) {
+		var anchor = frame.getAnchor(anchorOffset.anchorUID);
+		if (anchor === null) {
+			console.error('Unknown anchor uid', anchorOffset.anchorUID);
+			return;
+		}
+
+		node.matrixAutoUpdate = false;
+		var offsetCoordinates = anchorOffset.getTransformedCoordinates(anchor);
+		if (offsetCoordinates.coordinateSystem.type === XRCoordinateSystem.TRACKER) {
+			node.matrix.fromArray(offsetCoordinates.poseMatrix);
+		} else {
+			node.matrix.fromArray(offsetCoordinates.getTransformedCoordinates(frame.getCoordinateSystem(XRCoordinateSystem.TRACKER)).poseMatrix);
+		}
+		node.updateMatrixWorld(true);
+	};
+};
+
+exports.default = THREE.WebXRManager;
+
+/***/ }),
+/* 2 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+
+THREE.WebXRUtils = {
+	getDisplays: function getDisplays() {
+		return new Promise(function (resolve, reject) {
+			if (!navigator.XR) {
+				console.log('WebXR polyfill is not found');
+				resolve(null);
+				return;
+			} else {
+				navigator.XR.getDisplays().then(function (displays) {
+					if (displays.length == 0) {
+						console.log('No displays are available');
+						resolve(null);
+						return;
+					}
+					resolve(displays);
+					return;
+				}).catch(function (err) {
+					console.error('Error getting XR displays', err);
+					resolve(null);
+					return;
+				});
+			}
+		});
+	}
+};
+
+exports.default = THREE.WebXRUtils;
+
+/***/ }),
+/* 3 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var _typeof2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
+/******/(function (modules) {
+	// webpackBootstrap
+	/******/ // The module cache
+	/******/var installedModules = {};
+	/******/
+	/******/ // The require function
+	/******/function __webpack_require__(moduleId) {
+		/******/
+		/******/ // Check if module is in cache
+		/******/if (installedModules[moduleId]) {
+			/******/return installedModules[moduleId].exports;
+			/******/
+		}
+		/******/ // Create a new module (and put it into the cache)
+		/******/var module = installedModules[moduleId] = {
+			/******/i: moduleId,
+			/******/l: false,
+			/******/exports: {}
+			/******/ };
+		/******/
+		/******/ // Execute the module function
+		/******/modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
+		/******/
+		/******/ // Flag the module as loaded
+		/******/module.l = true;
+		/******/
+		/******/ // Return the exports of the module
+		/******/return module.exports;
+		/******/
+	}
+	/******/
+	/******/
+	/******/ // expose the modules object (__webpack_modules__)
+	/******/__webpack_require__.m = modules;
+	/******/
+	/******/ // expose the module cache
+	/******/__webpack_require__.c = installedModules;
+	/******/
+	/******/ // define getter function for harmony exports
+	/******/__webpack_require__.d = function (exports, name, getter) {
+		/******/if (!__webpack_require__.o(exports, name)) {
+			/******/Object.defineProperty(exports, name, {
+				/******/configurable: false,
+				/******/enumerable: true,
+				/******/get: getter
+				/******/ });
+			/******/
+		}
+		/******/
+	};
+	/******/
+	/******/ // getDefaultExport function for compatibility with non-harmony modules
+	/******/__webpack_require__.n = function (module) {
+		/******/var getter = module && module.__esModule ?
+		/******/function getDefault() {
+			return module['default'];
+		} :
+		/******/function getModuleExports() {
+			return module;
+		};
+		/******/__webpack_require__.d(getter, 'a', getter);
+		/******/return getter;
+		/******/
+	};
+	/******/
+	/******/ // Object.prototype.hasOwnProperty.call
+	/******/__webpack_require__.o = function (object, property) {
+		return Object.prototype.hasOwnProperty.call(object, property);
+	};
+	/******/
+	/******/ // __webpack_public_path__
+	/******/__webpack_require__.p = "";
+	/******/
+	/******/ // Load entry module and return exports
+	/******/return __webpack_require__(__webpack_require__.s = 17);
+	/******/
+})(
+/************************************************************************/
+/******/[
+/* 0 */
+/***/function (module, exports, __webpack_require__) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+
+	var _createClass = function () {
+		function defineProperties(target, props) {
+			for (var i = 0; i < props.length; i++) {
+				var descriptor = props[i];descriptor.enumerable = descriptor.enumerable || false;descriptor.configurable = true;if ("value" in descriptor) descriptor.writable = true;Object.defineProperty(target, descriptor.key, descriptor);
+			}
+		}return function (Constructor, protoProps, staticProps) {
+			if (protoProps) defineProperties(Constructor.prototype, protoProps);if (staticProps) defineProperties(Constructor, staticProps);return Constructor;
+		};
+	}();
+
+	var _Quaternion = __webpack_require__(1);
+
+	var _Quaternion2 = _interopRequireDefault(_Quaternion);
+
+	function _interopRequireDefault(obj) {
+		return obj && obj.__esModule ? obj : { default: obj };
+	}
+
+	function _classCallCheck(instance, Constructor) {
+		if (!(instance instanceof Constructor)) {
+			throw new TypeError("Cannot call a class as a function");
+		}
+	}
+
+	/*
+ MatrixMath provides helper functions for populating the various matrices involved with 3D graphics.
+ 
+ Many of the math methods were taken from the Google webvr polyfill:
+ https://github.com/googlevr/webvr-polyfill/blob/master/src/util.js#L270
+ */
+	var MatrixMath = function () {
+		function MatrixMath() {
+			_classCallCheck(this, MatrixMath);
+		}
+
+		_createClass(MatrixMath, null, [{
+			key: 'mat4_generateIdentity',
+
+			// Returns a new Float32Array that is set to the transform identity
+			value: function mat4_generateIdentity() {
+				return new Float32Array([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]);
+			}
+		}, {
+			key: 'mat4_get_position',
+			value: function mat4_get_position(out, m) {
+				out[0] = m[12];
+				out[1] = m[13];
+				out[2] = m[14];
+				return out;
+			}
+		}, {
+			key: 'mat4_get_rotation',
+			value: function mat4_get_rotation(out, m) {
+				var quat = new _Quaternion2.default();
+				quat.setFromRotationMatrix(m);
+				out[0] = quat.x;
+				out[1] = quat.y;
+				out[2] = quat.z;
+				out[3] = quat.w;
+				return out;
+			}
+		}, {
+			key: 'mat4_eyeView',
+			value: function mat4_eyeView(out, poseModelMatrix) {
+				var offset = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : new Float32Array([0, 0, 0]);
+
+				MatrixMath.mat4_translate(out, poseModelMatrix, offset);
+				MatrixMath.mat4_invert(out, out);
+			}
+		}, {
+			key: 'mat4_perspectiveFromFieldOfView',
+			value: function mat4_perspectiveFromFieldOfView(out, fov, near, far) {
+				var upTan = Math.tan(fov.upDegrees * MatrixMath.PI_OVER_180);
+				var downTan = Math.tan(fov.downDegrees * MatrixMath.PI_OVER_180);
+				var leftTan = Math.tan(fov.leftDegrees * MatrixMath.PI_OVER_180);
+				var rightTan = Math.tan(fov.rightDegrees * MatrixMath.PI_OVER_180);
+
+				var xScale = 2.0 / (leftTan + rightTan);
+				var yScale = 2.0 / (upTan + downTan);
+
+				out[0] = xScale;
+				out[1] = 0.0;
+				out[2] = 0.0;
+				out[3] = 0.0;
+				out[4] = 0.0;
+				out[5] = yScale;
+				out[6] = 0.0;
+				out[7] = 0.0;
+				out[8] = -((leftTan - rightTan) * xScale * 0.5);
+				out[9] = (upTan - downTan) * yScale * 0.5;
+				out[10] = far / (near - far);
+				out[11] = -1.0;
+				out[12] = 0.0;
+				out[13] = 0.0;
+				out[14] = far * near / (near - far);
+				out[15] = 0.0;
+				return out;
+			}
+		}, {
+			key: 'mat4_fromRotationTranslation',
+			value: function mat4_fromRotationTranslation(out) {
+				var q = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : [0, 0, 0, 1];
+				var v = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : [0, 0, 0];
+
+				// Quaternion math
+				var x = q[0];
+				var y = q[1];
+				var z = q[2];
+				var w = q[3];
+				var x2 = x + x;
+				var y2 = y + y;
+				var z2 = z + z;
+
+				var xx = x * x2;
+				var xy = x * y2;
+				var xz = x * z2;
+				var yy = y * y2;
+				var yz = y * z2;
+				var zz = z * z2;
+				var wx = w * x2;
+				var wy = w * y2;
+				var wz = w * z2;
+
+				out[0] = 1 - (yy + zz);
+				out[1] = xy + wz;
+				out[2] = xz - wy;
+				out[3] = 0;
+				out[4] = xy - wz;
+				out[5] = 1 - (xx + zz);
+				out[6] = yz + wx;
+				out[7] = 0;
+				out[8] = xz + wy;
+				out[9] = yz - wx;
+				out[10] = 1 - (xx + yy);
+				out[11] = 0;
+				out[12] = v[0];
+				out[13] = v[1];
+				out[14] = v[2];
+				out[15] = 1;
+
+				return out;
+			}
+		}, {
+			key: 'mat4_translate',
+			value: function mat4_translate(out, a, v) {
+				var x = v[0];
+				var y = v[1];
+				var z = v[2];
+				var a00 = void 0;
+				var a01 = void 0;
+				var a02 = void 0;
+				var a03 = void 0;
+				var a10 = void 0,
+				    a11 = void 0,
+				    a12 = void 0,
+				    a13 = void 0,
+				    a20 = void 0,
+				    a21 = void 0,
+				    a22 = void 0,
+				    a23 = void 0;
+
+				if (a === out) {
+					out[12] = a[0] * x + a[4] * y + a[8] * z + a[12];
+					out[13] = a[1] * x + a[5] * y + a[9] * z + a[13];
+					out[14] = a[2] * x + a[6] * y + a[10] * z + a[14];
+					out[15] = a[3] * x + a[7] * y + a[11] * z + a[15];
+				} else {
+					a00 = a[0];a01 = a[1];a02 = a[2];a03 = a[3];
+					a10 = a[4];a11 = a[5];a12 = a[6];a13 = a[7];
+					a20 = a[8];a21 = a[9];a22 = a[10];a23 = a[11];
+
+					out[0] = a00;out[1] = a01;out[2] = a02;out[3] = a03;
+					out[4] = a10;out[5] = a11;out[6] = a12;out[7] = a13;
+					out[8] = a20;out[9] = a21;out[10] = a22;out[11] = a23;
+
+					out[12] = a00 * x + a10 * y + a20 * z + a[12];
+					out[13] = a01 * x + a11 * y + a21 * z + a[13];
+					out[14] = a02 * x + a12 * y + a22 * z + a[14];
+					out[15] = a03 * x + a13 * y + a23 * z + a[15];
+				}
+
+				return out;
+			}
+		}, {
+			key: 'mat4_invert',
+			value: function mat4_invert(out, a) {
+				var a00 = a[0],
+				    a01 = a[1],
+				    a02 = a[2],
+				    a03 = a[3],
+				    a10 = a[4],
+				    a11 = a[5],
+				    a12 = a[6],
+				    a13 = a[7],
+				    a20 = a[8],
+				    a21 = a[9],
+				    a22 = a[10],
+				    a23 = a[11],
+				    a30 = a[12],
+				    a31 = a[13],
+				    a32 = a[14],
+				    a33 = a[15];
+
+				var b00 = a00 * a11 - a01 * a10;
+				var b01 = a00 * a12 - a02 * a10;
+				var b02 = a00 * a13 - a03 * a10;
+				var b03 = a01 * a12 - a02 * a11;
+				var b04 = a01 * a13 - a03 * a11;
+				var b05 = a02 * a13 - a03 * a12;
+				var b06 = a20 * a31 - a21 * a30;
+				var b07 = a20 * a32 - a22 * a30;
+				var b08 = a20 * a33 - a23 * a30;
+				var b09 = a21 * a32 - a22 * a31;
+				var b10 = a21 * a33 - a23 * a31;
+				var b11 = a22 * a33 - a23 * a32;
+
+				// Calculate the determinant
+				var det = b00 * b11 - b01 * b10 + b02 * b09 + b03 * b08 - b04 * b07 + b05 * b06;
+
+				if (!det) {
+					return null;
+				}
+				det = 1.0 / det;
+
+				out[0] = (a11 * b11 - a12 * b10 + a13 * b09) * det;
+				out[1] = (a02 * b10 - a01 * b11 - a03 * b09) * det;
+				out[2] = (a31 * b05 - a32 * b04 + a33 * b03) * det;
+				out[3] = (a22 * b04 - a21 * b05 - a23 * b03) * det;
+				out[4] = (a12 * b08 - a10 * b11 - a13 * b07) * det;
+				out[5] = (a00 * b11 - a02 * b08 + a03 * b07) * det;
+				out[6] = (a32 * b02 - a30 * b05 - a33 * b01) * det;
+				out[7] = (a20 * b05 - a22 * b02 + a23 * b01) * det;
+				out[8] = (a10 * b10 - a11 * b08 + a13 * b06) * det;
+				out[9] = (a01 * b08 - a00 * b10 - a03 * b06) * det;
+				out[10] = (a30 * b04 - a31 * b02 + a33 * b00) * det;
+				out[11] = (a21 * b02 - a20 * b04 - a23 * b00) * det;
+				out[12] = (a11 * b07 - a10 * b09 - a12 * b06) * det;
+				out[13] = (a00 * b09 - a01 * b07 + a02 * b06) * det;
+				out[14] = (a31 * b01 - a30 * b03 - a32 * b00) * det;
+				out[15] = (a20 * b03 - a21 * b01 + a22 * b00) * det;
+
+				return out;
+			}
+		}, {
+			key: 'mat4_multiply',
+			value: function mat4_multiply(out, ae, be) {
+				var a11 = ae[0],
+				    a12 = ae[4],
+				    a13 = ae[8],
+				    a14 = ae[12];
+				var a21 = ae[1],
+				    a22 = ae[5],
+				    a23 = ae[9],
+				    a24 = ae[13];
+				var a31 = ae[2],
+				    a32 = ae[6],
+				    a33 = ae[10],
+				    a34 = ae[14];
+				var a41 = ae[3],
+				    a42 = ae[7],
+				    a43 = ae[11],
+				    a44 = ae[15];
+
+				var b11 = be[0],
+				    b12 = be[4],
+				    b13 = be[8],
+				    b14 = be[12];
+				var b21 = be[1],
+				    b22 = be[5],
+				    b23 = be[9],
+				    b24 = be[13];
+				var b31 = be[2],
+				    b32 = be[6],
+				    b33 = be[10],
+				    b34 = be[14];
+				var b41 = be[3],
+				    b42 = be[7],
+				    b43 = be[11],
+				    b44 = be[15];
+
+				out[0] = a11 * b11 + a12 * b21 + a13 * b31 + a14 * b41;
+				out[4] = a11 * b12 + a12 * b22 + a13 * b32 + a14 * b42;
+				out[8] = a11 * b13 + a12 * b23 + a13 * b33 + a14 * b43;
+				out[12] = a11 * b14 + a12 * b24 + a13 * b34 + a14 * b44;
+
+				out[1] = a21 * b11 + a22 * b21 + a23 * b31 + a24 * b41;
+				out[5] = a21 * b12 + a22 * b22 + a23 * b32 + a24 * b42;
+				out[9] = a21 * b13 + a22 * b23 + a23 * b33 + a24 * b43;
+				out[13] = a21 * b14 + a22 * b24 + a23 * b34 + a24 * b44;
+
+				out[2] = a31 * b11 + a32 * b21 + a33 * b31 + a34 * b41;
+				out[6] = a31 * b12 + a32 * b22 + a33 * b32 + a34 * b42;
+				out[10] = a31 * b13 + a32 * b23 + a33 * b33 + a34 * b43;
+				out[14] = a31 * b14 + a32 * b24 + a33 * b34 + a34 * b44;
+
+				out[3] = a41 * b11 + a42 * b21 + a43 * b31 + a44 * b41;
+				out[7] = a41 * b12 + a42 * b22 + a43 * b32 + a44 * b42;
+				out[11] = a41 * b13 + a42 * b23 + a43 * b33 + a44 * b43;
+				out[15] = a41 * b14 + a42 * b24 + a43 * b34 + a44 * b44;
+
+				return out;
+			}
+		}]);
+
+		return MatrixMath;
+	}();
+
+	exports.default = MatrixMath;
+
+	MatrixMath.PI_OVER_180 = Math.PI / 180.0;
+
+	/***/
+},
+/* 1 */
+/***/function (module, exports, __webpack_require__) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+
+	var _createClass = function () {
+		function defineProperties(target, props) {
+			for (var i = 0; i < props.length; i++) {
+				var descriptor = props[i];descriptor.enumerable = descriptor.enumerable || false;descriptor.configurable = true;if ("value" in descriptor) descriptor.writable = true;Object.defineProperty(target, descriptor.key, descriptor);
+			}
+		}return function (Constructor, protoProps, staticProps) {
+			if (protoProps) defineProperties(Constructor.prototype, protoProps);if (staticProps) defineProperties(Constructor, staticProps);return Constructor;
+		};
+	}();
+
+	function _classCallCheck(instance, Constructor) {
+		if (!(instance instanceof Constructor)) {
+			throw new TypeError("Cannot call a class as a function");
+		}
+	}
+
+	/*
+ Quaternion wraps a vector of length 4 used as an orientation value.
+ 
+ Taken from https://github.com/googlevr/webvr-polyfill/blob/master/src/math-util.js which took it from Three.js
+ */
+	var Quaternion = function () {
+		function Quaternion() {
+			var x = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
+			var y = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;
+			var z = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 0;
+			var w = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 1;
+
+			_classCallCheck(this, Quaternion);
+
+			this.x = x;
+			this.y = y;
+			this.z = z;
+			this.w = w;
+		}
+
+		_createClass(Quaternion, [{
+			key: 'set',
+			value: function set(x, y, z, w) {
+				this.x = x;
+				this.y = y;
+				this.z = z;
+				this.w = w;
+				return this;
+			}
+		}, {
+			key: 'toArray',
+			value: function toArray() {
+				return [this.x, this.y, this.z, this.w];
+			}
+		}, {
+			key: 'copy',
+			value: function copy(quaternion) {
+				this.x = quaternion.x;
+				this.y = quaternion.y;
+				this.z = quaternion.z;
+				this.w = quaternion.w;
+				return this;
+			}
+		}, {
+			key: 'setFromRotationMatrix',
+			value: function setFromRotationMatrix(array16) {
+				// Taken from https://github.com/mrdoob/three.js/blob/dev/src/math/Quaternion.js
+				// which took it from http://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToQuaternion/index.htm
+				// assumes the upper 3x3 of array16 (column major) is a pure rotation matrix (i.e, unscaled)
+
+				var m11 = array16[0],
+				    m12 = array16[4],
+				    m13 = array16[8],
+				    m21 = array16[1],
+				    m22 = array16[5],
+				    m23 = array16[9],
+				    m31 = array16[2],
+				    m32 = array16[6],
+				    m33 = array16[10];
+
+				var trace = m11 + m22 + m33;
+
+				if (trace > 0) {
+					var s = 0.5 / Math.sqrt(trace + 1.0);
+					this.w = 0.25 / s;
+					this.x = (m32 - m23) * s;
+					this.y = (m13 - m31) * s;
+					this.z = (m21 - m12) * s;
+				} else if (m11 > m22 && m11 > m33) {
+					var _s = 2.0 * Math.sqrt(1.0 + m11 - m22 - m33);
+					this.w = (m32 - m23) / _s;
+					this.x = 0.25 * _s;
+					this.y = (m12 + m21) / _s;
+					this.z = (m13 + m31) / _s;
+				} else if (m22 > m33) {
+					var _s2 = 2.0 * Math.sqrt(1.0 + m22 - m11 - m33);
+					this.w = (m13 - m31) / _s2;
+					this.x = (m12 + m21) / _s2;
+					this.y = 0.25 * _s2;
+					this.z = (m23 + m32) / _s2;
+				} else {
+					var _s3 = 2.0 * Math.sqrt(1.0 + m33 - m11 - m22);
+					this.w = (m21 - m12) / _s3;
+					this.x = (m13 + m31) / _s3;
+					this.y = (m23 + m32) / _s3;
+					this.z = 0.25 * _s3;
+				}
+				return this;
+			}
+		}, {
+			key: 'setFromEuler',
+			value: function setFromEuler(x, y, z) {
+				var order = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 'XYZ';
+
+				// http://www.mathworks.com/matlabcentral/fileexchange/
+				// 	20696-function-to-convert-between-dcm-euler-angles-quaternions-and-euler-vectors/
+				//	content/SpinCalc.m
+
+				var cos = Math.cos;
+				var sin = Math.sin;
+				var c1 = cos(x / 2);
+				var c2 = cos(y / 2);
+				var c3 = cos(z / 2);
+				var s1 = sin(x / 2);
+				var s2 = sin(y / 2);
+				var s3 = sin(z / 2);
+
+				if (order === 'XYZ') {
+					this.x = s1 * c2 * c3 + c1 * s2 * s3;
+					this.y = c1 * s2 * c3 - s1 * c2 * s3;
+					this.z = c1 * c2 * s3 + s1 * s2 * c3;
+					this.w = c1 * c2 * c3 - s1 * s2 * s3;
+				} else if (order === 'YXZ') {
+					this.x = s1 * c2 * c3 + c1 * s2 * s3;
+					this.y = c1 * s2 * c3 - s1 * c2 * s3;
+					this.z = c1 * c2 * s3 - s1 * s2 * c3;
+					this.w = c1 * c2 * c3 + s1 * s2 * s3;
+				} else if (order === 'ZXY') {
+					this.x = s1 * c2 * c3 - c1 * s2 * s3;
+					this.y = c1 * s2 * c3 + s1 * c2 * s3;
+					this.z = c1 * c2 * s3 + s1 * s2 * c3;
+					this.w = c1 * c2 * c3 - s1 * s2 * s3;
+				} else if (order === 'ZYX') {
+					this.x = s1 * c2 * c3 - c1 * s2 * s3;
+					this.y = c1 * s2 * c3 + s1 * c2 * s3;
+					this.z = c1 * c2 * s3 - s1 * s2 * c3;
+					this.w = c1 * c2 * c3 + s1 * s2 * s3;
+				} else if (order === 'YZX') {
+					this.x = s1 * c2 * c3 + c1 * s2 * s3;
+					this.y = c1 * s2 * c3 + s1 * c2 * s3;
+					this.z = c1 * c2 * s3 - s1 * s2 * c3;
+					this.w = c1 * c2 * c3 - s1 * s2 * s3;
+				} else if (order === 'XZY') {
+					this.x = s1 * c2 * c3 - c1 * s2 * s3;
+					this.y = c1 * s2 * c3 - s1 * c2 * s3;
+					this.z = c1 * c2 * s3 + s1 * s2 * c3;
+					this.w = c1 * c2 * c3 + s1 * s2 * s3;
+				}
+			}
+		}, {
+			key: 'setFromAxisAngle',
+			value: function setFromAxisAngle(axis, angle) {
+				// http://www.euclideanspace.com/maths/geometry/rotations/conversions/angleToQuaternion/index.htm
+				// assumes axis is normalized
+				var halfAngle = angle / 2;
+				var s = Math.sin(halfAngle);
+				this.x = axis.x * s;
+				this.y = axis.y * s;
+				this.z = axis.z * s;
+				this.w = Math.cos(halfAngle);
+				return this;
+			}
+		}, {
+			key: 'multiply',
+			value: function multiply(q) {
+				return this.multiplyQuaternions(this, q);
+			}
+		}, {
+			key: 'multiplyQuaternions',
+			value: function multiplyQuaternions(a, b) {
+				// from http://www.euclideanspace.com/maths/algebra/realNormedAlgebra/quaternions/code/index.htm
+				var qax = a.x,
+				    qay = a.y,
+				    qaz = a.z,
+				    qaw = a.w;
+				var qbx = b.x,
+				    qby = b.y,
+				    qbz = b.z,
+				    qbw = b.w;
+				this.x = qax * qbw + qaw * qbx + qay * qbz - qaz * qby;
+				this.y = qay * qbw + qaw * qby + qaz * qbx - qax * qbz;
+				this.z = qaz * qbw + qaw * qbz + qax * qby - qay * qbx;
+				this.w = qaw * qbw - qax * qbx - qay * qby - qaz * qbz;
+				return this;
+			}
+		}, {
+			key: 'inverse',
+			value: function inverse() {
+				this.x *= -1;
+				this.y *= -1;
+				this.z *= -1;
+				this.normalize();
+				return this;
+			}
+		}, {
+			key: 'normalize',
+			value: function normalize() {
+				var l = Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z + this.w * this.w);
+				if (l === 0) {
+					this.x = 0;
+					this.y = 0;
+					this.z = 0;
+					this.w = 1;
+				} else {
+					l = 1 / l;
+					this.x = this.x * l;
+					this.y = this.y * l;
+					this.z = this.z * l;
+					this.w = this.w * l;
+				}
+				return this;
+			}
+		}, {
+			key: 'slerp',
+			value: function slerp(qb, t) {
+				// http://www.euclideanspace.com/maths/algebra/realNormedAlgebra/quaternions/slerp/
+				if (t === 0) return this;
+				if (t === 1) return this.copy(qb);
+
+				var x = this.x,
+				    y = this.y,
+				    z = this.z,
+				    w = this.w;
+				var cosHalfTheta = w * qb.w + x * qb.x + y * qb.y + z * qb.z;
+				if (cosHalfTheta < 0) {
+					this.w = -qb.w;
+					this.x = -qb.x;
+					this.y = -qb.y;
+					this.z = -qb.z;
+					cosHalfTheta = -cosHalfTheta;
+				} else {
+					this.copy(qb);
+				}
+				if (cosHalfTheta >= 1.0) {
+					this.w = w;
+					this.x = x;
+					this.y = y;
+					this.z = z;
+					return this;
+				}
+
+				var halfTheta = Math.acos(cosHalfTheta);
+				var sinHalfTheta = Math.sqrt(1.0 - cosHalfTheta * cosHalfTheta);
+				if (Math.abs(sinHalfTheta) < 0.001) {
+					this.w = 0.5 * (w + this.w);
+					this.x = 0.5 * (x + this.x);
+					this.y = 0.5 * (y + this.y);
+					this.z = 0.5 * (z + this.z);
+
+					return this;
+				}
+
+				var ratioA = Math.sin((1 - t) * halfTheta) / sinHalfTheta;
+				var ratioB = Math.sin(t * halfTheta) / sinHalfTheta;
+				this.w = w * ratioA + this.w * ratioB;
+				this.x = x * ratioA + this.x * ratioB;
+				this.y = y * ratioA + this.y * ratioB;
+				this.z = z * ratioA + this.z * ratioB;
+				return this;
+			}
+		}]);
+
+		return Quaternion;
+	}();
+
+	exports.default = Quaternion;
+
+	/***/
+},
+/* 2 */
+/***/function (module, exports, __webpack_require__) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+
+	var _createClass = function () {
+		function defineProperties(target, props) {
+			for (var i = 0; i < props.length; i++) {
+				var descriptor = props[i];descriptor.enumerable = descriptor.enumerable || false;descriptor.configurable = true;if ("value" in descriptor) descriptor.writable = true;Object.defineProperty(target, descriptor.key, descriptor);
+			}
+		}return function (Constructor, protoProps, staticProps) {
+			if (protoProps) defineProperties(Constructor.prototype, protoProps);if (staticProps) defineProperties(Constructor, staticProps);return Constructor;
+		};
+	}();
+
+	function _classCallCheck(instance, Constructor) {
+		if (!(instance instanceof Constructor)) {
+			throw new TypeError("Cannot call a class as a function");
+		}
+	}
+
+	/*
+ EventHandlerBase is the base class that implements the EventHandler interface methods for dispatching and receiving events.
+ */
+	var EventHandlerBase = function () {
+		function EventHandlerBase() {
+			_classCallCheck(this, EventHandlerBase);
+
+			this._listeners = new Map(); // string type -> [listener, ...]
+		}
+
+		_createClass(EventHandlerBase, [{
+			key: "addEventListener",
+			value: function addEventListener(type, listener) {
+				var listeners = this._listeners.get(type);
+				if (Array.isArray(listeners) === false) {
+					listeners = [];
+					this._listeners.set(type, listeners);
+				}
+				listeners.push(listener);
+			}
+		}, {
+			key: "removeEventListener",
+			value: function removeEventListener(type, listener) {
+				var listeners = this._listeners.get(type);
+				if (Array.isArray(listeners) === false) {
+					return;
+				}
+				for (var i = 0; i < listeners.length; i++) {
+					if (listeners[i] === listener) {
+						listeners.splice(i, 1);
+						return;
+					}
+				}
+			}
+		}, {
+			key: "dispatchEvent",
+			value: function dispatchEvent(event) {
+				var listeners = this._listeners.get(event.type);
+				if (Array.isArray(listeners) === false) return;
+				var _iteratorNormalCompletion = true;
+				var _didIteratorError = false;
+				var _iteratorError = undefined;
+
+				try {
+					for (var _iterator = listeners[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+						var listener = _step.value;
+
+						listener(event);
+					}
+				} catch (err) {
+					_didIteratorError = true;
+					_iteratorError = err;
+				} finally {
+					try {
+						if (!_iteratorNormalCompletion && _iterator.return) {
+							_iterator.return();
+						}
+					} finally {
+						if (_didIteratorError) {
+							throw _iteratorError;
+						}
+					}
+				}
+			}
+		}]);
+
+		return EventHandlerBase;
+	}();
+
+	exports.default = EventHandlerBase;
+
+	/***/
+},
+/* 3 */
+/***/function (module, exports, __webpack_require__) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+
+	var _createClass = function () {
+		function defineProperties(target, props) {
+			for (var i = 0; i < props.length; i++) {
+				var descriptor = props[i];descriptor.enumerable = descriptor.enumerable || false;descriptor.configurable = true;if ("value" in descriptor) descriptor.writable = true;Object.defineProperty(target, descriptor.key, descriptor);
+			}
+		}return function (Constructor, protoProps, staticProps) {
+			if (protoProps) defineProperties(Constructor.prototype, protoProps);if (staticProps) defineProperties(Constructor, staticProps);return Constructor;
+		};
+	}();
+
+	function _classCallCheck(instance, Constructor) {
+		if (!(instance instanceof Constructor)) {
+			throw new TypeError("Cannot call a class as a function");
+		}
+	}
+
+	/*
+ XRAnchors provide per-frame coordinates which the Reality attempts to pin "in place".
+ In a virtual Reality these coordinates do not change. 
+ In a Reality based on environment mapping sensors, the anchors may change coordinates on a per-frame bases as the system refines its map.
+ */
+	var XRAnchor = function () {
+		function XRAnchor(xrCoordinates) {
+			var uid = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+
+			_classCallCheck(this, XRAnchor);
+
+			this._uid = uid == null ? XRAnchor._generateUID() : uid;
+			this._coordinates = xrCoordinates;
+		}
+
+		_createClass(XRAnchor, [{
+			key: 'uid',
+			get: function get() {
+				return this._uid;
+			}
+		}, {
+			key: 'coordinates',
+			get: function get() {
+				return this._coordinates;
+			},
+			set: function set(value) {
+				this._coordinates = value;
+			}
+		}], [{
+			key: '_generateUID',
+			value: function _generateUID() {
+				return 'anchor-' + new Date().getTime() + '-' + Math.floor(Math.random() * Number.MAX_SAFE_INTEGER);
+			}
+		}]);
+
+		return XRAnchor;
+	}();
+
+	exports.default = XRAnchor;
+
+	/***/
+},
+/* 4 */
+/***/function (module, exports, __webpack_require__) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+
+	var _createClass = function () {
+		function defineProperties(target, props) {
+			for (var i = 0; i < props.length; i++) {
+				var descriptor = props[i];descriptor.enumerable = descriptor.enumerable || false;descriptor.configurable = true;if ("value" in descriptor) descriptor.writable = true;Object.defineProperty(target, descriptor.key, descriptor);
+			}
+		}return function (Constructor, protoProps, staticProps) {
+			if (protoProps) defineProperties(Constructor.prototype, protoProps);if (staticProps) defineProperties(Constructor, staticProps);return Constructor;
+		};
+	}();
+
+	var _MatrixMath = __webpack_require__(0);
+
+	var _MatrixMath2 = _interopRequireDefault(_MatrixMath);
+
+	var _Quaternion = __webpack_require__(1);
+
+	var _Quaternion2 = _interopRequireDefault(_Quaternion);
+
+	var _XRCoordinateSystem = __webpack_require__(13);
+
+	var _XRCoordinateSystem2 = _interopRequireDefault(_XRCoordinateSystem);
+
+	function _interopRequireDefault(obj) {
+		return obj && obj.__esModule ? obj : { default: obj };
+	}
+
+	function _classCallCheck(instance, Constructor) {
+		if (!(instance instanceof Constructor)) {
+			throw new TypeError("Cannot call a class as a function");
+		}
+	}
+
+	/*
+ XRCoordinates represent a pose (position and orientation) in relation to a XRCoordinateSystem.
+ */
+	var XRCoordinates = function () {
+		function XRCoordinates(display, coordinateSystem) {
+			var position = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : [0, 0, 0];
+			var orientation = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : [0, 0, 0, 1];
+
+			_classCallCheck(this, XRCoordinates);
+
+			this._display = display;
+			this._coordinateSystem = coordinateSystem;
+			this._poseMatrix = new Float32Array(16);
+			_MatrixMath2.default.mat4_fromRotationTranslation(this._poseMatrix, orientation, position);
+		}
+
+		_createClass(XRCoordinates, [{
+			key: 'getTransformedCoordinates',
+
+			/*
+   Returns a new XRCoordinates that represents this XRCoordinates's pose in the otherCoordinateSystem
+   May return null if there is no transform between this.coordinateSystem and otherCoordinateSystem
+   */
+			value: function getTransformedCoordinates(otherCoordinateSystem) {
+				// XRCoordinates? getTransformedCoordinates(XRCoordinateSystem otherCoordinateSystem)
+				if (this._coordinateSystem.type === _XRCoordinateSystem2.default.GEOSPATIAL || otherCoordinateSystem.type === _XRCoordinateSystem2.default.GEOSPATIAL) {
+					console.error('This polyfill does not yet support geospatial coordinate systems');
+					return null;
+				}
+				var transform = this._coordinateSystem.getTransformTo(otherCoordinateSystem);
+				if (transform === null) {
+					console.error('Could not get a transform between', this._coordinateSystem, otherCoordinateSystem);
+					return null;
+				}
+				var out = new XRCoordinates(this._display, otherCoordinateSystem);
+				_MatrixMath2.default.mat4_multiply(out._poseMatrix, transform, this._poseMatrix);
+				return out;
+			}
+		}, {
+			key: 'coordinateSystem',
+			get: function get() {
+				return this._coordinateSystem;
+			}
+		}, {
+			key: 'poseMatrix',
+			get: function get() {
+				return this._poseMatrix;
+			},
+			set: function set(array16) {
+				for (var i = 0; i < 16; i++) {
+					this._poseMatrix[i] = array16[i];
+				}
+			}
+		}, {
+			key: 'position',
+			get: function get() {
+				return new Float32Array([this._poseMatrix[12], this._poseMatrix[13], this._poseMatrix[14]]);
+			}
+		}, {
+			key: 'orientation',
+			get: function get() {
+				var quat = new _Quaternion2.default();
+				quat.setFromRotationMatrix(this._poseMatrix);
+				return quat.toArray();
+			}
+		}]);
+
+		return XRCoordinates;
+	}();
+
+	exports.default = XRCoordinates;
+
+	/***/
+},
+/* 5 */
+/***/function (module, exports, __webpack_require__) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+
+	var _createClass = function () {
+		function defineProperties(target, props) {
+			for (var i = 0; i < props.length; i++) {
+				var descriptor = props[i];descriptor.enumerable = descriptor.enumerable || false;descriptor.configurable = true;if ("value" in descriptor) descriptor.writable = true;Object.defineProperty(target, descriptor.key, descriptor);
+			}
+		}return function (Constructor, protoProps, staticProps) {
+			if (protoProps) defineProperties(Constructor.prototype, protoProps);if (staticProps) defineProperties(Constructor, staticProps);return Constructor;
+		};
+	}();
+
+	var _EventHandlerBase2 = __webpack_require__(2);
+
+	var _EventHandlerBase3 = _interopRequireDefault(_EventHandlerBase2);
+
+	var _XRFieldOfView = __webpack_require__(18);
+
+	var _XRFieldOfView2 = _interopRequireDefault(_XRFieldOfView);
+
+	var _VirtualReality = __webpack_require__(19);
+
+	var _VirtualReality2 = _interopRequireDefault(_VirtualReality);
+
+	function _interopRequireDefault(obj) {
+		return obj && obj.__esModule ? obj : { default: obj };
+	}
+
+	function _classCallCheck(instance, Constructor) {
+		if (!(instance instanceof Constructor)) {
+			throw new TypeError("Cannot call a class as a function");
+		}
+	}
+
+	function _possibleConstructorReturn(self, call) {
+		if (!self) {
+			throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
+		}return call && ((typeof call === 'undefined' ? 'undefined' : _typeof2(call)) === "object" || typeof call === "function") ? call : self;
+	}
+
+	function _inherits(subClass, superClass) {
+		if (typeof superClass !== "function" && superClass !== null) {
+			throw new TypeError("Super expression must either be null or a function, not " + (typeof superClass === 'undefined' ? 'undefined' : _typeof2(superClass)));
+		}subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } });if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;
+	}
+
+	/*
+ Each XRDisplay represents a method of using a specific type of hardware to render AR or VR realities and layers.
+ 
+ This doesn't yet support a geospatial coordinate system
+ */
+	var XRDisplay = function (_EventHandlerBase) {
+		_inherits(XRDisplay, _EventHandlerBase);
+
+		function XRDisplay(xr, displayName, isExternal, reality) {
+			_classCallCheck(this, XRDisplay);
+
+			var _this = _possibleConstructorReturn(this, (XRDisplay.__proto__ || Object.getPrototypeOf(XRDisplay)).call(this));
+
+			_this._xr = xr;
+			_this._displayName = displayName;
+			_this._isExternal = isExternal;
+			_this._reality = reality; // The Reality instance that is currently displayed
+
+			_this._headModelCoordinateSystem = new XRCoordinateSystem(_this, XRCoordinateSystem.HEAD_MODEL);
+			_this._eyeLevelCoordinateSystem = new XRCoordinateSystem(_this, XRCoordinateSystem.EYE_LEVEL);
+			_this._trackerCoordinateSystem = new XRCoordinateSystem(_this, XRCoordinateSystem.TRACKER);
+
+			_this._headPose = new XRViewPose([0, XRViewPose.SITTING_EYE_HEIGHT, 0]);
+			_this._eyeLevelPose = new XRViewPose([0, XRViewPose.SITTING_EYE_HEIGHT, 0]);
+			_this._trackerPoseModelMatrix = new Float32Array([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]);
+
+			var fov = 50 / 2;
+			_this._fov = new _XRFieldOfView2.default(fov, fov, fov, fov);
+			_this._depthNear = 0.1;
+			_this._depthFar = 1000;
+
+			_this._views = [];
+			return _this;
+		}
+
+		_createClass(XRDisplay, [{
+			key: 'supportsSession',
+			value: function supportsSession(parameters) {
+				// parameters: XRSessionCreateParametersInit 
+				// returns boolean
+				return this._supportedCreationParameters(parameters);
+			}
+		}, {
+			key: 'requestSession',
+			value: function requestSession(parameters) {
+				var _this2 = this;
+
+				return new Promise(function (resolve, reject) {
+					if (_this2._supportedCreationParameters(parameters) === false) {
+						reject();
+						return;
+					}
+					if (parameters.type === XRSession.REALITY) {
+						_this2._reality = new _VirtualReality2.default();
+						_this2._xr._privateRealities.push(_this2._reality);
+					}
+					resolve(_this2._createSession(parameters));
+				});
+			}
+		}, {
+			key: '_requestAnimationFrame',
+			value: function _requestAnimationFrame(callback) {
+				return window.requestAnimationFrame(callback);
+			}
+		}, {
+			key: '_cancelAnimationFrame',
+			value: function _cancelAnimationFrame(handle) {
+				return window.cancelAnimationFrame(handle);
+			}
+		}, {
+			key: '_createSession',
+			value: function _createSession(parameters) {
+				return new XRSession(this._xr, this, parameters);
+			}
+		}, {
+			key: '_supportedCreationParameters',
+			value: function _supportedCreationParameters(parameters) {
+				// returns true if the parameters are supported by this display
+				throw 'Should be implemented by extending class';
+			}
+
+			/*
+   Called by a session before it hands a new XRPresentationFrame to the app
+   */
+
+		}, {
+			key: '_handleNewFrame',
+			value: function _handleNewFrame(frame) {}
+
+			/*
+   Called by a session after it has handed the XRPresentationFrame to the app
+   Use this for any display submission calls that need to happen after the render has occurred.
+   */
+
+		}, {
+			key: '_handleAfterFrame',
+			value: function _handleAfterFrame(frame) {}
+
+			/*
+   Called by XRSession after the session.baseLayer is assigned a value
+   */
+
+		}, {
+			key: '_handleNewBaseLayer',
+			value: function _handleNewBaseLayer(baseLayer) {}
+
+			//attribute EventHandler ondeactivate;
+
+		}, {
+			key: 'displayName',
+			get: function get() {
+				return this._displayName;
+			}
+		}, {
+			key: 'isExternal',
+			get: function get() {
+				return this._isExternal;
+			}
+		}]);
+
+		return XRDisplay;
+	}(_EventHandlerBase3.default);
+
+	exports.default = XRDisplay;
+
+	/***/
+},
+/* 6 */
+/***/function (module, exports, __webpack_require__) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+
+	var _createClass = function () {
+		function defineProperties(target, props) {
+			for (var i = 0; i < props.length; i++) {
+				var descriptor = props[i];descriptor.enumerable = descriptor.enumerable || false;descriptor.configurable = true;if ("value" in descriptor) descriptor.writable = true;Object.defineProperty(target, descriptor.key, descriptor);
+			}
+		}return function (Constructor, protoProps, staticProps) {
+			if (protoProps) defineProperties(Constructor.prototype, protoProps);if (staticProps) defineProperties(Constructor, staticProps);return Constructor;
+		};
+	}();
+
+	var _EventHandlerBase2 = __webpack_require__(2);
+
+	var _EventHandlerBase3 = _interopRequireDefault(_EventHandlerBase2);
+
+	function _interopRequireDefault(obj) {
+		return obj && obj.__esModule ? obj : { default: obj };
+	}
+
+	function _classCallCheck(instance, Constructor) {
+		if (!(instance instanceof Constructor)) {
+			throw new TypeError("Cannot call a class as a function");
+		}
+	}
+
+	function _possibleConstructorReturn(self, call) {
+		if (!self) {
+			throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
+		}return call && ((typeof call === 'undefined' ? 'undefined' : _typeof2(call)) === "object" || typeof call === "function") ? call : self;
+	}
+
+	function _inherits(subClass, superClass) {
+		if (typeof superClass !== "function" && superClass !== null) {
+			throw new TypeError("Super expression must either be null or a function, not " + (typeof superClass === 'undefined' ? 'undefined' : _typeof2(superClass)));
+		}subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } });if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;
+	}
+
+	/*
+ A Reality represents a view of the world, be it the real world via sensors or a virtual world that is rendered with WebGL or WebGPU.
+ */
+	var Reality = function (_EventHandlerBase) {
+		_inherits(Reality, _EventHandlerBase);
+
+		function Reality(xr, name, isShared, isPassthrough) {
+			_classCallCheck(this, Reality);
+
+			var _this = _possibleConstructorReturn(this, (Reality.__proto__ || Object.getPrototypeOf(Reality)).call(this));
+
+			_this._xr = xr;
+			_this._name = name;
+			_this._isShared = isShared;
+			_this._isPassthrough = isPassthrough;
+			_this._anchors = new Map();
+			return _this;
+		}
+
+		_createClass(Reality, [{
+			key: 'getCoordinateSystem',
+			value: function getCoordinateSystem() {
+				//XRCoordinateSystem? getCoordinateSystem(XRFrameOfReferenceType type, ...); // Tries the types in order, returning the first match or null if none is found
+				throw new Error('Not implemented');
+			}
+
+			/*
+   Called when at least one active XRSession is using this Reality
+   */
+
+		}, {
+			key: '_start',
+			value: function _start() {
+				throw new Error('Exending classes should implement _start');
+			}
+
+			/*
+   Called when no more active XRSessions are using this Reality
+   */
+
+		}, {
+			key: '_stop',
+			value: function _stop() {
+				throw new Error('Exending classes should implement _stop');
+			}
+
+			/*
+   Called by a session before it hands a new XRPresentationFrame to the app
+   */
+
+		}, {
+			key: '_handleNewFrame',
+			value: function _handleNewFrame() {}
+
+			/*
+   Create an anchor hung in space
+   */
+
+		}, {
+			key: '_addAnchor',
+			value: function _addAnchor(anchor, display) {
+				// returns DOMString anchor UID
+				throw new Error('Exending classes should implement _addAnchor');
+			}
+
+			/*
+   Create an anchor attached to a surface, as found by a ray
+   returns a Promise that resolves either to an AnchorOffset or null if the hit test failed
+   normalized screen x and y are in range 0..1, with 0,0 at top left and 1,1 at bottom right
+   */
+
+		}, {
+			key: '_findAnchor',
+			value: function _findAnchor(normalizedScreenX, normalizedScreenY, display) {
+				throw new Error('Exending classes should implement _findAnchor');
+			}
+
+			/*
+   Find an XRAnchorOffset that is at floor level below the current head pose
+   returns a Promise that resolves either to an AnchorOffset or null if the floor level is unknown
+   */
+
+		}, {
+			key: '_findFloorAnchor',
+			value: function _findFloorAnchor(display) {
+				var _this2 = this;
+
+				var uid = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+
+				// Copy the head model matrix for the current pose so we have it in the promise below
+				var headModelMatrix = new Float32Array(display._headPose.poseModelMatrix);
+
+				return new Promise(function (resolve, reject) {
+					// For now, just create an anchor at origin level. Maybe in the future search for a surface?
+					var coordinates = new XRCoordinates(display, display._trackerCoordinateSystem);
+					headModelMatrix[13] = 0; // Set height to 0
+					coordinates.poseMatrix = headModelMatrix;
+					var anchor = new XRAnchor(coordinates, uid);
+					_this2._addAnchor(anchor, display);
+					resolve(new XRAnchorOffset(anchor.uid));
+				});
+			}
+		}, {
+			key: '_getAnchor',
+			value: function _getAnchor(uid) {
+				return this._anchors.get(uid) || null;
+			}
+		}, {
+			key: '_removeAnchor',
+			value: function _removeAnchor(uid) {
+				// returns void
+				throw new Error('Exending classes should implement _removeAnchor');
+			}
+
+			// attribute EventHandler onchange;
+
+		}, {
+			key: 'name',
+			get: function get() {
+				return this._name;
+			}
+		}, {
+			key: 'isShared',
+			get: function get() {
+				return this._isShared;
+			}
+		}, {
+			key: 'isPassthrough',
+			get: function get() {
+				return this._isPassthrough;
+			}
+		}]);
+
+		return Reality;
+	}(_EventHandlerBase3.default);
+
+	exports.default = Reality;
+
+	/***/
+},
+/* 7 */
+/***/function (module, exports, __webpack_require__) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+
+	var _createClass = function () {
+		function defineProperties(target, props) {
+			for (var i = 0; i < props.length; i++) {
+				var descriptor = props[i];descriptor.enumerable = descriptor.enumerable || false;descriptor.configurable = true;if ("value" in descriptor) descriptor.writable = true;Object.defineProperty(target, descriptor.key, descriptor);
+			}
+		}return function (Constructor, protoProps, staticProps) {
+			if (protoProps) defineProperties(Constructor.prototype, protoProps);if (staticProps) defineProperties(Constructor, staticProps);return Constructor;
+		};
+	}();
+
+	var _EventHandlerBase2 = __webpack_require__(2);
+
+	var _EventHandlerBase3 = _interopRequireDefault(_EventHandlerBase2);
+
+	function _interopRequireDefault(obj) {
+		return obj && obj.__esModule ? obj : { default: obj };
+	}
+
+	function _classCallCheck(instance, Constructor) {
+		if (!(instance instanceof Constructor)) {
+			throw new TypeError("Cannot call a class as a function");
+		}
+	}
+
+	function _possibleConstructorReturn(self, call) {
+		if (!self) {
+			throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
+		}return call && ((typeof call === 'undefined' ? 'undefined' : _typeof2(call)) === "object" || typeof call === "function") ? call : self;
+	}
+
+	function _inherits(subClass, superClass) {
+		if (typeof superClass !== "function" && superClass !== null) {
+			throw new TypeError("Super expression must either be null or a function, not " + (typeof superClass === 'undefined' ? 'undefined' : _typeof2(superClass)));
+		}subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } });if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;
+	}
+
+	/*
+ A script that wishes to make use of an XRDisplay can request an XRSession.
+ An XRSession provides a list of the available Reality instances that the script may request as well as make a request for an animation frame.
+ */
+	var XRSession = function (_EventHandlerBase) {
+		_inherits(XRSession, _EventHandlerBase);
+
+		function XRSession(xr, display, createParameters) {
+			_classCallCheck(this, XRSession);
+
+			var _this = _possibleConstructorReturn(this, (XRSession.__proto__ || Object.getPrototypeOf(XRSession)).call(this, xr));
+
+			_this._xr = xr;
+			_this._display = display;
+			_this._createParameters = createParameters;
+
+			_this._baseLayer = null;
+			_this._stageBounds = null;
+			return _this;
+		}
+
+		_createClass(XRSession, [{
+			key: 'requestFrame',
+			value: function requestFrame(callback) {
+				var _this2 = this;
+
+				if (typeof callback !== 'function') {
+					throw 'Invalid callback';
+				}
+				return this._display._requestAnimationFrame(function () {
+					var frame = _this2._createPresentationFrame();
+					_this2._display._reality._handleNewFrame(frame);
+					_this2._display._handleNewFrame(frame);
+					callback(frame);
+					_this2._display._handleAfterFrame(frame);
+				});
+			}
+		}, {
+			key: 'cancelFrame',
+			value: function cancelFrame(handle) {
+				return this._display._cancelAnimationFrame(handle);
+			}
+		}, {
+			key: 'end',
+			value: function end() {
+				//returns Promise<void>
+				throw 'Not implemented';
+			}
+		}, {
+			key: '_createPresentationFrame',
+			value: function _createPresentationFrame() {
+				return new XRPresentationFrame(this);
+			}
+		}, {
+			key: '_getCoordinateSystem',
+			value: function _getCoordinateSystem() {
+				for (var _len = arguments.length, types = Array(_len), _key = 0; _key < _len; _key++) {
+					types[_key] = arguments[_key];
+				}
+
+				var _iteratorNormalCompletion = true;
+				var _didIteratorError = false;
+				var _iteratorError = undefined;
+
+				try {
+					for (var _iterator = types[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+						var type = _step.value;
+
+						switch (type) {
+							case XRCoordinateSystem.HEAD_MODEL:
+								return this._display._headModelCoordinateSystem;
+							case XRCoordinateSystem.EYE_LEVEL:
+								return this._display._eyeLevelCoordinateSystem;
+							case XRCoordinateSystem.TRACKER:
+								return this._display._trackerCoordinateSystem;
+							case XRCoordinateSystem.GEOSPATIAL:
+							// Not supported yet
+							default:
+								continue;
+						}
+					}
+				} catch (err) {
+					_didIteratorError = true;
+					_iteratorError = err;
+				} finally {
+					try {
+						if (!_iteratorNormalCompletion && _iterator.return) {
+							_iterator.return();
+						}
+					} finally {
+						if (_didIteratorError) {
+							throw _iteratorError;
+						}
+					}
+				}
+
+				return null;
+			}
+
+			/*
+   attribute EventHandler onblur;
+   attribute EventHandler onfocus;
+   attribute EventHandler onresetpose;
+   attribute EventHandler onrealitychanged;
+   attribute EventHandler onrealityconnect;
+   attribute EventHandler onrealitydisconnect;
+   attribute EventHandler onboundschange;
+   attribute EventHandler onended;
+   */
+
+		}, {
+			key: 'display',
+			get: function get() {
+				return this._display;
+			}
+		}, {
+			key: 'createParameters',
+			get: function get() {
+				return this._parameters;
+			}
+		}, {
+			key: 'realities',
+			get: function get() {
+				return this._xr._sharedRealities;
+			}
+		}, {
+			key: 'reality',
+			get: function get() {
+				return this._display._reality;
+			}
+		}, {
+			key: 'baseLayer',
+			get: function get() {
+				return this._baseLayer;
+			},
+			set: function set(value) {
+				this._baseLayer = value;
+				this._display._handleNewBaseLayer(this._baseLayer);
+			}
+		}, {
+			key: 'depthNear',
+			get: function get() {
+				this._display._depthNear;
+			},
+			set: function set(value) {
+				this._display._depthNear = value;
+			}
+		}, {
+			key: 'depthFar',
+			get: function get() {
+				this._display._depthFar;
+			},
+			set: function set(value) {
+				this._display._depthFar = value;
+			}
+		}, {
+			key: 'hasStageBounds',
+			get: function get() {
+				this._stageBounds !== null;
+			}
+		}, {
+			key: 'stageBounds',
+			get: function get() {
+				return this._stageBounds;
+			}
+		}]);
+
+		return XRSession;
+	}(_EventHandlerBase3.default);
+
+	exports.default = XRSession;
+
+	XRSession.REALITY = 'reality';
+	XRSession.AUGMENTATION = 'augmentation';
+
+	XRSession.TYPES = [XRSession.REALITY, XRSession.AUGMENTATION];
+
+	/***/
+},
+/* 8 */
+/***/function (module, exports, __webpack_require__) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+
+	var _createClass = function () {
+		function defineProperties(target, props) {
+			for (var i = 0; i < props.length; i++) {
+				var descriptor = props[i];descriptor.enumerable = descriptor.enumerable || false;descriptor.configurable = true;if ("value" in descriptor) descriptor.writable = true;Object.defineProperty(target, descriptor.key, descriptor);
+			}
+		}return function (Constructor, protoProps, staticProps) {
+			if (protoProps) defineProperties(Constructor.prototype, protoProps);if (staticProps) defineProperties(Constructor, staticProps);return Constructor;
+		};
+	}();
+
+	var _XRViewport = __webpack_require__(14);
+
+	var _XRViewport2 = _interopRequireDefault(_XRViewport);
+
+	var _MatrixMath = __webpack_require__(0);
+
+	var _MatrixMath2 = _interopRequireDefault(_MatrixMath);
+
+	function _interopRequireDefault(obj) {
+		return obj && obj.__esModule ? obj : { default: obj };
+	}
+
+	function _classCallCheck(instance, Constructor) {
+		if (!(instance instanceof Constructor)) {
+			throw new TypeError("Cannot call a class as a function");
+		}
+	}
+
+	/*
+ An XRView describes a single view into an XR scene.
+ It provides several values directly, and acts as a key to query view-specific values from other interfaces.
+ */
+	var XRView = function () {
+		function XRView(fov, depthNear, depthFar) {
+			var eye = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : null;
+
+			_classCallCheck(this, XRView);
+
+			this._fov = fov;
+			this._depthNear = depthNear;
+			this._depthFar = depthFar;
+			this._eye = eye;
+			this._viewport = new _XRViewport2.default(0, 0, 1, 1);
+			this._projectionMatrix = new Float32Array(16);
+			_MatrixMath2.default.mat4_perspectiveFromFieldOfView(this._projectionMatrix, this._fov, this._depthNear, this._depthFar);
+		}
+
+		_createClass(XRView, [{
+			key: 'setProjectionMatrix',
+			value: function setProjectionMatrix(array16) {
+				for (var i = 0; i < 16; i++) {
+					this._projectionMatrix[i] = array16[i];
+				}
+			}
+		}, {
+			key: 'getViewport',
+			value: function getViewport(layer) {
+				if (this._eye === XRView.LEFT) {
+					this._viewport.x = 0;
+					this._viewport.y = 0;
+					this._viewport.width = layer.framebufferWidth / 2;
+					this._viewport.height = layer.framebufferHeight;
+				} else if (this._eye === XRView.RIGHT) {
+					this._viewport.x = layer.framebufferWidth / 2;
+					this._viewport.y = 0;
+					this._viewport.width = layer.framebufferWidth / 2;
+					this._viewport.height = layer.framebufferHeight;
+				} else {
+					this._viewport.x = 0;
+					this._viewport.y = 0;
+					this._viewport.width = layer.framebufferWidth;
+					this._viewport.height = layer.framebufferHeight;
+				}
+				return this._viewport;
+			}
+		}, {
+			key: 'eye',
+			get: function get() {
+				return this._eye;
+			}
+		}, {
+			key: 'projectionMatrix',
+			get: function get() {
+				return this._projectionMatrix;
+			}
+		}]);
+
+		return XRView;
+	}();
+
+	exports.default = XRView;
+
+	XRView.LEFT = 'left';
+	XRView.RIGHT = 'right';
+	XRView.EYES = [XRView.LEFT, XRView.RIGHT];
+
+	/***/
+},
+/* 9 */
+/***/function (module, exports, __webpack_require__) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+
+	var _createClass = function () {
+		function defineProperties(target, props) {
+			for (var i = 0; i < props.length; i++) {
+				var descriptor = props[i];descriptor.enumerable = descriptor.enumerable || false;descriptor.configurable = true;if ("value" in descriptor) descriptor.writable = true;Object.defineProperty(target, descriptor.key, descriptor);
+			}
+		}return function (Constructor, protoProps, staticProps) {
+			if (protoProps) defineProperties(Constructor.prototype, protoProps);if (staticProps) defineProperties(Constructor, staticProps);return Constructor;
+		};
+	}();
+
+	var _MatrixMath = __webpack_require__(0);
+
+	var _MatrixMath2 = _interopRequireDefault(_MatrixMath);
+
+	var _Quaternion = __webpack_require__(1);
+
+	var _Quaternion2 = _interopRequireDefault(_Quaternion);
+
+	function _interopRequireDefault(obj) {
+		return obj && obj.__esModule ? obj : { default: obj };
+	}
+
+	function _classCallCheck(instance, Constructor) {
+		if (!(instance instanceof Constructor)) {
+			throw new TypeError("Cannot call a class as a function");
+		}
+	}
+
+	/*
+ XRDevicePose describes the position and orientation of an XRDisplay relative to the query XRCoordinateSystem.
+ It also describes the view and projection matrices that should be used by the application to render a frame of the XR scene.
+ */
+	var XRViewPose = function () {
+		function XRViewPose() {
+			var position = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [0, 0, 0];
+			var orientation = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : [0, 0, 0, 1];
+
+			_classCallCheck(this, XRViewPose);
+
+			this._poseModelMatrix = new Float32Array(16);
+			_MatrixMath2.default.mat4_fromRotationTranslation(this._poseModelMatrix, orientation, position);
+		}
+
+		_createClass(XRViewPose, [{
+			key: '_setPoseModelMatrix',
+			value: function _setPoseModelMatrix(array16) {
+				for (var i = 0; i < 16; i++) {
+					this._poseModelMatrix[i] = array16[i];
+				}
+			}
+		}, {
+			key: '_translate',
+			value: function _translate(array3) {
+				this._poseModelMatrix[12] += array3[0];
+				this._poseModelMatrix[13] += array3[1];
+				this._poseModelMatrix[14] += array3[2];
+			}
+		}, {
+			key: 'getViewMatrix',
+			value: function getViewMatrix(view) {
+				var out = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+
+				if (out === null) {
+					out = new Float32Array(16);
+				}
+				_MatrixMath2.default.mat4_eyeView(out, this._poseModelMatrix); // TODO offsets
+				return out;
+			}
+		}, {
+			key: 'poseModelMatrix',
+			get: function get() {
+				return this._poseModelMatrix;
+			}
+		}, {
+			key: '_position',
+			get: function get() {
+				return [this._poseModelMatrix[12], this._poseModelMatrix[13], this._poseModelMatrix[14]];
+			},
+			set: function set(array3) {
+				this._poseModelMatrix[12] = array3[0];
+				this._poseModelMatrix[13] = array3[1];
+				this._poseModelMatrix[14] = array3[2];
+			}
+		}, {
+			key: '_orientation',
+			get: function get() {
+				var quat = new _Quaternion2.default();
+				quat.setFromRotationMatrix(this._poseModelMatrix);
+				return quat.toArray();
+			},
+			set: function set(array4) {
+				_MatrixMath2.default.mat4_fromRotationTranslation(this._poseModelMatrix, array4, this._position);
+			}
+		}]);
+
+		return XRViewPose;
+	}();
+
+	exports.default = XRViewPose;
+
+	XRViewPose.SITTING_EYE_HEIGHT = 1.1; // meters
+
+	/***/
+},
+/* 10 */
+/***/function (module, exports, __webpack_require__) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+
+	var _createClass = function () {
+		function defineProperties(target, props) {
+			for (var i = 0; i < props.length; i++) {
+				var descriptor = props[i];descriptor.enumerable = descriptor.enumerable || false;descriptor.configurable = true;if ("value" in descriptor) descriptor.writable = true;Object.defineProperty(target, descriptor.key, descriptor);
+			}
+		}return function (Constructor, protoProps, staticProps) {
+			if (protoProps) defineProperties(Constructor.prototype, protoProps);if (staticProps) defineProperties(Constructor, staticProps);return Constructor;
+		};
+	}();
+
+	function _classCallCheck(instance, Constructor) {
+		if (!(instance instanceof Constructor)) {
+			throw new TypeError("Cannot call a class as a function");
+		}
+	}
+
+	/*
+ Vector3 wraps a vector of length 3, often used as a position in 3D space.
+ 
+ Taken from https://github.com/googlevr/webvr-polyfill/blob/master/src/math-util.js which took it from Three.js
+ */
+	var Vector3 = function () {
+		function Vector3() {
+			var x = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
+			var y = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;
+			var z = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 0;
+
+			_classCallCheck(this, Vector3);
+
+			this.x = x;
+			this.y = y;
+			this.z = z;
+		}
+
+		_createClass(Vector3, [{
+			key: "set",
+			value: function set(x, y, z) {
+				this.x = x;
+				this.y = y;
+				this.z = z;
+				return this;
+			}
+		}, {
+			key: "copy",
+			value: function copy(v) {
+				this.x = v.x;
+				this.y = v.y;
+				this.z = v.z;
+				return this;
+			}
+		}, {
+			key: "toArray",
+			value: function toArray() {
+				return [this.x, this.y, this.z];
+			}
+		}, {
+			key: "length",
+			value: function length() {
+				return Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z);
+			}
+		}, {
+			key: "add",
+			value: function add(x, y, z) {
+				this.x += x;
+				this.y += y;
+				this.z += z;
+			}
+		}, {
+			key: "normalize",
+			value: function normalize() {
+				var scalar = this.length();
+				if (scalar !== 0) {
+					this.multiplyScalar(1 / scalar);
+				} else {
+					this.x = 0;
+					this.y = 0;
+					this.z = 0;
+				}
+				return this;
+			}
+		}, {
+			key: "multiplyScalar",
+			value: function multiplyScalar(scalar) {
+				this.x *= scalar;
+				this.y *= scalar;
+				this.z *= scalar;
+			}
+		}, {
+			key: "applyQuaternion",
+			value: function applyQuaternion(q) {
+				var x = this.x;
+				var y = this.y;
+				var z = this.z;
+
+				var qx = q.x;
+				var qy = q.y;
+				var qz = q.z;
+				var qw = q.w;
+
+				// calculate quat * vector
+				var ix = qw * x + qy * z - qz * y;
+				var iy = qw * y + qz * x - qx * z;
+				var iz = qw * z + qx * y - qy * x;
+				var iw = -qx * x - qy * y - qz * z;
+
+				// calculate result * inverse quat
+				this.x = ix * qw + iw * -qx + iy * -qz - iz * -qy;
+				this.y = iy * qw + iw * -qy + iz * -qx - ix * -qz;
+				this.z = iz * qw + iw * -qz + ix * -qy - iy * -qx;
+
+				return this;
+			}
+		}, {
+			key: "applyMatrix4",
+			value: function applyMatrix4(matrix) {
+				var x = this.x;
+				var y = this.y;
+				var z = this.z;
+				var w = 1 / (matrix[3] * x + matrix[7] * y + matrix[11] * z + matrix[15]);
+				this.x = (matrix[0] * x + matrix[4] * y + matrix[8] * z + matrix[12]) * w;
+				this.y = (matrix[1] * x + matrix[5] * y + matrix[9] * z + matrix[13]) * w;
+				this.z = (matrix[2] * x + matrix[6] * y + matrix[10] * z + matrix[14]) * w;
+				return this;
+			}
+		}, {
+			key: "dot",
+			value: function dot(v) {
+				return this.x * v.x + this.y * v.y + this.z * v.z;
+			}
+		}, {
+			key: "crossVectors",
+			value: function crossVectors(a, b) {
+				var ax = a.x,
+				    ay = a.y,
+				    az = a.z;
+				var bx = b.x,
+				    by = b.y,
+				    bz = b.z;
+				this.x = ay * bz - az * by;
+				this.y = az * bx - ax * bz;
+				this.z = ax * by - ay * bx;
+				return this;
+			}
+		}]);
+
+		return Vector3;
+	}();
+
+	exports.default = Vector3;
+
+	/***/
+},
+/* 11 */
+/***/function (module, exports, __webpack_require__) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+
+	var _typeof = typeof Symbol === "function" && _typeof2(Symbol.iterator) === "symbol" ? function (obj) {
+		return typeof obj === 'undefined' ? 'undefined' : _typeof2(obj);
+	} : function (obj) {
+		return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj === 'undefined' ? 'undefined' : _typeof2(obj);
+	};
+
+	var _createClass = function () {
+		function defineProperties(target, props) {
+			for (var i = 0; i < props.length; i++) {
+				var descriptor = props[i];descriptor.enumerable = descriptor.enumerable || false;descriptor.configurable = true;if ("value" in descriptor) descriptor.writable = true;Object.defineProperty(target, descriptor.key, descriptor);
+			}
+		}return function (Constructor, protoProps, staticProps) {
+			if (protoProps) defineProperties(Constructor.prototype, protoProps);if (staticProps) defineProperties(Constructor, staticProps);return Constructor;
+		};
+	}();
+
+	var _EventHandlerBase2 = __webpack_require__(2);
+
+	var _EventHandlerBase3 = _interopRequireDefault(_EventHandlerBase2);
+
+	function _interopRequireDefault(obj) {
+		return obj && obj.__esModule ? obj : { default: obj };
+	}
+
+	function _classCallCheck(instance, Constructor) {
+		if (!(instance instanceof Constructor)) {
+			throw new TypeError("Cannot call a class as a function");
+		}
+	}
+
+	function _possibleConstructorReturn(self, call) {
+		if (!self) {
+			throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
+		}return call && ((typeof call === 'undefined' ? 'undefined' : _typeof2(call)) === "object" || typeof call === "function") ? call : self;
+	}
+
+	function _inherits(subClass, superClass) {
+		if (typeof superClass !== "function" && superClass !== null) {
+			throw new TypeError("Super expression must either be null or a function, not " + (typeof superClass === 'undefined' ? 'undefined' : _typeof2(superClass)));
+		}subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } });if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;
+	}
+
+	/*
+ ARKitWrapper talks to Apple ARKit, as exposed by Mozilla's test ARDemo app.
+ It won't function inside a browser like Firefox.
+ 
+ ARKitWrapper is a singleton. Use ARKitWrapper.GetOrCreate() to get the instance, then add event listeners like so:
+ 
+ 	if(ARKitWrapper.HasARKit()){
+ 		let arKitWrapper = ARKitWrapper.GetOrCreate()
+ 		arKitWrapper.addEventListener(ARKitWrapper.INIT_EVENT, ev => { console.log('ARKit initialized', ev) })
+ 		arKitWrapper.addEventListener(ARKitWrapper.WATCH_EVENT, ev => { console.log('ARKit update', ev) })
+ 		arKitWrapper.watch({
+ 			location: boolean,
+ 			camera: boolean,
+ 			objects: boolean,
+ 			light_intensity: boolean
+ 		})
+ 	}
+ 
+ */
+	var ARKitWrapper = function (_EventHandlerBase) {
+		_inherits(ARKitWrapper, _EventHandlerBase);
+
+		function ARKitWrapper() {
+			_classCallCheck(this, ARKitWrapper);
+
+			var _this = _possibleConstructorReturn(this, (ARKitWrapper.__proto__ || Object.getPrototypeOf(ARKitWrapper)).call(this));
+
+			if (ARKitWrapper.HasARKit() === false) {
+				throw 'ARKitWrapper will only work in Mozilla\'s ARDemo test app';
+			}
+			if (typeof ARKitWrapper.GLOBAL_INSTANCE !== 'undefined') {
+				throw 'ARKitWrapper is a singleton. Use ARKitWrapper.GetOrCreate() to get the global instance.';
+			}
+
+			_this._deviceId = null;
+			_this._isWatching = false;
+			_this._isInitialized = false;
+			_this._rawARData = null;
+
+			_this._globalCallbacksMap = {}; // Used to map a window.arkitCallback method name to an ARKitWrapper.on* method name
+			// Set up the window.arkitCallback methods that the ARKit bridge depends on
+			var callbackNames = ['onInit', 'onWatch'];
+			for (var i = 0; i < callbackNames.length; i++) {
+				_this._generateGlobalCallback(callbackNames[i], i);
+			}
+
+			// Set up some named global methods that the ARKit to JS bridge uses and send out custom events when they are called
+			var eventCallbacks = [['arkitStartRecording', ARKitWrapper.RECORD_START_EVENT], ['arkitStopRecording', ARKitWrapper.RECORD_STOP_EVENT], ['arkitDidMoveBackground', ARKitWrapper.DID_MOVE_BACKGROUND_EVENT], ['arkitWillEnterForeground', ARKitWrapper.WILL_ENTER_FOREGROUND_EVENT], ['arkitInterrupted', ARKitWrapper.INTERRUPTED_EVENT], ['arkitInterruptionEnded', ARKitWrapper.INTERRUPTION_ENDED_EVENT], ['arkitShowDebug', ARKitWrapper.SHOW_DEBUG_EVENT]];
+
+			var _loop = function _loop(_i) {
+				window[eventCallbacks[_i][0]] = function (detail) {
+					detail = detail || null;
+					_this.dispatchEvent(new CustomEvent(eventCallbacks[_i][1], {
+						source: _this,
+						detail: detail
+					}));
+				};
+			};
+
+			for (var _i = 0; _i < eventCallbacks.length; _i++) {
+				_loop(_i);
+			}
+			return _this;
+		}
+
+		_createClass(ARKitWrapper, [{
+			key: 'waitForInit',
+			// True if this instance has received data via onWatch
+
+			/*
+   Useful for waiting for or immediately receiving notice of ARKit initialization
+   */
+			value: function waitForInit() {
+				var _this2 = this;
+
+				return new Promise(function (resolve, reject) {
+					if (_this2._isInitialized) {
+						resolve();
+						return;
+					}
+					var callback = function callback() {
+						_this2.removeEventListener(ARKitWrapper.INIT_EVENT, callback, false);
+						resolve();
+					};
+					_this2.addEventListener(ARKitWrapper.INIT_EVENT, callback, false);
+				});
+			}
+
+			/*
+   getData looks into the most recent ARKit data (as received by onWatch) for a key
+   returns the key's value or null if it doesn't exist or if a key is not specified it returns all data
+   */
+
+		}, {
+			key: 'getData',
+			value: function getData() {
+				var key = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+
+				if (key === null) {
+					return this._rawARData;
+				}
+				if (this._rawARData && typeof this._rawARData[key] !== 'undefined') {
+					return this._rawARData[key];
+				}
+				return null;
+			}
+
+			/*
+   returns
+   	{
+   		uuid: DOMString,
+   		transform: [4x4 column major affine transform]
+   	}
+   	return null if object with `uuid` is not found
+   */
+
+		}, {
+			key: 'getObject',
+			value: function getObject(uuid) {
+				if (!this._isInitialized) {
+					return null;
+				}
+				var objects = this.getKey('objects');
+				if (objects === null) return null;
+				var _iteratorNormalCompletion = true;
+				var _didIteratorError = false;
+				var _iteratorError = undefined;
+
+				try {
+					for (var _iterator = objects[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+						var object = _step.value;
+
+						if (object.uuid === uuid) {
+							return object;
+						}
+					}
+				} catch (err) {
+					_didIteratorError = true;
+					_iteratorError = err;
+				} finally {
+					try {
+						if (!_iteratorNormalCompletion && _iterator.return) {
+							_iterator.return();
+						}
+					} finally {
+						if (_didIteratorError) {
+							throw _iteratorError;
+						}
+					}
+				}
+
+				return null;
+			}
+
+			/*
+   Sends a hitTest message to ARKit to get hit testing results
+   x, y - screen coordinates normalized to 0..1 (0,0 is at top left and 1,1 is at bottom right)
+   types - bit mask of hit testing types
+   
+   Returns a Promise that resolves to a (possibly empty) array of hit test data:
+   [
+   	{
+   		type: 1,							// A packed mask of types ARKitWrapper.HIT_TEST_TYPE_*
+   		distance: 1.0216870307922363,		// The distance in meters from the camera to the detected anchor or feature point.
+   		world_transform:  [float x 16],		// The pose of the hit test result relative to the world coordinate system. 
+   		local_transform:  [float x 16],		// The pose of the hit test result relative to the nearest anchor or feature point
+   			// If the `type` is `HIT_TEST_TYPE_ESTIMATED_HORIZONTAL_PLANE`, `HIT_TEST_TYPE_EXISTING_PLANE`, or `HIT_TEST_TYPE_EXISTING_PLANE_USING_EXTENT` (2, 8, or 16) it will also have anchor data:
+   		anchor_center: { x:float, y:float, z:float },
+   		anchor_extent: { x:float, y:float },
+   		uuid: string,
+   			// If the `type` is `HIT_TEST_TYPE_EXISTING_PLANE` or `HIT_TEST_TYPE_EXISTING_PLANE_USING_EXTENT` (8 or 16) it will also have an anchor transform:
+   		anchor_transform: [float x 16]
+   	},
+   	...
+   ]
+   @see https://developer.apple.com/documentation/arkit/arframe/2875718-hittest
+   */
+
+		}, {
+			key: 'hitTest',
+			value: function hitTest(x, y) {
+				var _this3 = this;
+
+				var types = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : ARKitWrapper.HIT_TEST_TYPE_ALL;
+
+				return new Promise(function (resolve, reject) {
+					if (!_this3._isInitialized) {
+						reject(new Error('ARKit is not initialized'));
+						return;
+					}
+					window.webkit.messageHandlers.hitTest.postMessage({
+						x: x,
+						y: y,
+						type: types,
+						callback: _this3._createPromiseCallback('hitTest', resolve)
+					});
+				});
+			}
+
+			/*
+   Sends an addAnchor message to ARKit
+   Returns a promise that returns:
+   {
+   	uuid - the anchor's uuid,
+   	transform - anchor transformation matrix
+   }
+   */
+
+		}, {
+			key: 'addAnchor',
+			value: function addAnchor(uid, transform) {
+				var _this4 = this;
+
+				return new Promise(function (resolve, reject) {
+					if (!_this4._isInitialized) {
+						reject(new Error('ARKit is not initialized'));
+						return;
+					}
+					window.webkit.messageHandlers.addAnchor.postMessage({
+						uuid: uid,
+						transform: transform,
+						callback: _this4._createPromiseCallback('addAnchor', resolve)
+					});
+				});
+			}
+
+			/*
+   If this instance is currently watching, send the stopAR message to ARKit to request that it stop sending data on onWatch
+   */
+
+		}, {
+			key: 'stop',
+			value: function stop() {
+				var _this5 = this;
+
+				return new Promise(function (resolve, reject) {
+					if (!_this5._isWatching) {
+						resolve();
+						return;
+					}
+					window.webkit.messageHandlers.stopAR.postMessage({
+						callback: _this5._createPromiseCallback('stop', resolve)
+					});
+				});
+			}
+
+			/*
+   If not already watching, send a watchAR message to ARKit to request that it start sending per-frame data to onWatch
+   options: the options map for ARKit
+   	{
+   		location: boolean,
+   		camera: boolean,
+   		objects: boolean,
+   		light_intensity: boolean
+   	}
+   */
+
+		}, {
+			key: 'watch',
+			value: function watch() {
+				var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+
+				if (!this._isInitialized) {
+					return false;
+				}
+				if (this._isWatching) {
+					return true;
+				}
+				this._isWatching = true;
+
+				if (options === null) {
+					options = {
+						location: true,
+						camera: true,
+						objects: true,
+						light_intensity: true
+					};
+				}
+
+				var data = {
+					options: options,
+					callback: this._globalCallbacksMap.onWatch
+				};
+				window.webkit.messageHandlers.watchAR.postMessage(data);
+				return true;
+			}
+
+			/*
+   Sends a setUIOptions message to ARKit to set ui options (show or hide ui elements)
+   options: {
+   	browser: boolean,
+   	points: boolean,
+   	focus: boolean,
+   	rec: boolean,
+   	rec_time: boolean,
+   	mic: boolean,
+   	build: boolean,
+   	plane: boolean,
+   	warnings: boolean,
+   	anchors: boolean,
+   	debug: boolean,
+   	statistics: boolean
+   }
+   */
+
+		}, {
+			key: 'setUIOptions',
+			value: function setUIOptions(options) {
+				window.webkit.messageHandlers.setUIOptions.postMessage(options);
+			}
+
+			/*
+   Called during instance creation to send a message to ARKit to initialize and create a device ID
+   Usually results in ARKit calling back to _onInit with a deviceId
+   options: {
+   	ui: {
+   		browser: boolean,
+   		points: boolean,
+   		focus: boolean,
+   		rec: boolean,
+   		rec_time: boolean,
+   		mic: boolean,
+   		build: boolean,
+   		plane: boolean,
+   		warnings: boolean,
+   		anchors: boolean,
+   		debug: boolean,
+   		statistics: boolean
+   	}
+   }
+   */
+
+		}, {
+			key: '_sendInit',
+			value: function _sendInit(options) {
+				// get device id
+				window.webkit.messageHandlers.initAR.postMessage({
+					options: options,
+					callback: this._globalCallbacksMap.onInit
+				});
+			}
+
+			/*
+   Callback for when ARKit is initialized
+   deviceId: DOMString with the AR device ID
+   */
+
+		}, {
+			key: '_onInit',
+			value: function _onInit(deviceId) {
+				this._deviceId = deviceId;
+				this._isInitialized = true;
+				this.dispatchEvent(new CustomEvent(ARKitWrapper.INIT_EVENT, {
+					source: this
+				}));
+			}
+
+			/*
+   _onWatch is called from native ARKit on each frame:
+   	data:
+   	{
+   		"camera_transform":[4x4 column major affine transform matrix],
+   		"projection_camera":[4x4 projection matrix],
+   		"location":{
+   			"altitude": 176.08457946777344,
+   			"longitude": -79.222516606740456,
+   			"latitude": 35.789005972772181
+   		},
+   		"objects":[
+   			{
+   				uuid: DOMString (unique UID),
+   				transform: [4x4 column major affine transform]
+   			}, ...
+   		]
+   	}
+   	*/
+
+		}, {
+			key: '_onWatch',
+			value: function _onWatch(data) {
+				this._rawARData = data;
+				this.dispatchEvent(new CustomEvent(ARKitWrapper.WATCH_EVENT, {
+					source: this,
+					detail: this._rawARData
+				}));
+			}
+
+			/*
+   Callback from ARKit for when sending per-frame data to onWatch is stopped
+   */
+
+		}, {
+			key: '_onStop',
+			value: function _onStop() {
+				this._isWatching = false;
+			}
+		}, {
+			key: '_createPromiseCallback',
+			value: function _createPromiseCallback(action, resolve) {
+				var _this6 = this;
+
+				var callbackName = this._generateCallbackUID(action);
+				window[callbackName] = function (data) {
+					delete window[callbackName];
+					var wrapperCallbackName = '_on' + action[0].toUpperCase() + action.slice(1);
+					if (typeof _this6[wrapperCallbackName] == 'function') {
+						_this6[wrapperCallbackName](data);
+					}
+					resolve(data);
+				};
+				return callbackName;
+			}
+		}, {
+			key: '_generateCallbackUID',
+			value: function _generateCallbackUID(prefix) {
+				return 'arkitCallback_' + prefix + '_' + new Date().getTime() + '_' + Math.floor(Math.random() * Number.MAX_SAFE_INTEGER);
+			}
+
+			/*
+   The ARKit iOS app depends on several callbacks on `window`. This method sets them up.
+   They end up as window.arkitCallback? where ? is an integer.
+   You can map window.arkitCallback? to ARKitWrapper instance methods using _globalCallbacksMap
+   */
+
+		}, {
+			key: '_generateGlobalCallback',
+			value: function _generateGlobalCallback(callbackName, num) {
+				var name = 'arkitCallback' + num;
+				this._globalCallbacksMap[callbackName] = name;
+				var self = this;
+				window[name] = function (deviceData) {
+					self['_' + callbackName](deviceData);
+				};
+			}
+		}, {
+			key: 'deviceId',
+			get: function get() {
+				return this._deviceId;
+			} // The ARKit provided device ID
+
+		}, {
+			key: 'isWatching',
+			get: function get() {
+				return this._isWatching;
+			} // True if ARKit is sending frame data
+
+		}, {
+			key: 'isInitialized',
+			get: function get() {
+				return this._isInitialized;
+			} // True if this instance has received the onInit callback from ARKit
+
+		}, {
+			key: 'hasData',
+			get: function get() {
+				return this._rawARData !== null;
+			}
+		}], [{
+			key: 'GetOrCreate',
+			value: function GetOrCreate() {
+				var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+
+				if (typeof ARKitWrapper.GLOBAL_INSTANCE === 'undefined') {
+					ARKitWrapper.GLOBAL_INSTANCE = new ARKitWrapper();
+					options = options && (typeof options === 'undefined' ? 'undefined' : _typeof(options)) == 'object' ? options : {};
+					var defaultUIOptions = {
+						browser: true,
+						points: true,
+						focus: false,
+						rec: true,
+						rec_time: true,
+						mic: false,
+						build: false,
+						plane: true,
+						warnings: true,
+						anchors: false,
+						debug: true,
+						statistics: false
+					};
+					var uiOptions = _typeof(options.ui) == 'object' ? options.ui : {};
+					options.ui = Object.assign(defaultUIOptions, uiOptions);
+					ARKitWrapper.GLOBAL_INSTANCE._sendInit(options);
+				}
+				return ARKitWrapper.GLOBAL_INSTANCE;
+			}
+		}, {
+			key: 'HasARKit',
+			value: function HasARKit() {
+				return typeof window.webkit !== 'undefined';
+			}
+		}]);
+
+		return ARKitWrapper;
+	}(_EventHandlerBase3.default);
+
+	// ARKitWrapper event names:
+
+
+	exports.default = ARKitWrapper;
+	ARKitWrapper.INIT_EVENT = 'arkit-init';
+	ARKitWrapper.WATCH_EVENT = 'arkit-watch';
+	ARKitWrapper.RECORD_START_EVENT = 'arkit-record-start';
+	ARKitWrapper.RECORD_STOP_EVENT = 'arkit-record-stop';
+	ARKitWrapper.DID_MOVE_BACKGROUND_EVENT = 'arkit-did-move-background';
+	ARKitWrapper.WILL_ENTER_FOREGROUND_EVENT = 'arkit-will-enter-foreground';
+	ARKitWrapper.INTERRUPTED_EVENT = 'arkit-interrupted';
+	ARKitWrapper.INTERRUPTION_ENDED_EVENT = 'arkit-interruption-ended';
+	ARKitWrapper.SHOW_DEBUG_EVENT = 'arkit-show-debug';
+
+	// hit test types
+	ARKitWrapper.HIT_TEST_TYPE_FEATURE_POINT = 1;
+	ARKitWrapper.HIT_TEST_TYPE_EXISTING_PLANE = 8;
+	ARKitWrapper.HIT_TEST_TYPE_ESTIMATED_HORIZONTAL_PLANE = 2;
+	ARKitWrapper.HIT_TEST_TYPE_EXISTING_PLANE_USING_EXTENT = 16;
+
+	ARKitWrapper.HIT_TEST_TYPE_ALL = ARKitWrapper.HIT_TEST_TYPE_FEATURE_POINT | ARKitWrapper.HIT_TEST_TYPE_EXISTING_PLANE | ARKitWrapper.HIT_TEST_TYPE_ESTIMATED_HORIZONTAL_PLANE | ARKitWrapper.HIT_TEST_TYPE_EXISTING_PLANE_USING_EXTENT;
+
+	ARKitWrapper.HIT_TEST_TYPE_EXISTING_PLANES = ARKitWrapper.HIT_TEST_TYPE_EXISTING_PLANE | ARKitWrapper.HIT_TEST_TYPE_EXISTING_PLANE_USING_EXTENT;
+
+	/***/
+},
+/* 12 */
+/***/function (module, exports, __webpack_require__) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+
+	var _createClass = function () {
+		function defineProperties(target, props) {
+			for (var i = 0; i < props.length; i++) {
+				var descriptor = props[i];descriptor.enumerable = descriptor.enumerable || false;descriptor.configurable = true;if ("value" in descriptor) descriptor.writable = true;Object.defineProperty(target, descriptor.key, descriptor);
+			}
+		}return function (Constructor, protoProps, staticProps) {
+			if (protoProps) defineProperties(Constructor.prototype, protoProps);if (staticProps) defineProperties(Constructor, staticProps);return Constructor;
+		};
+	}();
+
+	var _MatrixMath = __webpack_require__(0);
+
+	var _MatrixMath2 = _interopRequireDefault(_MatrixMath);
+
+	var _Quaternion = __webpack_require__(1);
+
+	var _Quaternion2 = _interopRequireDefault(_Quaternion);
+
+	var _XRAnchor = __webpack_require__(3);
+
+	var _XRAnchor2 = _interopRequireDefault(_XRAnchor);
+
+	var _XRCoordinates = __webpack_require__(4);
+
+	var _XRCoordinates2 = _interopRequireDefault(_XRCoordinates);
+
+	function _interopRequireDefault(obj) {
+		return obj && obj.__esModule ? obj : { default: obj };
+	}
+
+	function _classCallCheck(instance, Constructor) {
+		if (!(instance instanceof Constructor)) {
+			throw new TypeError("Cannot call a class as a function");
+		}
+	}
+
+	/*
+ XRAnchorOffset represents a pose in relation to an XRAnchor
+ */
+	var XRAnchorOffset = function () {
+		function XRAnchorOffset(anchorUID) {
+			var poseMatrix = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+
+			_classCallCheck(this, XRAnchorOffset);
+
+			this._anchorUID = anchorUID;
+			this._poseMatrix = poseMatrix || _MatrixMath2.default.mat4_generateIdentity();
+		}
+
+		_createClass(XRAnchorOffset, [{
+			key: 'getTransformedCoordinates',
+
+			/*
+   Return an XRCoordinates in the same coordinate system as `anchor` that is offset by this XRAnchorOffset.poseMatrix
+   */
+			value: function getTransformedCoordinates(anchor) {
+				var coordinates = new _XRCoordinates2.default(anchor.coordinates._display, anchor.coordinates.coordinateSystem);
+				_MatrixMath2.default.mat4_multiply(coordinates.poseMatrix, this._poseMatrix, anchor.coordinates.poseMatrix);
+				return coordinates;
+			}
+		}, {
+			key: 'anchorUID',
+			get: function get() {
+				return this._anchorUID;
+			}
+
+			/*
+   A Float32Array(16) representing a column major affine transform matrix
+   */
+
+		}, {
+			key: 'poseMatrix',
+			get: function get() {
+				return this._poseMatrix;
+			},
+			set: function set(array16) {
+				for (var i = 0; i < 16; i++) {
+					this._poseMatrix[i] = array16[i];
+				}
+			}
+
+			/*
+   returns a Float32Array(4) representing an x, y, z position from this.poseMatrix
+   */
+
+		}, {
+			key: 'position',
+			get: function get() {
+				return new Float32Array([this._poseMatrix[12], this._poseMatrix[13], this._poseMatrix[14]]);
+			}
+
+			/*
+   returns a Float32Array(4) representing x, y, z, w of a quaternion from this.poseMatrix
+   */
+
+		}, {
+			key: 'orientation',
+			get: function get() {
+				var quat = new _Quaternion2.default();
+				quat.setFromRotationMatrix(this._poseMatrix);
+				return quat.toArray();
+			}
+		}]);
+
+		return XRAnchorOffset;
+	}();
+
+	exports.default = XRAnchorOffset;
+
+	/***/
+},
+/* 13 */
+/***/function (module, exports, __webpack_require__) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+
+	var _createClass = function () {
+		function defineProperties(target, props) {
+			for (var i = 0; i < props.length; i++) {
+				var descriptor = props[i];descriptor.enumerable = descriptor.enumerable || false;descriptor.configurable = true;if ("value" in descriptor) descriptor.writable = true;Object.defineProperty(target, descriptor.key, descriptor);
+			}
+		}return function (Constructor, protoProps, staticProps) {
+			if (protoProps) defineProperties(Constructor.prototype, protoProps);if (staticProps) defineProperties(Constructor, staticProps);return Constructor;
+		};
+	}();
+
+	var _MatrixMath = __webpack_require__(0);
+
+	var _MatrixMath2 = _interopRequireDefault(_MatrixMath);
+
+	var _XRCoordinates = __webpack_require__(4);
+
+	var _XRCoordinates2 = _interopRequireDefault(_XRCoordinates);
+
+	function _interopRequireDefault(obj) {
+		return obj && obj.__esModule ? obj : { default: obj };
+	}
+
+	function _classCallCheck(instance, Constructor) {
+		if (!(instance instanceof Constructor)) {
+			throw new TypeError("Cannot call a class as a function");
+		}
+	}
+
+	/*
+ XRCoordinateSystem represents the origin of a 3D coordinate system positioned at a known frame of reference.
+ The XRCoordinateSystem is a string from XRCoordinateSystem.TYPES:
+ 
+ - XRCoordinateSystem.HEAD_MODEL: origin is aligned with the pose of the head, as sensed by HMD or handset trackers
+ - XRCoordinateSystem.EYE_LEVEL: origin is at a fixed distance above the ground
+ - XRCoordinateSystem.TRACKER: The origin of this coordinate system is at floor level at or below the origin of the HMD or handset provided tracking system
+ - XRCoordinateSystem.GEOSPATIAL: origin is at the East, Up, South plane tangent to the planet at the latitude, longitude, and altitude represented by the `XRCoordinateSystem.cartographicCoordinates`.
+ 
+ */
+	var XRCoordinateSystem = function () {
+		function XRCoordinateSystem(display, type) {
+			var cartographicCoordinates = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
+
+			_classCallCheck(this, XRCoordinateSystem);
+
+			this._display = display;
+			this._type = type;
+			this._cartographicCoordinates = cartographicCoordinates;
+		}
+
+		_createClass(XRCoordinateSystem, [{
+			key: 'getCoordinates',
+			value: function getCoordinates() {
+				var position = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [0, 0, 0];
+				var orientation = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : [0, 0, 0, 1];
+
+				return new _XRCoordinates2.default(this._display, this, position, orientation);
+			}
+		}, {
+			key: 'getTransformTo',
+			value: function getTransformTo(otherCoordinateSystem) {
+				var out = new Float32Array([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]);
+
+				// apply inverse of other system's poseModelMatrix to the identity matrix
+				var inverse = new Float32Array(16);
+				_MatrixMath2.default.mat4_invert(inverse, otherCoordinateSystem._poseModelMatrix);
+				_MatrixMath2.default.mat4_multiply(out, inverse, out);
+
+				// apply this system's poseModelMatrix
+				_MatrixMath2.default.mat4_multiply(out, this._poseModelMatrix, out);
+				return out;
+			}
+		}, {
+			key: 'cartographicCoordinates',
+			get: function get() {
+				return this._cartographicCoordinates;
+			}
+		}, {
+			key: 'type',
+			get: function get() {
+				return this._type;
+			}
+		}, {
+			key: '_poseModelMatrix',
+			get: function get() {
+				switch (this._type) {
+					case XRCoordinateSystem.HEAD_MODEL:
+						return this._display._headPose.poseModelMatrix;
+					case XRCoordinateSystem.EYE_LEVEL:
+						return this._display._eyeLevelPose.poseModelMatrix;
+					case XRCoordinateSystem.TRACKER:
+						return this._display._trackerPoseModelMatrix;
+					case XRCoordinateSystem.GEOSPATIAL:
+						throw 'This polyfill does not yet handle geospatial coordinate systems';
+					default:
+						throw 'Unknown coordinate system type: ' + this._type;
+				}
+			}
+		}]);
+
+		return XRCoordinateSystem;
+	}();
+
+	exports.default = XRCoordinateSystem;
+
+	XRCoordinateSystem.HEAD_MODEL = 'headModel';
+	XRCoordinateSystem.EYE_LEVEL = 'eyeLevel';
+	XRCoordinateSystem.TRACKER = 'tracker';
+	XRCoordinateSystem.GEOSPATIAL = 'geospatial';
+
+	XRCoordinateSystem.TYPES = [XRCoordinateSystem.HEAD_MODEL, XRCoordinateSystem.EYE_LEVEL, XRCoordinateSystem.TRACKER, XRCoordinateSystem.GEOSPATIAL];
+
+	/***/
+},
+/* 14 */
+/***/function (module, exports, __webpack_require__) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+
+	var _createClass = function () {
+		function defineProperties(target, props) {
+			for (var i = 0; i < props.length; i++) {
+				var descriptor = props[i];descriptor.enumerable = descriptor.enumerable || false;descriptor.configurable = true;if ("value" in descriptor) descriptor.writable = true;Object.defineProperty(target, descriptor.key, descriptor);
+			}
+		}return function (Constructor, protoProps, staticProps) {
+			if (protoProps) defineProperties(Constructor.prototype, protoProps);if (staticProps) defineProperties(Constructor, staticProps);return Constructor;
+		};
+	}();
+
+	function _classCallCheck(instance, Constructor) {
+		if (!(instance instanceof Constructor)) {
+			throw new TypeError("Cannot call a class as a function");
+		}
+	}
+
+	/*
+ XRViewport represents the dimensions in pixels of an XRView.
+ */
+	var XRViewport = function () {
+		function XRViewport(x, y, width, height) {
+			_classCallCheck(this, XRViewport);
+
+			this._x = x;
+			this._y = y;
+			this._width = width;
+			this._height = height;
+		}
+
+		_createClass(XRViewport, [{
+			key: "x",
+			get: function get() {
+				return this._x;
+			},
+			set: function set(value) {
+				this._x = value;
+			}
+		}, {
+			key: "y",
+			get: function get() {
+				return this._y;
+			},
+			set: function set(value) {
+				this._y = value;
+			}
+		}, {
+			key: "width",
+			get: function get() {
+				return this._width;
+			},
+			set: function set(value) {
+				this._width = value;
+			}
+		}, {
+			key: "height",
+			get: function get() {
+				return this._height;
+			},
+			set: function set(value) {
+				this._height = value;
+			}
+		}]);
+
+		return XRViewport;
+	}();
+
+	exports.default = XRViewport;
+
+	/***/
+},
+/* 15 */
+/***/function (module, exports, __webpack_require__) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+
+	var _EventHandlerBase2 = __webpack_require__(2);
+
+	var _EventHandlerBase3 = _interopRequireDefault(_EventHandlerBase2);
+
+	function _interopRequireDefault(obj) {
+		return obj && obj.__esModule ? obj : { default: obj };
+	}
+
+	function _classCallCheck(instance, Constructor) {
+		if (!(instance instanceof Constructor)) {
+			throw new TypeError("Cannot call a class as a function");
+		}
+	}
+
+	function _possibleConstructorReturn(self, call) {
+		if (!self) {
+			throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
+		}return call && ((typeof call === 'undefined' ? 'undefined' : _typeof2(call)) === "object" || typeof call === "function") ? call : self;
+	}
+
+	function _inherits(subClass, superClass) {
+		if (typeof superClass !== "function" && superClass !== null) {
+			throw new TypeError("Super expression must either be null or a function, not " + (typeof superClass === 'undefined' ? 'undefined' : _typeof2(superClass)));
+		}subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } });if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;
+	}
+
+	/*
+ XRLayer defines a source of bitmap images and a description of how the image is to be rendered in the XRDisplay
+ */
+	var XRLayer = function (_EventHandlerBase) {
+		_inherits(XRLayer, _EventHandlerBase);
+
+		function XRLayer() {
+			_classCallCheck(this, XRLayer);
+
+			return _possibleConstructorReturn(this, (XRLayer.__proto__ || Object.getPrototypeOf(XRLayer)).apply(this, arguments));
+		}
+
+		return XRLayer;
+	}(_EventHandlerBase3.default);
+
+	exports.default = XRLayer;
+
+	/***/
+},
+/* 16 */
+/***/function (module, exports, __webpack_require__) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+
+	var _createClass = function () {
+		function defineProperties(target, props) {
+			for (var i = 0; i < props.length; i++) {
+				var descriptor = props[i];descriptor.enumerable = descriptor.enumerable || false;descriptor.configurable = true;if ("value" in descriptor) descriptor.writable = true;Object.defineProperty(target, descriptor.key, descriptor);
+			}
+		}return function (Constructor, protoProps, staticProps) {
+			if (protoProps) defineProperties(Constructor.prototype, protoProps);if (staticProps) defineProperties(Constructor, staticProps);return Constructor;
+		};
+	}();
+
+	var _EventHandlerBase2 = __webpack_require__(2);
+
+	var _EventHandlerBase3 = _interopRequireDefault(_EventHandlerBase2);
+
+	var _Vector = __webpack_require__(10);
+
+	var _Vector2 = _interopRequireDefault(_Vector);
+
+	var _Quaternion = __webpack_require__(1);
+
+	var _Quaternion2 = _interopRequireDefault(_Quaternion);
+
+	var _Euler = __webpack_require__(30);
+
+	var _Euler2 = _interopRequireDefault(_Euler);
+
+	function _interopRequireDefault(obj) {
+		return obj && obj.__esModule ? obj : { default: obj };
+	}
+
+	function _classCallCheck(instance, Constructor) {
+		if (!(instance instanceof Constructor)) {
+			throw new TypeError("Cannot call a class as a function");
+		}
+	}
+
+	function _possibleConstructorReturn(self, call) {
+		if (!self) {
+			throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
+		}return call && ((typeof call === 'undefined' ? 'undefined' : _typeof2(call)) === "object" || typeof call === "function") ? call : self;
+	}
+
+	function _inherits(subClass, superClass) {
+		if (typeof superClass !== "function" && superClass !== null) {
+			throw new TypeError("Super expression must either be null or a function, not " + (typeof superClass === 'undefined' ? 'undefined' : _typeof2(superClass)));
+		}subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } });if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;
+	}
+
+	/*
+ DeviceOrientationTracker keeps track of device orientation, which can be queried usnig `getOrientation`
+ */
+	var DeviceOrientationTracker = function (_EventHandlerBase) {
+		_inherits(DeviceOrientationTracker, _EventHandlerBase);
+
+		function DeviceOrientationTracker() {
+			_classCallCheck(this, DeviceOrientationTracker);
+
+			var _this = _possibleConstructorReturn(this, (DeviceOrientationTracker.__proto__ || Object.getPrototypeOf(DeviceOrientationTracker)).call(this));
+
+			_this._deviceOrientation = null;
+			_this._windowOrientation = 0;
+
+			window.addEventListener('orientationchange', function () {
+				_this._windowOrientation = window.orientation || 0;
+			}, false);
+			window.addEventListener('deviceorientation', function (ev) {
+				_this._deviceOrientation = ev;
+				_this.dispatchEvent(new CustomEvent(DeviceOrientationTracker.ORIENTATION_UPDATE_EVENT, {
+					deviceOrientation: _this._deviceOrientation,
+					windowOrientation: _this._windowOrientation
+				}));
+			}, false);
+			return _this;
+		}
+
+		/*
+  getOrientation sets the value of outQuaternion to the most recently tracked device orientation
+  returns true if a device orientation has been received, otherwise false
+  */
+
+		_createClass(DeviceOrientationTracker, [{
+			key: 'getOrientation',
+			value: function getOrientation(outQuaternion) {
+				if (this._deviceOrientation === null) {
+					outQuaternion.set(0, 0, 0, 1);
+					return false;
+				}
+				DeviceOrientationTracker.WORKING_EULER.set(this._deviceOrientation.beta * DeviceOrientationTracker.DEG_TO_RAD, this._deviceOrientation.alpha * DeviceOrientationTracker.DEG_TO_RAD, -1 * this._deviceOrientation.gamma * DeviceOrientationTracker.DEG_TO_RAD, 'YXZ');
+				outQuaternion.setFromEuler(DeviceOrientationTracker.WORKING_EULER.x, DeviceOrientationTracker.WORKING_EULER.y, DeviceOrientationTracker.WORKING_EULER.z, DeviceOrientationTracker.WORKING_EULER.order);
+				outQuaternion.multiply(DeviceOrientationTracker.HALF_PI_AROUND_X);
+				outQuaternion.multiply(DeviceOrientationTracker.WORKING_QUATERNION.setFromAxisAngle(DeviceOrientationTracker.Z_AXIS, -this._windowOrientation * DeviceOrientationTracker.DEG_TO_RAD));
+				return true;
+			}
+		}]);
+
+		return DeviceOrientationTracker;
+	}(_EventHandlerBase3.default);
+
+	exports.default = DeviceOrientationTracker;
+
+	DeviceOrientationTracker.ORIENTATION_UPDATE_EVENT = 'orientation-update';
+
+	DeviceOrientationTracker.Z_AXIS = new _Vector2.default(0, 0, 1);
+	DeviceOrientationTracker.WORKING_EULER = new _Euler2.default();
+	DeviceOrientationTracker.WORKING_QUATERNION = new _Quaternion2.default();
+	DeviceOrientationTracker.HALF_PI_AROUND_X = new _Quaternion2.default(-Math.sqrt(0.5), 0, 0, Math.sqrt(0.5));
+	DeviceOrientationTracker.DEG_TO_RAD = Math.PI / 180;
+
+	/***/
+},
+/* 17 */
+/***/function (module, exports, __webpack_require__) {
+
+	"use strict";
+
+	var _createClass = function () {
+		function defineProperties(target, props) {
+			for (var i = 0; i < props.length; i++) {
+				var descriptor = props[i];descriptor.enumerable = descriptor.enumerable || false;descriptor.configurable = true;if ("value" in descriptor) descriptor.writable = true;Object.defineProperty(target, descriptor.key, descriptor);
+			}
+		}return function (Constructor, protoProps, staticProps) {
+			if (protoProps) defineProperties(Constructor.prototype, protoProps);if (staticProps) defineProperties(Constructor, staticProps);return Constructor;
+		};
+	}();
+
+	var _XRDisplay = __webpack_require__(5);
+
+	var _XRDisplay2 = _interopRequireDefault(_XRDisplay);
+
+	var _XRSession = __webpack_require__(7);
+
+	var _XRSession2 = _interopRequireDefault(_XRSession);
+
+	var _XRSessionCreateParameters = __webpack_require__(20);
+
+	var _XRSessionCreateParameters2 = _interopRequireDefault(_XRSessionCreateParameters);
+
+	var _Reality = __webpack_require__(6);
+
+	var _Reality2 = _interopRequireDefault(_Reality);
+
+	var _XRPointCloud = __webpack_require__(21);
+
+	var _XRPointCloud2 = _interopRequireDefault(_XRPointCloud);
+
+	var _XRLightEstimate = __webpack_require__(22);
+
+	var _XRLightEstimate2 = _interopRequireDefault(_XRLightEstimate);
+
+	var _XRAnchor = __webpack_require__(3);
+
+	var _XRAnchor2 = _interopRequireDefault(_XRAnchor);
+
+	var _XRPlaneAnchor = __webpack_require__(23);
+
+	var _XRPlaneAnchor2 = _interopRequireDefault(_XRPlaneAnchor);
+
+	var _XRAnchorOffset = __webpack_require__(12);
+
+	var _XRAnchorOffset2 = _interopRequireDefault(_XRAnchorOffset);
+
+	var _XRStageBounds = __webpack_require__(24);
+
+	var _XRStageBounds2 = _interopRequireDefault(_XRStageBounds);
+
+	var _XRStageBoundsPoint = __webpack_require__(25);
+
+	var _XRStageBoundsPoint2 = _interopRequireDefault(_XRStageBoundsPoint);
+
+	var _XRPresentationFrame = __webpack_require__(26);
+
+	var _XRPresentationFrame2 = _interopRequireDefault(_XRPresentationFrame);
+
+	var _XRView = __webpack_require__(8);
+
+	var _XRView2 = _interopRequireDefault(_XRView);
+
+	var _XRViewport = __webpack_require__(14);
+
+	var _XRViewport2 = _interopRequireDefault(_XRViewport);
+
+	var _XRCartographicCoordinates = __webpack_require__(27);
+
+	var _XRCartographicCoordinates2 = _interopRequireDefault(_XRCartographicCoordinates);
+
+	var _XRCoordinateSystem = __webpack_require__(13);
+
+	var _XRCoordinateSystem2 = _interopRequireDefault(_XRCoordinateSystem);
+
+	var _XRCoordinates = __webpack_require__(4);
+
+	var _XRCoordinates2 = _interopRequireDefault(_XRCoordinates);
+
+	var _XRViewPose = __webpack_require__(9);
+
+	var _XRViewPose2 = _interopRequireDefault(_XRViewPose);
+
+	var _XRLayer = __webpack_require__(15);
+
+	var _XRLayer2 = _interopRequireDefault(_XRLayer);
+
+	var _XRWebGLLayer = __webpack_require__(28);
+
+	var _XRWebGLLayer2 = _interopRequireDefault(_XRWebGLLayer);
+
+	var _EventHandlerBase2 = __webpack_require__(2);
+
+	var _EventHandlerBase3 = _interopRequireDefault(_EventHandlerBase2);
+
+	var _FlatDisplay = __webpack_require__(29);
+
+	var _FlatDisplay2 = _interopRequireDefault(_FlatDisplay);
+
+	var _HeadMountedDisplay = __webpack_require__(31);
+
+	var _HeadMountedDisplay2 = _interopRequireDefault(_HeadMountedDisplay);
+
+	var _CameraReality = __webpack_require__(32);
+
+	var _CameraReality2 = _interopRequireDefault(_CameraReality);
+
+	function _interopRequireDefault(obj) {
+		return obj && obj.__esModule ? obj : { default: obj };
+	}
+
+	function _classCallCheck(instance, Constructor) {
+		if (!(instance instanceof Constructor)) {
+			throw new TypeError("Cannot call a class as a function");
+		}
+	}
+
+	function _possibleConstructorReturn(self, call) {
+		if (!self) {
+			throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
+		}return call && ((typeof call === 'undefined' ? 'undefined' : _typeof2(call)) === "object" || typeof call === "function") ? call : self;
+	}
+
+	function _inherits(subClass, superClass) {
+		if (typeof superClass !== "function" && superClass !== null) {
+			throw new TypeError("Super expression must either be null or a function, not " + (typeof superClass === 'undefined' ? 'undefined' : _typeof2(superClass)));
+		}subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } });if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;
+	}
+
+	/*
+ XRPolyfill implements the window.XR functionality as a polyfill
+ 
+ Code below will check for window.XR and if it doesn't exist will install this polyfill,
+ so you can safely include this script in any page.
+ */
+	var XRPolyfill = function (_EventHandlerBase) {
+		_inherits(XRPolyfill, _EventHandlerBase);
+
+		function XRPolyfill() {
+			_classCallCheck(this, XRPolyfill);
+
+			var _this = _possibleConstructorReturn(this, (XRPolyfill.__proto__ || Object.getPrototypeOf(XRPolyfill)).call(this));
+
+			window.XRDisplay = _XRDisplay2.default;
+			window.XRSession = _XRSession2.default;
+			window.XRSessionCreateParameters = _XRSessionCreateParameters2.default;
+			window.Reality = _Reality2.default;
+			window.XRPointCloud = _XRPointCloud2.default;
+			window.XRLightEstimate = _XRLightEstimate2.default;
+			window.XRAnchor = _XRAnchor2.default;
+			window.XRPlaneAnchor = _XRPlaneAnchor2.default;
+			window.XRAnchorOffset = _XRAnchorOffset2.default;
+			window.XRStageBounds = _XRStageBounds2.default;
+			window.XRStageBoundsPoint = _XRStageBoundsPoint2.default;
+			window.XRPresentationFrame = _XRPresentationFrame2.default;
+			window.XRView = _XRView2.default;
+			window.XRViewport = _XRViewport2.default;
+			window.XRCartographicCoordinates = _XRCartographicCoordinates2.default;
+			window.XRCoordinateSystem = _XRCoordinateSystem2.default;
+			window.XRCoordinates = _XRCoordinates2.default;
+			window.XRViewPose = _XRViewPose2.default;
+			window.XRLayer = _XRLayer2.default;
+			window.XRWebGLLayer = _XRWebGLLayer2.default;
+
+			// Reality instances that may be shared by multiple XRSessions
+			_this._sharedRealities = [new _CameraReality2.default(_this)];
+			_this._privateRealities = [];
+
+			_this._displays = [new _FlatDisplay2.default(_this, _this._sharedRealities[0])];
+
+			if (typeof navigator.getVRDisplays === 'function') {
+				navigator.getVRDisplays().then(function (displays) {
+					var _iteratorNormalCompletion = true;
+					var _didIteratorError = false;
+					var _iteratorError = undefined;
+
+					try {
+						for (var _iterator = displays[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+							var display = _step.value;
+
+							if (display === null) continue;
+							if (display.capabilities.canPresent) {
+								_this._displays.push(new _HeadMountedDisplay2.default(_this, _this._sharedRealities[0], display));
+							}
+						}
+					} catch (err) {
+						_didIteratorError = true;
+						_iteratorError = err;
+					} finally {
+						try {
+							if (!_iteratorNormalCompletion && _iterator.return) {
+								_iterator.return();
+							}
+						} finally {
+							if (_didIteratorError) {
+								throw _iteratorError;
+							}
+						}
+					}
+				});
+			}
+
+			// These elements are at the beginning of the body and absolutely positioned to fill the entire window
+			// Sessions and realities add their elements to these divs so that they are in the right render order
+			_this._sessionEls = document.createElement('div');
+			_this._sessionEls.setAttribute('class', 'webxr-sessions');
+			_this._realityEls = document.createElement('div');
+			_this._realityEls.setAttribute('class', 'webxr-realities');
+			var _arr = [_this._sessionEls, _this._realityEls];
+			for (var _i = 0; _i < _arr.length; _i++) {
+				var el = _arr[_i];
+				el.style.position = 'absolute';
+				el.style.width = '100%';
+				el.style.height = '100%';
+			}
+
+			document.addEventListener('DOMContentLoaded', function () {
+				document.body.style.width = '100%';
+				document.body.style.height = '100%';
+				document.body.prepend(_this._sessionEls);
+				document.body.prepend(_this._realityEls); // realities must render behind the sessions
+			});
+			return _this;
+		}
+
+		_createClass(XRPolyfill, [{
+			key: 'getDisplays',
+			value: function getDisplays() {
+				var _this2 = this;
+
+				return new Promise(function (resolve, reject) {
+					resolve(_this2._displays);
+				});
+			}
+
+			//attribute EventHandler ondisplayconnect;
+			//attribute EventHandler ondisplaydisconnect;
+
+		}]);
+
+		return XRPolyfill;
+	}(_EventHandlerBase3.default);
+
+	/* Install XRPolyfill if window.XR does not exist */
+
+	if (typeof navigator.XR === 'undefined') navigator.XR = new XRPolyfill();
+
+	/***/
+},
+/* 18 */
+/***/function (module, exports, __webpack_require__) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+
+	var _createClass = function () {
+		function defineProperties(target, props) {
+			for (var i = 0; i < props.length; i++) {
+				var descriptor = props[i];descriptor.enumerable = descriptor.enumerable || false;descriptor.configurable = true;if ("value" in descriptor) descriptor.writable = true;Object.defineProperty(target, descriptor.key, descriptor);
+			}
+		}return function (Constructor, protoProps, staticProps) {
+			if (protoProps) defineProperties(Constructor.prototype, protoProps);if (staticProps) defineProperties(Constructor, staticProps);return Constructor;
+		};
+	}();
+
+	function _classCallCheck(instance, Constructor) {
+		if (!(instance instanceof Constructor)) {
+			throw new TypeError("Cannot call a class as a function");
+		}
+	}
+
+	/*
+ XRFieldOFView represents the four boundaries of a camera's field of view: up, down, left, and right.
+ */
+	var XRFieldOfView = function () {
+		function XRFieldOfView(upDegrees, downDegrees, leftDegrees, rightDegrees) {
+			_classCallCheck(this, XRFieldOfView);
+
+			this._upDegrees = upDegrees;
+			this._downDegrees = downDegrees;
+			this._leftDegrees = leftDegrees;
+			this._rightDegrees = rightDegrees;
+		}
+
+		_createClass(XRFieldOfView, [{
+			key: "upDegrees",
+			get: function get() {
+				return this._upDegrees;
+			}
+		}, {
+			key: "downDegrees",
+			get: function get() {
+				return this._downDegrees;
+			}
+		}, {
+			key: "leftDegrees",
+			get: function get() {
+				return this._leftDegrees;
+			}
+		}, {
+			key: "rightDegrees",
+			get: function get() {
+				return this._rightDegrees;
+			}
+		}]);
+
+		return XRFieldOfView;
+	}();
+
+	exports.default = XRFieldOfView;
+
+	/***/
+},
+/* 19 */
+/***/function (module, exports, __webpack_require__) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+
+	var _createClass = function () {
+		function defineProperties(target, props) {
+			for (var i = 0; i < props.length; i++) {
+				var descriptor = props[i];descriptor.enumerable = descriptor.enumerable || false;descriptor.configurable = true;if ("value" in descriptor) descriptor.writable = true;Object.defineProperty(target, descriptor.key, descriptor);
+			}
+		}return function (Constructor, protoProps, staticProps) {
+			if (protoProps) defineProperties(Constructor.prototype, protoProps);if (staticProps) defineProperties(Constructor, staticProps);return Constructor;
+		};
+	}();
+
+	var _Reality2 = __webpack_require__(6);
+
+	var _Reality3 = _interopRequireDefault(_Reality2);
+
+	function _interopRequireDefault(obj) {
+		return obj && obj.__esModule ? obj : { default: obj };
+	}
+
+	function _classCallCheck(instance, Constructor) {
+		if (!(instance instanceof Constructor)) {
+			throw new TypeError("Cannot call a class as a function");
+		}
+	}
+
+	function _possibleConstructorReturn(self, call) {
+		if (!self) {
+			throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
+		}return call && ((typeof call === 'undefined' ? 'undefined' : _typeof2(call)) === "object" || typeof call === "function") ? call : self;
+	}
+
+	function _inherits(subClass, superClass) {
+		if (typeof superClass !== "function" && superClass !== null) {
+			throw new TypeError("Super expression must either be null or a function, not " + (typeof superClass === 'undefined' ? 'undefined' : _typeof2(superClass)));
+		}subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } });if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;
+	}
+
+	/*
+ VirtualReality is a Reality that is empty and waiting for fanstastic CG scenes.
+ */
+	var VirtualReality = function (_Reality) {
+		_inherits(VirtualReality, _Reality);
+
+		function VirtualReality(xr) {
+			_classCallCheck(this, VirtualReality);
+
+			return _possibleConstructorReturn(this, (VirtualReality.__proto__ || Object.getPrototypeOf(VirtualReality)).call(this, xr, 'Virtual', false, false));
+		}
+
+		/*
+  Called when at least one active XRSession is using this Reality
+  */
+
+		_createClass(VirtualReality, [{
+			key: '_start',
+			value: function _start() {}
+
+			/*
+   Called when no more active XRSessions are using this Reality
+   */
+
+		}, {
+			key: '_stop',
+			value: function _stop() {}
+
+			/*
+   Called by a session before it hands a new XRPresentationFrame to the app
+   */
+
+		}, {
+			key: '_handleNewFrame',
+			value: function _handleNewFrame() {}
+
+			/*
+   Create an anchor hung in space
+   */
+
+		}, {
+			key: '_addAnchor',
+			value: function _addAnchor(anchor, display) {
+				this._anchors.set(anchor.uid, anchor);
+				return anchor.uid;
+			}
+
+			/*
+   Create an anchor attached to a surface, as found by a ray
+   normalized screen x and y are in range 0..1, with 0,0 at top left and 1,1 at bottom right
+   */
+
+		}, {
+			key: '_findAnchor',
+			value: function _findAnchor(normalizedScreenX, normalizedScreenY, display) {
+				return new Promise(function (resolve, reject) {
+					resolve(null);
+				});
+			}
+		}, {
+			key: '_removeAnchor',
+			value: function _removeAnchor(uid) {
+				this._anchors.delete(uid);
+			}
+		}]);
+
+		return VirtualReality;
+	}(_Reality3.default);
+
+	exports.default = VirtualReality;
+
+	/***/
+},
+/* 20 */
+/***/function (module, exports, __webpack_require__) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+
+	var _createClass = function () {
+		function defineProperties(target, props) {
+			for (var i = 0; i < props.length; i++) {
+				var descriptor = props[i];descriptor.enumerable = descriptor.enumerable || false;descriptor.configurable = true;if ("value" in descriptor) descriptor.writable = true;Object.defineProperty(target, descriptor.key, descriptor);
+			}
+		}return function (Constructor, protoProps, staticProps) {
+			if (protoProps) defineProperties(Constructor.prototype, protoProps);if (staticProps) defineProperties(Constructor, staticProps);return Constructor;
+		};
+	}();
+
+	function _classCallCheck(instance, Constructor) {
+		if (!(instance instanceof Constructor)) {
+			throw new TypeError("Cannot call a class as a function");
+		}
+	}
+
+	/*
+ The XRSessionCreateParametersInit dictionary provides a session description, indicating the desired capabilities of a session to be returned from requestSession()
+ */
+	var XRSessionCreateParameters = function () {
+		function XRSessionCreateParameters() {
+			_classCallCheck(this, XRSessionCreateParameters);
+		}
+
+		_createClass(XRSessionCreateParameters, [{
+			key: 'exclusive',
+			get: function get() {
+				//readonly attribute boolean exclusive;
+				throw 'Not implemented';
+			}
+		}, {
+			key: 'type',
+			get: function get() {
+				//readonly attribute XRSessionRealityType type;
+				throw 'Not implemented';
+			}
+		}]);
+
+		return XRSessionCreateParameters;
+	}();
+
+	exports.default = XRSessionCreateParameters;
+
+	/***/
+},
+/* 21 */
+/***/function (module, exports, __webpack_require__) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+
+	var _createClass = function () {
+		function defineProperties(target, props) {
+			for (var i = 0; i < props.length; i++) {
+				var descriptor = props[i];descriptor.enumerable = descriptor.enumerable || false;descriptor.configurable = true;if ("value" in descriptor) descriptor.writable = true;Object.defineProperty(target, descriptor.key, descriptor);
+			}
+		}return function (Constructor, protoProps, staticProps) {
+			if (protoProps) defineProperties(Constructor.prototype, protoProps);if (staticProps) defineProperties(Constructor, staticProps);return Constructor;
+		};
+	}();
+
+	function _classCallCheck(instance, Constructor) {
+		if (!(instance instanceof Constructor)) {
+			throw new TypeError("Cannot call a class as a function");
+		}
+	}
+
+	/*
+ XRPointCloud holds an array of float values where each four values represents [x, y, z, confidence in range 0-1] that describe a point in space detected by the device's sensors.
+ */
+	var XRPointCloud = function () {
+		function XRPointCloud() {
+			_classCallCheck(this, XRPointCloud);
+		}
+
+		_createClass(XRPointCloud, [{
+			key: 'points',
+			get: function get() {
+				//readonly attribute Float32Array points
+				throw new Error('Not implemented');
+			}
+		}]);
+
+		return XRPointCloud;
+	}();
+
+	exports.default = XRPointCloud;
+
+	/***/
+},
+/* 22 */
+/***/function (module, exports, __webpack_require__) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+
+	var _createClass = function () {
+		function defineProperties(target, props) {
+			for (var i = 0; i < props.length; i++) {
+				var descriptor = props[i];descriptor.enumerable = descriptor.enumerable || false;descriptor.configurable = true;if ("value" in descriptor) descriptor.writable = true;Object.defineProperty(target, descriptor.key, descriptor);
+			}
+		}return function (Constructor, protoProps, staticProps) {
+			if (protoProps) defineProperties(Constructor.prototype, protoProps);if (staticProps) defineProperties(Constructor, staticProps);return Constructor;
+		};
+	}();
+
+	function _classCallCheck(instance, Constructor) {
+		if (!(instance instanceof Constructor)) {
+			throw new TypeError("Cannot call a class as a function");
+		}
+	}
+
+	/*
+ XRLightEstimate represents the attributes of environmental light as supplied by the device's sensors.
+ */
+	var XRLightEstimate = function () {
+		function XRLightEstimate() {
+			_classCallCheck(this, XRLightEstimate);
+		}
+
+		_createClass(XRLightEstimate, [{
+			key: 'getAmbientColorTemperature',
+			value: function getAmbientColorTemperature() {
+				//readonly attribute double ambientColorTemperature;
+				throw new Error('Not implemented');
+			}
+		}, {
+			key: 'ambientIntensity',
+			get: function get() {
+				//readonly attribute double ambientIntensity;
+				throw new Error('Not implemented');
+			}
+		}]);
+
+		return XRLightEstimate;
+	}();
+
+	exports.default = XRLightEstimate;
+
+	/***/
+},
+/* 23 */
+/***/function (module, exports, __webpack_require__) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+
+	var _createClass = function () {
+		function defineProperties(target, props) {
+			for (var i = 0; i < props.length; i++) {
+				var descriptor = props[i];descriptor.enumerable = descriptor.enumerable || false;descriptor.configurable = true;if ("value" in descriptor) descriptor.writable = true;Object.defineProperty(target, descriptor.key, descriptor);
+			}
+		}return function (Constructor, protoProps, staticProps) {
+			if (protoProps) defineProperties(Constructor.prototype, protoProps);if (staticProps) defineProperties(Constructor, staticProps);return Constructor;
+		};
+	}();
+
+	var _XRAnchor2 = __webpack_require__(3);
+
+	var _XRAnchor3 = _interopRequireDefault(_XRAnchor2);
+
+	function _interopRequireDefault(obj) {
+		return obj && obj.__esModule ? obj : { default: obj };
+	}
+
+	function _classCallCheck(instance, Constructor) {
+		if (!(instance instanceof Constructor)) {
+			throw new TypeError("Cannot call a class as a function");
+		}
+	}
+
+	function _possibleConstructorReturn(self, call) {
+		if (!self) {
+			throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
+		}return call && ((typeof call === 'undefined' ? 'undefined' : _typeof2(call)) === "object" || typeof call === "function") ? call : self;
+	}
+
+	function _inherits(subClass, superClass) {
+		if (typeof superClass !== "function" && superClass !== null) {
+			throw new TypeError("Super expression must either be null or a function, not " + (typeof superClass === 'undefined' ? 'undefined' : _typeof2(superClass)));
+		}subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } });if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;
+	}
+
+	/*
+ XRPlaneAnchor represents a flat surfaces like floors, table tops, or walls.
+ */
+	var XRPlaneAnchor = function (_XRAnchor) {
+		_inherits(XRPlaneAnchor, _XRAnchor);
+
+		function XRPlaneAnchor() {
+			_classCallCheck(this, XRPlaneAnchor);
+
+			return _possibleConstructorReturn(this, (XRPlaneAnchor.__proto__ || Object.getPrototypeOf(XRPlaneAnchor)).apply(this, arguments));
+		}
+
+		_createClass(XRPlaneAnchor, [{
+			key: 'width',
+			get: function get() {
+				//readonly attribute double width;
+				throw 'Not implemented';
+			}
+		}, {
+			key: 'length',
+			get: function get() {
+				//readonly attribute double length;
+				throw 'Not implemented';
+			}
+		}]);
+
+		return XRPlaneAnchor;
+	}(_XRAnchor3.default);
+
+	exports.default = XRPlaneAnchor;
+
+	/***/
+},
+/* 24 */
+/***/function (module, exports, __webpack_require__) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+
+	var _createClass = function () {
+		function defineProperties(target, props) {
+			for (var i = 0; i < props.length; i++) {
+				var descriptor = props[i];descriptor.enumerable = descriptor.enumerable || false;descriptor.configurable = true;if ("value" in descriptor) descriptor.writable = true;Object.defineProperty(target, descriptor.key, descriptor);
+			}
+		}return function (Constructor, protoProps, staticProps) {
+			if (protoProps) defineProperties(Constructor.prototype, protoProps);if (staticProps) defineProperties(Constructor, staticProps);return Constructor;
+		};
+	}();
+
+	function _classCallCheck(instance, Constructor) {
+		if (!(instance instanceof Constructor)) {
+			throw new TypeError("Cannot call a class as a function");
+		}
+	}
+
+	/*
+ The XRStageBounds interface describes a space known as a "Stage".
+ The stage is a bounded, floor-relative play space that the user can be expected to safely be able to move within.
+ Other XR platforms sometimes refer to this concept as "room scale" or "standing XR".
+ */
+	var XRStageBounds = function () {
+		function XRStageBounds() {
+			_classCallCheck(this, XRStageBounds);
+		}
+
+		_createClass(XRStageBounds, [{
+			key: 'center',
+			get: function get() {
+				//readonly attribute XRCoordinates center;
+				throw new Error('Not implemented');
+			}
+		}, {
+			key: 'geometry',
+			get: function get() {
+				//readonly attribute FrozenArray<XRStageBoundsPoint>? geometry;
+				throw new Error('Not implemented');
+			}
+		}]);
+
+		return XRStageBounds;
+	}();
+
+	exports.default = XRStageBounds;
+
+	/***/
+},
+/* 25 */
+/***/function (module, exports, __webpack_require__) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+
+	var _createClass = function () {
+		function defineProperties(target, props) {
+			for (var i = 0; i < props.length; i++) {
+				var descriptor = props[i];descriptor.enumerable = descriptor.enumerable || false;descriptor.configurable = true;if ("value" in descriptor) descriptor.writable = true;Object.defineProperty(target, descriptor.key, descriptor);
+			}
+		}return function (Constructor, protoProps, staticProps) {
+			if (protoProps) defineProperties(Constructor.prototype, protoProps);if (staticProps) defineProperties(Constructor, staticProps);return Constructor;
+		};
+	}();
+
+	function _classCallCheck(instance, Constructor) {
+		if (!(instance instanceof Constructor)) {
+			throw new TypeError("Cannot call a class as a function");
+		}
+	}
+
+	/*
+ XRStageBoundPoints represent the offset in meters from the stage origin along the X and Z axes.
+ */
+	var XRStageBoundsPoint = function () {
+		function XRStageBoundsPoint() {
+			_classCallCheck(this, XRStageBoundsPoint);
+		}
+
+		_createClass(XRStageBoundsPoint, [{
+			key: 'x',
+			get: function get() {
+				//readonly attribute double x;
+				throw new Error('Not implemented');
+			}
+		}, {
+			key: 'y',
+			get: function get() {
+				//readonly attribute double z;
+				throw new Error('Not implemented');
+			}
+		}]);
+
+		return XRStageBoundsPoint;
+	}();
+
+	exports.default = XRStageBoundsPoint;
+
+	/***/
+},
+/* 26 */
+/***/function (module, exports, __webpack_require__) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+
+	var _createClass = function () {
+		function defineProperties(target, props) {
+			for (var i = 0; i < props.length; i++) {
+				var descriptor = props[i];descriptor.enumerable = descriptor.enumerable || false;descriptor.configurable = true;if ("value" in descriptor) descriptor.writable = true;Object.defineProperty(target, descriptor.key, descriptor);
+			}
+		}return function (Constructor, protoProps, staticProps) {
+			if (protoProps) defineProperties(Constructor.prototype, protoProps);if (staticProps) defineProperties(Constructor, staticProps);return Constructor;
+		};
+	}();
+
+	var _XRAnchor = __webpack_require__(3);
+
+	var _XRAnchor2 = _interopRequireDefault(_XRAnchor);
+
+	function _interopRequireDefault(obj) {
+		return obj && obj.__esModule ? obj : { default: obj };
+	}
+
+	function _classCallCheck(instance, Constructor) {
+		if (!(instance instanceof Constructor)) {
+			throw new TypeError("Cannot call a class as a function");
+		}
+	}
+
+	/*
+ XRPresentationFrame provides all of the values needed to render a single frame of an XR scene to the XRDisplay.
+ */
+	var XRPresentationFrame = function () {
+		function XRPresentationFrame(session) {
+			_classCallCheck(this, XRPresentationFrame);
+
+			this._session = session;
+		}
+
+		_createClass(XRPresentationFrame, [{
+			key: 'addAnchor',
+
+			/*
+   Create an anchor at a specific position defined by XRAnchor.coordinates
+   */
+			value: function addAnchor(anchor) {
+				//DOMString? addAnchor(XRAnchor anchor);
+				return this._session.reality._addAnchor(anchor, this._session.display);
+			}
+
+			// normalized screen x and y are in range 0..1, with 0,0 at top left and 1,1 at bottom right
+
+		}, {
+			key: 'findAnchor',
+			value: function findAnchor(normalizedScreenX, normalizedScreenY) {
+				// Promise<XRAnchorOffset?> findAnchor(float32, float32); // cast a ray to find or create an anchor at the first intersection in the Reality
+				return this._session.reality._findAnchor(normalizedScreenX, normalizedScreenY, this._session.display);
+			}
+
+			/*
+   Find an XRAnchorOffset that is at floor level below the current head pose
+   uid will be the resulting anchor uid (if any), or if null one will be assigned
+   */
+
+		}, {
+			key: 'findFloorAnchor',
+			value: function findFloorAnchor() {
+				var uid = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+
+				// Promise<XRAnchorOffset?> findFloorAnchor();
+				return this._session.reality._findFloorAnchor(this._session.display, uid);
+			}
+		}, {
+			key: 'removeAnchor',
+			value: function removeAnchor(uid) {
+				// void removeAnchor(DOMString uid);
+				return this._session.reality._removeAnchor(uid);
+			}
+
+			/*
+   Returns an existing XRAnchor or null if uid is unknown
+   */
+
+		}, {
+			key: 'getAnchor',
+			value: function getAnchor(uid) {
+				// XRAnchor? getAnchor(DOMString uid);
+				return this._session.reality._getAnchor(uid);
+			}
+		}, {
+			key: 'getCoordinateSystem',
+			value: function getCoordinateSystem() {
+				var _session;
+
+				// XRCoordinateSystem? getCoordinateSystem(...XRFrameOfReferenceType types); // Tries the types in order, returning the first match or null if none is found
+				return (_session = this._session)._getCoordinateSystem.apply(_session, arguments);
+			}
+		}, {
+			key: 'getViewPose',
+			value: function getViewPose(coordinateSystem) {
+				// XRViewPose? getViewPose(XRCoordinateSystem coordinateSystem);
+				switch (coordinateSystem.type) {
+					case XRCoordinateSystem.HEAD_MODEL:
+						return this._session._display._headPose;
+					case XRCoordinateSystem.EYE_LEVEL:
+						return this._session._display._eyeLevelPose;
+					default:
+						return null;
+				}
+			}
+		}, {
+			key: 'session',
+			get: function get() {
+				return this._session;
+			}
+		}, {
+			key: 'views',
+			get: function get() {
+				//readonly attribute FrozenArray<XRView> views;
+				return this._session._display._views;
+			}
+		}, {
+			key: 'hasPointCloud',
+			get: function get() {
+				//readonly attribute boolean hasPointCloud;
+				return false;
+			}
+		}, {
+			key: 'pointCloud',
+			get: function get() {
+				//readonly attribute XRPointCloud? pointCloud;
+				return null;
+			}
+		}, {
+			key: 'hasLightEstimate',
+			get: function get() {
+				//readonly attribute boolean hasLightEstimate;
+				return false;
+			}
+		}, {
+			key: 'lightEstimate',
+			get: function get() {
+				//readonly attribute XRLightEstimate? lightEstimate;
+				return null;
+			}
+
+			/*
+   Returns an array of known XRAnchor instances. May be empty.
+   */
+
+		}, {
+			key: 'anchors',
+			get: function get() {
+				//readonly attribute sequence<XRAnchor> anchors;
+				var results = [];
+				var _iteratorNormalCompletion = true;
+				var _didIteratorError = false;
+				var _iteratorError = undefined;
+
+				try {
+					for (var _iterator = this._session.reality._anchors.values()[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+						var value = _step.value;
+
+						results.push(value);
+					}
+				} catch (err) {
+					_didIteratorError = true;
+					_iteratorError = err;
+				} finally {
+					try {
+						if (!_iteratorNormalCompletion && _iterator.return) {
+							_iterator.return();
+						}
+					} finally {
+						if (_didIteratorError) {
+							throw _iteratorError;
+						}
+					}
+				}
+
+				return results;
+			}
+		}]);
+
+		return XRPresentationFrame;
+	}();
+
+	exports.default = XRPresentationFrame;
+
+	/***/
+},
+/* 27 */
+/***/function (module, exports, __webpack_require__) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+
+	var _createClass = function () {
+		function defineProperties(target, props) {
+			for (var i = 0; i < props.length; i++) {
+				var descriptor = props[i];descriptor.enumerable = descriptor.enumerable || false;descriptor.configurable = true;if ("value" in descriptor) descriptor.writable = true;Object.defineProperty(target, descriptor.key, descriptor);
+			}
+		}return function (Constructor, protoProps, staticProps) {
+			if (protoProps) defineProperties(Constructor.prototype, protoProps);if (staticProps) defineProperties(Constructor, staticProps);return Constructor;
+		};
+	}();
+
+	function _classCallCheck(instance, Constructor) {
+		if (!(instance instanceof Constructor)) {
+			throw new TypeError("Cannot call a class as a function");
+		}
+	}
+
+	/*
+ The XRCartographicCoordinates are used in conjunction with the XRCoordinateSystem to represent a frame of reference that may optionally be positioned in relation to a geodetic frame like WGS84 for Earth, otherwise a sphere is assumed.
+ */
+	var XRCartographicCoordinates = function () {
+		function XRCartographicCoordinates() {
+			_classCallCheck(this, XRCartographicCoordinates);
+		}
+
+		_createClass(XRCartographicCoordinates, [{
+			key: 'geodeticFrame',
+			get: function get() {
+				// attribute XRCartographicCoordinatesGeodeticFrame? geodeticFrame;
+				throw new Error('Not implemented');
+			}
+		}, {
+			key: 'latitude',
+			get: function get() {
+				// attribute double latitude;
+				throw new Error('Not implemented');
+			}
+		}, {
+			key: 'longitude',
+			get: function get() {
+				// attribute double longitude;
+				throw new Error('Not implemented');
+			}
+		}, {
+			key: 'positionAccuracy',
+			get: function get() {
+				// attribute double positionAccuracy;
+				throw new Error('Not implemented');
+			}
+		}, {
+			key: 'altitude',
+			get: function get() {
+				// attribute double altitude;
+				throw new Error('Not implemented');
+			}
+		}, {
+			key: 'altitudeAccuracy',
+			get: function get() {
+				// attribute double altitudeAccuracy;
+				throw new Error('Not implemented');
+			}
+		}, {
+			key: 'orientation',
+			get: function get() {
+				//attribute Float32Array orientation; // quaternion x,y,z,w from 0,0,0,1 of East/Up/South 
+				throw new Error('Not implemented');
+			}
+		}]);
+
+		return XRCartographicCoordinates;
+	}();
+
+	exports.default = XRCartographicCoordinates;
+
+	XRCartographicCoordinates.WGS84 = "WGS84";
+	XRCartographicCoordinates.GEODETIC_FRAMES = [XRCartographicCoordinates.WGS84];
+
+	/***/
+},
+/* 28 */
+/***/function (module, exports, __webpack_require__) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+
+	var _createClass = function () {
+		function defineProperties(target, props) {
+			for (var i = 0; i < props.length; i++) {
+				var descriptor = props[i];descriptor.enumerable = descriptor.enumerable || false;descriptor.configurable = true;if ("value" in descriptor) descriptor.writable = true;Object.defineProperty(target, descriptor.key, descriptor);
+			}
+		}return function (Constructor, protoProps, staticProps) {
+			if (protoProps) defineProperties(Constructor.prototype, protoProps);if (staticProps) defineProperties(Constructor, staticProps);return Constructor;
+		};
+	}();
+
+	var _XRLayer2 = __webpack_require__(15);
+
+	var _XRLayer3 = _interopRequireDefault(_XRLayer2);
+
+	function _interopRequireDefault(obj) {
+		return obj && obj.__esModule ? obj : { default: obj };
+	}
+
+	function _classCallCheck(instance, Constructor) {
+		if (!(instance instanceof Constructor)) {
+			throw new TypeError("Cannot call a class as a function");
+		}
+	}
+
+	function _possibleConstructorReturn(self, call) {
+		if (!self) {
+			throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
+		}return call && ((typeof call === 'undefined' ? 'undefined' : _typeof2(call)) === "object" || typeof call === "function") ? call : self;
+	}
+
+	function _inherits(subClass, superClass) {
+		if (typeof superClass !== "function" && superClass !== null) {
+			throw new TypeError("Super expression must either be null or a function, not " + (typeof superClass === 'undefined' ? 'undefined' : _typeof2(superClass)));
+		}subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } });if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;
+	}
+
+	/*
+ XRWebGLLayer defines the WebGL or WebGL 2 context that is rendering the visuals for this layer.
+ */
+	var XRWebGLLayer = function (_XRLayer) {
+		_inherits(XRWebGLLayer, _XRLayer);
+
+		function XRWebGLLayer(session, context) {
+			_classCallCheck(this, XRWebGLLayer);
+
+			var _this = _possibleConstructorReturn(this, (XRWebGLLayer.__proto__ || Object.getPrototypeOf(XRWebGLLayer)).call(this));
+
+			_this._session = session;
+			_this._context = context;
+			_this._framebuffer = null; // TODO
+			return _this;
+		}
+
+		_createClass(XRWebGLLayer, [{
+			key: 'requestViewportScaling',
+			value: function requestViewportScaling(viewportScaleFactor) {
+				// void requestViewportScaling(double viewportScaleFactor);
+				throw 'Not implemented';
+			}
+		}, {
+			key: 'context',
+			get: function get() {
+				return this._context;
+			}
+		}, {
+			key: 'antialias',
+			get: function get() {
+				// readonly attribute boolean antialias;
+				throw 'Not implemented';
+			}
+		}, {
+			key: 'depth',
+			get: function get() {
+				// readonly attribute boolean depth;
+				throw 'Not implemented';
+			}
+		}, {
+			key: 'stencil',
+			get: function get() {
+				// readonly attribute boolean stencil;
+				throw 'Not implemented';
+			}
+		}, {
+			key: 'alpha',
+			get: function get() {
+				// readonly attribute boolean alpha;
+				throw 'Not implemented';
+			}
+		}, {
+			key: 'multiview',
+			get: function get() {
+				// readonly attribute boolean multiview;
+				throw 'Not implemented';
+			}
+		}, {
+			key: 'framebuffer',
+			get: function get() {
+				return this._framebuffer;
+			}
+		}, {
+			key: 'framebufferWidth',
+			get: function get() {
+				return this._context.drawingBufferWidth;
+			}
+		}, {
+			key: 'framebufferHeight',
+			get: function get() {
+				return this._context.drawingBufferHeight;
+			}
+		}]);
+
+		return XRWebGLLayer;
+	}(_XRLayer3.default);
+
+	exports.default = XRWebGLLayer;
+
+	/***/
+},
+/* 29 */
+/***/function (module, exports, __webpack_require__) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+
+	var _createClass = function () {
+		function defineProperties(target, props) {
+			for (var i = 0; i < props.length; i++) {
+				var descriptor = props[i];descriptor.enumerable = descriptor.enumerable || false;descriptor.configurable = true;if ("value" in descriptor) descriptor.writable = true;Object.defineProperty(target, descriptor.key, descriptor);
+			}
+		}return function (Constructor, protoProps, staticProps) {
+			if (protoProps) defineProperties(Constructor.prototype, protoProps);if (staticProps) defineProperties(Constructor, staticProps);return Constructor;
+		};
+	}();
+
+	var _get = function get(object, property, receiver) {
+		if (object === null) object = Function.prototype;var desc = Object.getOwnPropertyDescriptor(object, property);if (desc === undefined) {
+			var parent = Object.getPrototypeOf(object);if (parent === null) {
+				return undefined;
+			} else {
+				return get(parent, property, receiver);
+			}
+		} else if ("value" in desc) {
+			return desc.value;
+		} else {
+			var getter = desc.get;if (getter === undefined) {
+				return undefined;
+			}return getter.call(receiver);
+		}
+	};
+
+	var _XRDisplay2 = __webpack_require__(5);
+
+	var _XRDisplay3 = _interopRequireDefault(_XRDisplay2);
+
+	var _XRView = __webpack_require__(8);
+
+	var _XRView2 = _interopRequireDefault(_XRView);
+
+	var _XRSession = __webpack_require__(7);
+
+	var _XRSession2 = _interopRequireDefault(_XRSession);
+
+	var _MatrixMath = __webpack_require__(0);
+
+	var _MatrixMath2 = _interopRequireDefault(_MatrixMath);
+
+	var _Quaternion = __webpack_require__(1);
+
+	var _Quaternion2 = _interopRequireDefault(_Quaternion);
+
+	var _Vector = __webpack_require__(10);
+
+	var _Vector2 = _interopRequireDefault(_Vector);
+
+	var _DeviceOrientationTracker = __webpack_require__(16);
+
+	var _DeviceOrientationTracker2 = _interopRequireDefault(_DeviceOrientationTracker);
+
+	var _ARKitWrapper = __webpack_require__(11);
+
+	var _ARKitWrapper2 = _interopRequireDefault(_ARKitWrapper);
+
+	function _interopRequireDefault(obj) {
+		return obj && obj.__esModule ? obj : { default: obj };
+	}
+
+	function _toConsumableArray(arr) {
+		if (Array.isArray(arr)) {
+			for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) {
+				arr2[i] = arr[i];
+			}return arr2;
+		} else {
+			return Array.from(arr);
+		}
+	}
+
+	function _classCallCheck(instance, Constructor) {
+		if (!(instance instanceof Constructor)) {
+			throw new TypeError("Cannot call a class as a function");
+		}
+	}
+
+	function _possibleConstructorReturn(self, call) {
+		if (!self) {
+			throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
+		}return call && ((typeof call === 'undefined' ? 'undefined' : _typeof2(call)) === "object" || typeof call === "function") ? call : self;
+	}
+
+	function _inherits(subClass, superClass) {
+		if (typeof superClass !== "function" && superClass !== null) {
+			throw new TypeError("Super expression must either be null or a function, not " + (typeof superClass === 'undefined' ? 'undefined' : _typeof2(superClass)));
+		}subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } });if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;
+	}
+
+	/*
+ FlatDisplay takes over a handset's full screen and presents a moving view into a Reality, as if it were a magic window.
+ 
+ If ARKit is present, it uses the ARKit updates to set the headModel pose.
+ If ARCore is available on the VRDisplays, use that to pose the headModel. (TODO)
+ Otherwise, use orientation events.
+ */
+	var FlatDisplay = function (_XRDisplay) {
+		_inherits(FlatDisplay, _XRDisplay);
+
+		function FlatDisplay(xr, reality) {
+			_classCallCheck(this, FlatDisplay);
+
+			var _this = _possibleConstructorReturn(this, (FlatDisplay.__proto__ || Object.getPrototypeOf(FlatDisplay)).call(this, xr, 'Flat', false, reality));
+
+			_this._started = false;
+			_this._initialized = false;
+
+			// This is used if we have ARKit support
+			_this._arKitWrapper = null;
+
+			// This is used if we have ARCore support
+			_this._vrFrameData = null;
+
+			// This is used if we are using orientation events
+			_this._deviceOrientationTracker = null;
+
+			// These are used if we have ARCore support or use window orientation events
+			_this._deviceOrientation = null; // Quaternion
+			_this._devicePosition = null; // Vector3
+			_this._deviceWorldMatrix = null; // Float32Array(16)
+
+			// Currently only support full screen views
+			_this._views.push(new _XRView2.default(_this._fov, _this._depthNear, _this._depthFar));
+			return _this;
+		}
+
+		_createClass(FlatDisplay, [{
+			key: '_start',
+			value: function _start() {
+				var _this2 = this;
+
+				if (this._reality._vrDisplay) {
+					// Use ARCore
+					if (this._vrFrameData === null) {
+						this._vrFrameData = new VRFrameData();
+						this._views[0]._depthNear = this._reality._vrDisplay.depthNear;
+						this._views[0]._depthFar = this._reality._vrDisplay.depthFar;
+						this._deviceOrientation = new _Quaternion2.default();
+						this._devicePosition = new _Vector2.default();
+						this._deviceWorldMatrix = new Float32Array(16);
+					}
+				} else if (_ARKitWrapper2.default.HasARKit()) {
+					// Use ARKit
+					if (this._initialized === false) {
+						this._initialized = true;
+						this._arKitWrapper = _ARKitWrapper2.default.GetOrCreate();
+						this._arKitWrapper.addEventListener(_ARKitWrapper2.default.INIT_EVENT, this._handleARKitInit.bind(this));
+						this._arKitWrapper.addEventListener(_ARKitWrapper2.default.WATCH_EVENT, this._handleARKitUpdate.bind(this));
+						this._arKitWrapper.waitForInit().then(function () {
+							_this2._arKitWrapper.watch();
+						});
+					} else {
+						this._arKitWrapper.watch();
+					}
+				} else {
+					// Use device orientation
+					if (this._initialized === false) {
+						this._initialized = true;
+						this._deviceOrientation = new _Quaternion2.default();
+						this._devicePosition = new _Vector2.default();
+						this._deviceWorldMatrix = new Float32Array(16);
+						this._deviceOrientationTracker = new _DeviceOrientationTracker2.default();
+						this._deviceOrientationTracker.addEventListener(_DeviceOrientationTracker2.default.ORIENTATION_UPDATE_EVENT, this._updateFromDeviceOrientationTracker.bind(this));
+					}
+				}
+				this.running = true;
+				this._reality._start();
+			}
+		}, {
+			key: '_stop',
+			value: function _stop() {}
+			// TODO figure out how to stop ARKit and ARCore so that CameraReality can still work
+
+
+			/*
+   Called by a session to indicate that its baseLayer attribute has been set.
+   FlatDisplay just adds the layer's canvas to DOM elements created by the XR polyfill
+   */
+
+		}, {
+			key: '_handleNewBaseLayer',
+			value: function _handleNewBaseLayer(baseLayer) {
+				baseLayer._context.canvas.width = window.innerWidth;
+				baseLayer._context.canvas.height = window.innerHeight;
+				this._xr._sessionEls.appendChild(baseLayer._context.canvas);
+			}
+
+			/*
+   Called by a session before it hands a new XRPresentationFrame to the app
+   */
+
+		}, {
+			key: '_handleNewFrame',
+			value: function _handleNewFrame(frame) {
+				if (this._vrFrameData !== null) {
+					this._updateFromVRDevice();
+				}
+			}
+		}, {
+			key: '_updateFromVRDevice',
+			value: function _updateFromVRDevice() {
+				var _deviceOrientation, _devicePosition;
+
+				this._reality._vrDisplay.getFrameData(this._vrFrameData);
+				this._views[0].setProjectionMatrix(this._vrFrameData.leftProjectionMatrix);
+				(_deviceOrientation = this._deviceOrientation).set.apply(_deviceOrientation, _toConsumableArray(this._vrFrameData.pose.orientation));
+				(_devicePosition = this._devicePosition).set.apply(_devicePosition, _toConsumableArray(this._vrFrameData.pose.position));
+				this._devicePosition.add(0, XRViewPose.SITTING_EYE_HEIGHT, 0);
+				_MatrixMath2.default.mat4_fromRotationTranslation(this._deviceWorldMatrix, this._deviceOrientation.toArray(), this._devicePosition.toArray());
+				this._headPose._setPoseModelMatrix(this._deviceWorldMatrix);
+				this._eyeLevelPose._position = this._devicePosition.toArray();
+			}
+		}, {
+			key: '_updateFromDeviceOrientationTracker',
+			value: function _updateFromDeviceOrientationTracker() {
+				// TODO set XRView's FOV
+				this._deviceOrientationTracker.getOrientation(this._deviceOrientation);
+				this._devicePosition.set(this._headPose.poseModelMatrix[12], this._headPose.poseModelMatrix[13], this._headPose.poseModelMatrix[14]);
+				this._devicePosition.add(0, XRViewPose.SITTING_EYE_HEIGHT, 0);
+				_MatrixMath2.default.mat4_fromRotationTranslation(this._deviceWorldMatrix, this._deviceOrientation.toArray(), this._devicePosition.toArray());
+				this._headPose._setPoseModelMatrix(this._deviceWorldMatrix);
+				this._eyeLevelPose._position = this._devicePosition.toArray();
+			}
+		}, {
+			key: '_handleARKitUpdate',
+			value: function _handleARKitUpdate() {
+				var cameraTransformMatrix = this._arKitWrapper.getData('camera_transform');
+				if (cameraTransformMatrix) {
+					this._headPose._setPoseModelMatrix(cameraTransformMatrix);
+					this._headPose._poseModelMatrix[13] += XRViewPose.SITTING_EYE_HEIGHT;
+					this._eyeLevelPose._position = this._headPose._position;
+				} else {
+					console.log('no camera transform', this._arKitWrapper.rawARData);
+				}
+
+				var cameraProjectionMatrix = this._arKitWrapper.getData('projection_camera');
+				if (cameraProjectionMatrix) {
+					this._views[0].setProjectionMatrix(cameraProjectionMatrix);
+				} else {
+					console.log('no projection camera', this._arKitWrapper.rawARData);
+				}
+			}
+		}, {
+			key: '_handleARKitInit',
+			value: function _handleARKitInit(ev) {
+				var _this3 = this;
+
+				setTimeout(function () {
+					_this3._arKitWrapper.watch({
+						location: true,
+						camera: true,
+						objects: true,
+						light_intensity: true
+					});
+				}, 1000);
+			}
+		}, {
+			key: '_createSession',
+			value: function _createSession(parameters) {
+				this._start();
+				return _get(FlatDisplay.prototype.__proto__ || Object.getPrototypeOf(FlatDisplay.prototype), '_createSession', this).call(this, parameters);
+			}
+		}, {
+			key: '_supportedCreationParameters',
+			value: function _supportedCreationParameters(parameters) {
+				return parameters.type === _XRSession2.default.AUGMENTATION && parameters.exclusive === false;
+			}
+
+			//attribute EventHandler ondeactivate; // FlatDisplay never deactivates
+
+		}]);
+
+		return FlatDisplay;
+	}(_XRDisplay3.default);
+
+	exports.default = FlatDisplay;
+
+	/***/
+},
+/* 30 */
+/***/function (module, exports, __webpack_require__) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+
+	var _createClass = function () {
+		function defineProperties(target, props) {
+			for (var i = 0; i < props.length; i++) {
+				var descriptor = props[i];descriptor.enumerable = descriptor.enumerable || false;descriptor.configurable = true;if ("value" in descriptor) descriptor.writable = true;Object.defineProperty(target, descriptor.key, descriptor);
+			}
+		}return function (Constructor, protoProps, staticProps) {
+			if (protoProps) defineProperties(Constructor.prototype, protoProps);if (staticProps) defineProperties(Constructor, staticProps);return Constructor;
+		};
+	}();
+
+	function _classCallCheck(instance, Constructor) {
+		if (!(instance instanceof Constructor)) {
+			throw new TypeError("Cannot call a class as a function");
+		}
+	}
+
+	var Euler = function () {
+		function Euler(x, y, z) {
+			var order = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : Euler.DefaultOrder;
+
+			_classCallCheck(this, Euler);
+
+			this.x = x;
+			this.y = y;
+			this.z = z;
+			this.order = order;
+		}
+
+		_createClass(Euler, [{
+			key: 'set',
+			value: function set(x, y, z) {
+				var order = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : Euler.DefaultOrder;
+
+				this.x = x;
+				this.y = y;
+				this.z = z;
+				this.order = order;
+			}
+		}, {
+			key: 'toArray',
+			value: function toArray() {
+				return [this.x, this.y, this.z];
+			}
+		}]);
+
+		return Euler;
+	}();
+
+	exports.default = Euler;
+
+	Euler.RotationOrders = ['XYZ', 'YZX', 'ZXY', 'XZY', 'YXZ', 'ZYX'];
+	Euler.DefaultOrder = 'XYZ';
+
+	/***/
+},
+/* 31 */
+/***/function (module, exports, __webpack_require__) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+
+	var _createClass = function () {
+		function defineProperties(target, props) {
+			for (var i = 0; i < props.length; i++) {
+				var descriptor = props[i];descriptor.enumerable = descriptor.enumerable || false;descriptor.configurable = true;if ("value" in descriptor) descriptor.writable = true;Object.defineProperty(target, descriptor.key, descriptor);
+			}
+		}return function (Constructor, protoProps, staticProps) {
+			if (protoProps) defineProperties(Constructor.prototype, protoProps);if (staticProps) defineProperties(Constructor, staticProps);return Constructor;
+		};
+	}();
+
+	var _XRDisplay2 = __webpack_require__(5);
+
+	var _XRDisplay3 = _interopRequireDefault(_XRDisplay2);
+
+	var _XRView = __webpack_require__(8);
+
+	var _XRView2 = _interopRequireDefault(_XRView);
+
+	var _XRSession = __webpack_require__(7);
+
+	var _XRSession2 = _interopRequireDefault(_XRSession);
+
+	var _XRViewPose = __webpack_require__(9);
+
+	var _XRViewPose2 = _interopRequireDefault(_XRViewPose);
+
+	var _MatrixMath = __webpack_require__(0);
+
+	var _MatrixMath2 = _interopRequireDefault(_MatrixMath);
+
+	var _Quaternion = __webpack_require__(1);
+
+	var _Quaternion2 = _interopRequireDefault(_Quaternion);
+
+	var _Vector = __webpack_require__(10);
+
+	var _Vector2 = _interopRequireDefault(_Vector);
+
+	var _DeviceOrientationTracker = __webpack_require__(16);
+
+	var _DeviceOrientationTracker2 = _interopRequireDefault(_DeviceOrientationTracker);
+
+	var _ARKitWrapper = __webpack_require__(11);
+
+	var _ARKitWrapper2 = _interopRequireDefault(_ARKitWrapper);
+
+	function _interopRequireDefault(obj) {
+		return obj && obj.__esModule ? obj : { default: obj };
+	}
+
+	function _toConsumableArray(arr) {
+		if (Array.isArray(arr)) {
+			for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) {
+				arr2[i] = arr[i];
+			}return arr2;
+		} else {
+			return Array.from(arr);
+		}
+	}
+
+	function _classCallCheck(instance, Constructor) {
+		if (!(instance instanceof Constructor)) {
+			throw new TypeError("Cannot call a class as a function");
+		}
+	}
+
+	function _possibleConstructorReturn(self, call) {
+		if (!self) {
+			throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
+		}return call && ((typeof call === 'undefined' ? 'undefined' : _typeof2(call)) === "object" || typeof call === "function") ? call : self;
+	}
+
+	function _inherits(subClass, superClass) {
+		if (typeof superClass !== "function" && superClass !== null) {
+			throw new TypeError("Super expression must either be null or a function, not " + (typeof superClass === 'undefined' ? 'undefined' : _typeof2(superClass)));
+		}subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } });if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;
+	}
+
+	/*
+ HeadMountedDisplay wraps a WebVR 1.1 display, like a Vive, Rift, or Daydream.
+ */
+	var HeadMountedDisplay = function (_XRDisplay) {
+		_inherits(HeadMountedDisplay, _XRDisplay);
+
+		function HeadMountedDisplay(xr, reality, vrDisplay) {
+			_classCallCheck(this, HeadMountedDisplay);
+
+			var _this = _possibleConstructorReturn(this, (HeadMountedDisplay.__proto__ || Object.getPrototypeOf(HeadMountedDisplay)).call(this, xr, vrDisplay.displayName, vrDisplay.capabilities.hasExternalDisplay, reality));
+
+			_this._vrDisplay = vrDisplay;
+			_this._vrFrameData = new VRFrameData();
+
+			// The view projection matrices will be reset using VRFrameData during this._handleNewFrame
+			_this._leftView = new _XRView2.default(_this._fov, _this._depthNear, _this._depthFar, _XRView2.default.LEFT);
+			_this._rightView = new _XRView2.default(_this._fov, _this._depthNear, _this._depthFar, _XRView2.default.RIGHT);
+			_this._views = [_this._leftView, _this._rightView];
+
+			// These will be used to set the head and eye level poses during this._handleNewFrame
+			_this._deviceOrientation = new _Quaternion2.default();
+			_this._devicePosition = new _Vector2.default();
+			_this._deviceWorldMatrix = new Float32Array(16);
+			return _this;
+		}
+
+		/*
+  Called via the XRSession.requestAnimationFrame
+  */
+
+		_createClass(HeadMountedDisplay, [{
+			key: '_requestAnimationFrame',
+			value: function _requestAnimationFrame(callback) {
+				if (this._vrDisplay.isPresenting) {
+					this._vrDisplay.requestAnimationFrame(callback);
+				} else {
+					window.requestAnimationFrame(callback);
+				}
+			}
+
+			/*
+   Called by a session to indicate that its baseLayer attribute has been set.
+   This is where the VRDisplay is used to create a session 
+   */
+
+		}, {
+			key: '_handleNewBaseLayer',
+			value: function _handleNewBaseLayer(baseLayer) {
+				var _this2 = this;
+
+				this._vrDisplay.requestPresent([{
+					source: baseLayer._context.canvas
+				}]).then(function () {
+					var leftEye = _this2._vrDisplay.getEyeParameters('left');
+					var rightEye = _this2._vrDisplay.getEyeParameters('right');
+					baseLayer._context.canvas.width = Math.max(leftEye.renderWidth, rightEye.renderWidth) * 2;
+					baseLayer._context.canvas.height = Math.max(leftEye.renderHeight, rightEye.renderHeight);
+					baseLayer._context.canvas.style.position = 'absolute';
+					baseLayer._context.canvas.style.bottom = '1px';
+					baseLayer._context.canvas.style.right = '1px';
+					document.body.appendChild(baseLayer._context.canvas);
+				}).catch(function (e) {
+					console.error('Unable to init WebVR 1.1 display', e);
+				});
+			}
+
+			/*
+   Called by a session before it hands a new XRPresentationFrame to the app
+   */
+
+		}, {
+			key: '_handleNewFrame',
+			value: function _handleNewFrame(frame) {
+				if (this._vrDisplay.isPresenting) {
+					this._updateFromVRFrameData();
+				}
+			}
+		}, {
+			key: '_handleAfterFrame',
+			value: function _handleAfterFrame(frame) {
+				if (this._vrDisplay.isPresenting) {
+					this._vrDisplay.submitFrame();
+				}
+			}
+		}, {
+			key: '_supportedCreationParameters',
+			value: function _supportedCreationParameters(parameters) {
+				return parameters.type === _XRSession2.default.REALITY && parameters.exclusive === true;
+			}
+		}, {
+			key: '_updateFromVRFrameData',
+			value: function _updateFromVRFrameData() {
+				this._vrDisplay.getFrameData(this._vrFrameData);
+				this._leftView.setProjectionMatrix(this._vrFrameData.leftProjectionMatrix);
+				this._rightView.setProjectionMatrix(this._vrFrameData.rightProjectionMatrix);
+				if (this._vrFrameData.pose) {
+					if (this._vrFrameData.pose.orientation) {
+						var _deviceOrientation;
+
+						(_deviceOrientation = this._deviceOrientation).set.apply(_deviceOrientation, _toConsumableArray(this._vrFrameData.pose.orientation));
+					}
+					if (this._vrFrameData.pose.position) {
+						var _devicePosition;
+
+						(_devicePosition = this._devicePosition).set.apply(_devicePosition, _toConsumableArray(this._vrFrameData.pose.position));
+					}
+					_MatrixMath2.default.mat4_fromRotationTranslation(this._deviceWorldMatrix, this._deviceOrientation.toArray(), this._devicePosition.toArray());
+					if (this._vrDisplay.stageParameters && this._vrDisplay.stageParameters.sittingToStandingTransform) {
+						_MatrixMath2.default.mat4_multiply(this._deviceWorldMatrix, this._vrDisplay.stageParameters.sittingToStandingTransform, this._deviceWorldMatrix);
+					}
+					this._headPose._setPoseModelMatrix(this._deviceWorldMatrix);
+					this._eyeLevelPose.position = this._devicePosition.toArray();
+				}
+			}
+		}]);
+
+		return HeadMountedDisplay;
+	}(_XRDisplay3.default);
+
+	exports.default = HeadMountedDisplay;
+
+	/***/
+},
+/* 32 */
+/***/function (module, exports, __webpack_require__) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+
+	var _createClass = function () {
+		function defineProperties(target, props) {
+			for (var i = 0; i < props.length; i++) {
+				var descriptor = props[i];descriptor.enumerable = descriptor.enumerable || false;descriptor.configurable = true;if ("value" in descriptor) descriptor.writable = true;Object.defineProperty(target, descriptor.key, descriptor);
+			}
+		}return function (Constructor, protoProps, staticProps) {
+			if (protoProps) defineProperties(Constructor.prototype, protoProps);if (staticProps) defineProperties(Constructor, staticProps);return Constructor;
+		};
+	}();
+
+	var _Reality2 = __webpack_require__(6);
+
+	var _Reality3 = _interopRequireDefault(_Reality2);
+
+	var _XRAnchor = __webpack_require__(3);
+
+	var _XRAnchor2 = _interopRequireDefault(_XRAnchor);
+
+	var _XRViewPose = __webpack_require__(9);
+
+	var _XRViewPose2 = _interopRequireDefault(_XRViewPose);
+
+	var _XRCoordinates = __webpack_require__(4);
+
+	var _XRCoordinates2 = _interopRequireDefault(_XRCoordinates);
+
+	var _XRAnchorOffset = __webpack_require__(12);
+
+	var _XRAnchorOffset2 = _interopRequireDefault(_XRAnchorOffset);
+
+	var _MatrixMath = __webpack_require__(0);
+
+	var _MatrixMath2 = _interopRequireDefault(_MatrixMath);
+
+	var _Quaternion = __webpack_require__(1);
+
+	var _Quaternion2 = _interopRequireDefault(_Quaternion);
+
+	var _ARKitWrapper = __webpack_require__(11);
+
+	var _ARKitWrapper2 = _interopRequireDefault(_ARKitWrapper);
+
+	var _ARCoreCameraRenderer = __webpack_require__(33);
+
+	var _ARCoreCameraRenderer2 = _interopRequireDefault(_ARCoreCameraRenderer);
+
+	function _interopRequireDefault(obj) {
+		return obj && obj.__esModule ? obj : { default: obj };
+	}
+
+	function _classCallCheck(instance, Constructor) {
+		if (!(instance instanceof Constructor)) {
+			throw new TypeError("Cannot call a class as a function");
+		}
+	}
+
+	function _possibleConstructorReturn(self, call) {
+		if (!self) {
+			throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
+		}return call && ((typeof call === 'undefined' ? 'undefined' : _typeof2(call)) === "object" || typeof call === "function") ? call : self;
+	}
+
+	function _inherits(subClass, superClass) {
+		if (typeof superClass !== "function" && superClass !== null) {
+			throw new TypeError("Super expression must either be null or a function, not " + (typeof superClass === 'undefined' ? 'undefined' : _typeof2(superClass)));
+		}subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } });if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;
+	}
+
+	/*
+ CameraReality displays the forward facing camera.
+ 
+ If this is running in the iOS ARKit wrapper app, the camera data will be displayed in a Metal layer below the WKWebKit layer.
+ If this is running in the Google ARCore Chrome application, it will create a canvas element and use the ARCore provided camera data.
+ If there is no ARKit or ARCore available, it will use WebRTC's MediaStream to render camera data into a canvas.
+ */
+	var CameraReality = function (_Reality) {
+		_inherits(CameraReality, _Reality);
+
+		function CameraReality(xr) {
+			_classCallCheck(this, CameraReality);
+
+			var _this = _possibleConstructorReturn(this, (CameraReality.__proto__ || Object.getPrototypeOf(CameraReality)).call(this, xr, 'Camera', true, true));
+
+			_this._initialized = false;
+			_this._running = false;
+
+			// These are used if we have access to ARKit
+			_this._arKitWrapper = null;
+
+			// These are used if we do not have access to ARKit
+			_this._mediaStream = null;
+			_this._videoEl = null;
+
+			// These are used if we're using the Google ARCore web app
+			_this._arCoreCameraRenderer = null;
+			_this._arCoreCanvas = null;
+			_this._elContext = null;
+			_this._vrDisplay = null;
+			_this._vrFrameData = null;
+
+			// Try to find a WebVR 1.1 display that supports Google's ARCore extensions
+			if (typeof navigator.getVRDisplays === 'function') {
+				navigator.getVRDisplays().then(function (displays) {
+					var _iteratorNormalCompletion = true;
+					var _didIteratorError = false;
+					var _iteratorError = undefined;
+
+					try {
+						for (var _iterator = displays[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+							var display = _step.value;
+
+							if (display === null) continue;
+							if (display.capabilities.hasPassThroughCamera) {
+								// This is the ARCore extension to WebVR 1.1
+								_this._vrDisplay = display;
+								_this._vrFrameData = new VRFrameData();
+								_this._arCoreCanvas = document.createElement('canvas');
+								_this._xr._realityEls.appendChild(_this._arCoreCanvas);
+								_this._arCoreCanvas.width = window.innerWidth;
+								_this._arCoreCanvas.height = window.innerHeight;
+								_this._elContext = _this._arCoreCanvas.getContext('webgl');
+								if (_this._elContext === null) {
+									throw 'Could not create CameraReality GL context';
+								}
+								window.addEventListener('resize', function () {
+									_this._arCoreCanvas.width = window.innerWidth;
+									_this._arCoreCanvas.height = window.innerHeight;
+								}, false);
+								break;
+							}
+						}
+					} catch (err) {
+						_didIteratorError = true;
+						_iteratorError = err;
+					} finally {
+						try {
+							if (!_iteratorNormalCompletion && _iterator.return) {
+								_iterator.return();
+							}
+						} finally {
+							if (_didIteratorError) {
+								throw _iteratorError;
+							}
+						}
+					}
+				});
+			}
+			return _this;
+		}
+
+		/*
+  Called by a session before it hands a new XRPresentationFrame to the app
+  */
+
+		_createClass(CameraReality, [{
+			key: '_handleNewFrame',
+			value: function _handleNewFrame(frame) {
+				if (this._arCoreCameraRenderer) {
+					this._arCoreCameraRenderer.render();
+					this._vrDisplay.getFrameData(this._vrFrameData);
+				}
+
+				// TODO update the anchor positions using ARCore or ARKit
+			}
+		}, {
+			key: '_start',
+			value: function _start() {
+				var _this2 = this;
+
+				if (this._running) return;
+				this._running = true;
+
+				if (this._vrDisplay !== null) {
+					// Using ARCore
+					this._arCoreCameraRenderer = new _ARCoreCameraRenderer2.default(this._vrDisplay, this._elContext);
+					this._initialized = true;
+				} else if (_ARKitWrapper2.default.HasARKit()) {
+					// Using ARKit
+					if (this._initialized === false) {
+						this._initialized = true;
+						this._arKitWrapper = _ARKitWrapper2.default.GetOrCreate();
+						this._arKitWrapper.addEventListener(_ARKitWrapper2.default.WATCH_EVENT, this._handleARKitWatch.bind(this));
+						this._arKitWrapper.waitForInit().then(function () {
+							_this2._arKitWrapper.watch();
+						});
+					} else {
+						this._arKitWrapper.watch();
+					}
+				} else {
+					// Using WebRTC
+					if (this._initialized === false) {
+						this._initialized = true;
+						navigator.mediaDevices.getUserMedia({
+							audio: false,
+							video: { facingMode: "environment" }
+						}).then(function (stream) {
+							_this2._videoEl = document.createElement('video');
+							_this2._xr._realityEls.appendChild(_this2._videoEl);
+							_this2._videoEl.setAttribute('class', 'camera-reality-video');
+							_this2._videoEl.setAttribute('playsinline', true);
+							_this2._videoEl.style.width = '100%';
+							_this2._videoEl.style.height = '100%';
+							_this2._videoEl.srcObject = stream;
+							_this2._videoEl.play();
+						}).catch(function (err) {
+							console.error('Could not set up video stream', err);
+							_this2._initialized = false;
+							_this2._running = false;
+						});
+					} else {
+						this._videoEl.play();
+					}
+				}
+			}
+		}, {
+			key: '_stop',
+			value: function _stop() {
+				if (_ARKitWrapper2.default.HasARKit()) {
+					if (this._arKitWrapper === null) {
+						return;
+					}
+					this._arKitWrapper.stop();
+				} else if (this._videoEl !== null) {
+					this._videoEl.pause();
+				}
+			}
+		}, {
+			key: '_handleARKitWatch',
+			value: function _handleARKitWatch(ev) {
+				if (ev.detail && ev.detail.objects) {
+					var _iteratorNormalCompletion2 = true;
+					var _didIteratorError2 = false;
+					var _iteratorError2 = undefined;
+
+					try {
+						for (var _iterator2 = ev.detail.objects[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+							var anchorInfo = _step2.value;
+
+							this._updateAnchorFromARKitUpdate(anchorInfo.uuid, anchorInfo);
+						}
+					} catch (err) {
+						_didIteratorError2 = true;
+						_iteratorError2 = err;
+					} finally {
+						try {
+							if (!_iteratorNormalCompletion2 && _iterator2.return) {
+								_iterator2.return();
+							}
+						} finally {
+							if (_didIteratorError2) {
+								throw _iteratorError2;
+							}
+						}
+					}
+				}
+			}
+		}, {
+			key: '_handleARKitAddObject',
+			value: function _handleARKitAddObject(anchorInfo) {
+				this._updateAnchorFromARKitUpdate(anchorInfo.uuid, anchorInfo);
+			}
+		}, {
+			key: '_updateAnchorFromARKitUpdate',
+			value: function _updateAnchorFromARKitUpdate(uid, anchorInfo) {
+				var anchor = this._anchors.get(uid) || null;
+				if (anchor === null) {
+					console.log('unknown anchor', anchor);
+					return;
+				}
+				// This assumes that the anchor's coordinates are in the tracker coordinate system
+				anchor.coordinates.poseMatrix = anchorInfo.transform;
+			}
+		}, {
+			key: '_addAnchor',
+			value: function _addAnchor(anchor, display) {
+				var _this3 = this;
+
+				// Convert coordinates to the tracker coordinate system so that updating from ARKit transforms is simple
+				anchor.coordinates = anchor.coordinates.getTransformedCoordinates(display._trackerCoordinateSystem);
+				if (this._arKitWrapper !== null) {
+					this._arKitWrapper.addAnchor(anchor.uid, anchor.coordinates.poseMatrix).then(function (detail) {
+						return _this3._handleARKitAddObject(detail);
+					});
+				}
+				// ARCore as implemented in the browser does not offer anchors except on a surface, so we just use untracked anchors
+				this._anchors.set(anchor.uid, anchor);
+				return anchor.uid;
+			}
+
+			/*
+   Creates an anchor offset relative to a surface, as found by a ray
+   normalized screen x and y are in range 0..1, with 0,0 at top left and 1,1 at bottom right
+   returns a Promise that resolves either to an AnchorOffset with the first hit result or null if the hit test failed
+   */
+
+		}, {
+			key: '_findAnchor',
+			value: function _findAnchor(normalizedScreenX, normalizedScreenY, display) {
+				var _this4 = this;
+
+				return new Promise(function (resolve, reject) {
+					if (_this4._arKitWrapper !== null) {
+						// Perform a hit test using the ARKit integration
+						_this4._arKitWrapper.hitTest(normalizedScreenX, normalizedScreenY, _ARKitWrapper2.default.HIT_TEST_TYPE_EXISTING_PLANES).then(function (hits) {
+							if (hits.length === 0) {
+								resolve(null);
+								console.log('miss');
+								return;
+							}
+							var hit = _this4._pickARKitHit(hits);
+							hit.anchor_transform[13] += _XRViewPose2.default.SITTING_EYE_HEIGHT;
+							hit.world_transform[13] += _XRViewPose2.default.SITTING_EYE_HEIGHT;
+
+							// Use the first hit to create an XRAnchorOffset, creating the XRAnchor as necessary
+
+							// TODO use XRPlaneAnchor for anchors with extents
+
+							var anchor = _this4._getAnchor(hit.uuid);
+							if (anchor === null) {
+								var anchorCoordinates = new _XRCoordinates2.default(display, display._trackerCoordinateSystem);
+								anchorCoordinates.poseMatrix = hit.anchor_transform;
+								anchor = new _XRAnchor2.default(anchorCoordinates, hit.uuid);
+								_this4._anchors.set(anchor.uid, anchor);
+							}
+
+							var offsetPosition = [hit.world_transform[12] - hit.anchor_transform[12], hit.world_transform[13] - hit.anchor_transform[13], hit.world_transform[14] - hit.anchor_transform[14]];
+							var worldRotation = new _Quaternion2.default().setFromRotationMatrix(hit.world_transform);
+							var inverseAnchorRotation = new _Quaternion2.default().setFromRotationMatrix(hit.anchor_transform).inverse();
+							var offsetRotation = new _Quaternion2.default().multiplyQuaternions(worldRotation, inverseAnchorRotation);
+							var anchorOffset = new _XRAnchorOffset2.default(anchor.uid);
+							anchorOffset.poseMatrix = _MatrixMath2.default.mat4_fromRotationTranslation(new Float32Array(16), offsetRotation.toArray(), offsetPosition);
+							resolve(anchorOffset);
+						});
+					} else if (_this4._vrDisplay !== null) {
+						// Perform a hit test using the ARCore data
+						var hits = _this4._vrDisplay.hitTest(normalizedScreenX, normalizedScreenY);
+						if (hits.length == 0) {
+							resolve(null);
+							return;
+						}
+						hits.sort(function (a, b) {
+							return a.distance - b.distance;
+						});
+						var anchor = _this4._getAnchor(hits[0].uuid);
+						if (anchor === null) {
+							var coordinates = new _XRCoordinates2.default(display, display._trackerCoordinateSystem);
+							coordinates.poseMatrix = hits[0].modelMatrix;
+							coordinates._poseMatrix[13] += _XRViewPose2.default.SITTING_EYE_HEIGHT;
+							anchor = new _XRAnchor2.default(coordinates);
+							_this4._anchors.set(anchor.uid, anchor);
+						}
+						resolve(new _XRAnchorOffset2.default(anchor.uid));
+					} else {
+						resolve(null); // No platform support for finding anchors
+					}
+				});
+			}
+		}, {
+			key: '_removeAnchor',
+			value: function _removeAnchor(uid) {
+				// returns void
+				// TODO talk to ARKit to delete an anchor
+				this._anchors.delete(uid);
+			}
+		}, {
+			key: '_pickARKitHit',
+			value: function _pickARKitHit(data) {
+				if (data.length === 0) return null;
+				var info = null;
+
+				var planeResults = data.filter(function (hitTestResult) {
+					return hitTestResult.type != _ARKitWrapper2.default.HIT_TEST_TYPE_FEATURE_POINT;
+				});
+				var planeExistingUsingExtentResults = planeResults.filter(function (hitTestResult) {
+					return hitTestResult.type == _ARKitWrapper2.default.HIT_TEST_TYPE_EXISTING_PLANE_USING_EXTENT;
+				});
+				var planeExistingResults = planeResults.filter(function (hitTestResult) {
+					return hitTestResult.type == _ARKitWrapper2.default.HIT_TEST_TYPE_EXISTING_PLANE;
+				});
+
+				if (planeExistingUsingExtentResults.length) {
+					// existing planes using extent first
+					planeExistingUsingExtentResults = planeExistingUsingExtentResults.sort(function (a, b) {
+						return a.distance - b.distance;
+					});
+					info = planeExistingUsingExtentResults[0];
+				} else if (planeExistingResults.length) {
+					// then other existing planes
+					planeExistingResults = planeExistingResults.sort(function (a, b) {
+						return a.distance - b.distance;
+					});
+					info = planeExistingResults[0];
+				} else if (planeResults.length) {
+					// other types except feature points
+					planeResults = planeResults.sort(function (a, b) {
+						return a.distance - b.distance;
+					});
+					info = planeResults[0];
+				} else {
+					// feature points if any
+					info = data[0];
+				}
+				return info;
+			}
+		}]);
+
+		return CameraReality;
+	}(_Reality3.default);
+
+	exports.default = CameraReality;
+
+	/***/
+},
+/* 33 */
+/***/function (module, exports, __webpack_require__) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+
+	var _createClass = function () {
+		function defineProperties(target, props) {
+			for (var i = 0; i < props.length; i++) {
+				var descriptor = props[i];descriptor.enumerable = descriptor.enumerable || false;descriptor.configurable = true;if ("value" in descriptor) descriptor.writable = true;Object.defineProperty(target, descriptor.key, descriptor);
+			}
+		}return function (Constructor, protoProps, staticProps) {
+			if (protoProps) defineProperties(Constructor.prototype, protoProps);if (staticProps) defineProperties(Constructor, staticProps);return Constructor;
+		};
+	}();
+
+	function _classCallCheck(instance, Constructor) {
+		if (!(instance instanceof Constructor)) {
+			throw new TypeError("Cannot call a class as a function");
+		}
+	}
+
+	/*
+  * Copyright 2017 Google Inc. All Rights Reserved.
+  * Licensed under the Apache License, Version 2.0 (the 'License')
+  * you may not use this file except in compliance with the License.
+  * You may obtain a copy of the License at
+  *
+  *     http://www.apache.org/licenses/LICENSE-2.0
+  *
+  * Unless required by applicable law or agreed to in writing, software
+  * distributed under the License is distributed on an 'AS IS' BASIS,
+  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  */
+
+	var fragmentSource = '#extension GL_OES_EGL_image_external : require\n\nprecision mediump float;\n\nvarying vec2 vTextureCoord;\n\nuniform samplerExternalOES uSampler;\n\nvoid main(void) {\n  gl_FragColor = texture2D(uSampler, vTextureCoord);\n}';
+
+	var vertexSource = 'attribute vec3 aVertexPosition;\nattribute vec2 aTextureCoord;\n\nvarying vec2 vTextureCoord;\n\nvoid main(void) {\n  gl_Position = vec4(aVertexPosition, 1.0);\n  vTextureCoord = aTextureCoord;\n}';
+
+	/**
+  * Creates and load a shader from a string, type specifies either 'vertex' or 'fragment'
+  *
+  * @param {WebGLRenderingContext} gl
+  * @param {string} str
+  * @param {string} type
+  * @return {!WebGLShader}
+  */
+	function getShader(gl, str, type) {
+		if (type == 'fragment') {
+			var shader = gl.createShader(gl.FRAGMENT_SHADER);
+		} else if (type == 'vertex') {
+			var shader = gl.createShader(gl.VERTEX_SHADER);
+		} else {
+			return null;
+		}
+
+		gl.shaderSource(shader, str);
+		gl.compileShader(shader);
+
+		var result = gl.getShaderParameter(shader, gl.COMPILE_STATUS);
+		if (!result) {
+			console.error(gl.getShaderInfoLog(shader));
+			return null;
+		}
+
+		return shader;
+	}
+
+	/**
+  * Creates a shader program from vertex and fragment shader sources
+  *
+  * @param {WebGLRenderingContext} gl
+  * @param {string} vs
+  * @param {string} fs
+  * @return {!WebGLProgram}
+  */
+	function getProgram(gl, vs, fs) {
+		var vertexShader = getShader(gl, vs, 'vertex');
+		var fragmentShader = getShader(gl, fs, 'fragment');
+		if (!fragmentShader) {
+			return null;
+		}
+
+		var shaderProgram = gl.createProgram();
+		gl.attachShader(shaderProgram, vertexShader);
+		gl.attachShader(shaderProgram, fragmentShader);
+		gl.linkProgram(shaderProgram);
+
+		var result = gl.getProgramParameter(shaderProgram, gl.LINK_STATUS);
+		if (!result) {
+			console.error('Could not initialise arview shaders');
+		}
+
+		return shaderProgram;
+	}
+
+	/**
+  * Calculate the correct orientation depending on the device and the camera
+  * orientations.
+  *
+  * @param {number} screenOrientation
+  * @param {number} seeThroughCameraOrientation
+  * @return {number}
+  */
+	function combineOrientations(screenOrientation, seeThroughCameraOrientation) {
+		var seeThroughCameraOrientationIndex = 0;
+		switch (seeThroughCameraOrientation) {
+			case 90:
+				seeThroughCameraOrientationIndex = 1;
+				break;
+			case 180:
+				seeThroughCameraOrientationIndex = 2;
+				break;
+			case 270:
+				seeThroughCameraOrientationIndex = 3;
+				break;
+			default:
+				seeThroughCameraOrientationIndex = 0;
+				break;
+		}
+		var screenOrientationIndex = 0;
+		switch (screenOrientation) {
+			case 90:
+				screenOrientationIndex = 1;
+				break;
+			case 180:
+				screenOrientationIndex = 2;
+				break;
+			case 270:
+				screenOrientationIndex = 3;
+				break;
+			default:
+				screenOrientationIndex = 0;
+				break;
+		}
+		var ret = screenOrientationIndex - seeThroughCameraOrientationIndex;
+		if (ret < 0) {
+			ret += 4;
+		}
+		return ret % 4;
+	}
+
+	/**
+  * Renders the ar camera's video texture
+  */
+
+	var ARVideoRenderer = function () {
+		/**
+   * @param {VRDisplay} vrDisplay
+   * @param {WebGLRenderingContext} gl
+   */
+		function ARVideoRenderer(vrDisplay, gl) {
+			_classCallCheck(this, ARVideoRenderer);
+
+			this.vrDisplay = vrDisplay;
+			this.gl = gl;
+			this.passThroughCamera = vrDisplay.getPassThroughCamera();
+			this.program = getProgram(gl, vertexSource, fragmentSource);
+
+			gl.useProgram(this.program);
+
+			// Setup a quad
+			this.vertexPositionAttribute = gl.getAttribLocation(this.program, 'aVertexPosition');
+			this.textureCoordAttribute = gl.getAttribLocation(this.program, 'aTextureCoord');
+
+			this.samplerUniform = gl.getUniformLocation(this.program, 'uSampler');
+
+			this.vertexPositionBuffer = gl.createBuffer();
+			gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexPositionBuffer);
+			var vertices = [-1.0, 1.0, 0.0, -1.0, -1.0, 0.0, 1.0, 1.0, 0.0, 1.0, -1.0, 0.0];
+			var f32Vertices = new Float32Array(vertices);
+			gl.bufferData(gl.ARRAY_BUFFER, f32Vertices, gl.STATIC_DRAW);
+			this.vertexPositionBuffer.itemSize = 3;
+			this.vertexPositionBuffer.numItems = 12;
+
+			this.textureCoordBuffer = gl.createBuffer();
+			gl.bindBuffer(gl.ARRAY_BUFFER, this.textureCoordBuffer);
+			// Precalculate different texture UV coordinates depending on the possible
+			// orientations of the device depending if there is a VRDisplay or not
+			var textureCoords = null;
+			if (this.vrDisplay) {
+				var u = this.passThroughCamera.width / this.passThroughCamera.textureWidth;
+				var v = this.passThroughCamera.height / this.passThroughCamera.textureHeight;
+				textureCoords = [[0.0, 0.0, 0.0, v, u, 0.0, u, v], [u, 0.0, 0.0, 0.0, u, v, 0.0, v], [u, v, u, 0.0, 0.0, v, 0.0, 0.0], [0.0, v, u, v, 0.0, 0.0, u, 0.0]];
+			} else {
+				textureCoords = [[0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 1.0, 1.0], [1.0, 0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 1.0], [1.0, 1.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0], [0.0, 1.0, 1.0, 1.0, 0.0, 0.0, 1.0, 0.0]];
+			}
+
+			this.f32TextureCoords = [];
+			for (var i = 0; i < textureCoords.length; i++) {
+				this.f32TextureCoords.push(new Float32Array(textureCoords[i]));
+			}
+			// Store the current combined orientation to check if it has changed
+			// during the update calls and use the correct texture coordinates.
+			this.combinedOrientation = combineOrientations(screen.orientation.angle, this.passThroughCamera.orientation);
+
+			gl.bufferData(gl.ARRAY_BUFFER, this.f32TextureCoords[this.combinedOrientation], gl.STATIC_DRAW);
+			this.textureCoordBuffer.itemSize = 2;
+			this.textureCoordBuffer.numItems = 8;
+			gl.bindBuffer(gl.ARRAY_BUFFER, null);
+
+			this.indexBuffer = gl.createBuffer();
+			gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
+			var indices = [0, 1, 2, 2, 1, 3];
+			var ui16Indices = new Uint16Array(indices);
+			gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, ui16Indices, gl.STATIC_DRAW);
+			this.indexBuffer.itemSize = 1;
+			this.indexBuffer.numItems = 6;
+			gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
+
+			this.texture = gl.createTexture();
+			gl.useProgram(null);
+
+			// The projection matrix will be based on an identify orthographic camera
+			this.projectionMatrix = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
+			this.mvMatrix = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
+			return this;
+		}
+
+		/**
+   * Renders the quad
+   */
+
+		_createClass(ARVideoRenderer, [{
+			key: 'render',
+			value: function render() {
+				var gl = this.gl;
+				gl.useProgram(this.program);
+				gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexPositionBuffer);
+				gl.enableVertexAttribArray(this.vertexPositionAttribute);
+				gl.vertexAttribPointer(this.vertexPositionAttribute, this.vertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
+
+				gl.bindBuffer(gl.ARRAY_BUFFER, this.textureCoordBuffer);
+
+				// Check the current orientation of the device combined with the
+				// orientation of the VRSeeThroughCamera to determine the correct UV
+				// coordinates to be used.
+				var combinedOrientation = combineOrientations(screen.orientation.angle, this.passThroughCamera.orientation);
+				if (combinedOrientation !== this.combinedOrientation) {
+					this.combinedOrientation = combinedOrientation;
+					gl.bufferData(gl.ARRAY_BUFFER, this.f32TextureCoords[this.combinedOrientation], gl.STATIC_DRAW);
+				}
+				gl.enableVertexAttribArray(this.textureCoordAttribute);
+				gl.vertexAttribPointer(this.textureCoordAttribute, this.textureCoordBuffer.itemSize, gl.FLOAT, false, 0, 0);
+
+				gl.activeTexture(gl.TEXTURE0);
+				gl.bindTexture(gl.TEXTURE_EXTERNAL_OES, this.texture);
+				// Update the content of the texture in every frame.
+				gl.texImage2D(gl.TEXTURE_EXTERNAL_OES, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, this.passThroughCamera);
+				gl.uniform1i(this.samplerUniform, 0);
+
+				gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
+
+				gl.drawElements(gl.TRIANGLES, this.indexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
+
+				// Disable enabled states to allow other render calls to correctly work
+				gl.bindTexture(gl.TEXTURE_EXTERNAL_OES, null);
+				gl.disableVertexAttribArray(this.vertexPositionAttribute);
+				gl.disableVertexAttribArray(this.textureCoordAttribute);
+				gl.bindBuffer(gl.ARRAY_BUFFER, null);
+				gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
+				gl.useProgram(null);
+			}
+		}]);
+
+		return ARVideoRenderer;
+	}();
+
+	/**
+  * A helper class that takes a VRDisplay with AR capabilities
+  * and renders the see through camera to the passed in WebGL context.
+  */
+
+	var ARCoreCameraRenderer = function () {
+		function ARCoreCameraRenderer(vrDisplay, gl) {
+			_classCallCheck(this, ARCoreCameraRenderer);
+
+			this.vrDisplay = vrDisplay;
+			this.gl = gl;
+
+			this.videoRenderer = new ARVideoRenderer(vrDisplay, this.gl);
+
+			// Cache the width/height so we're not potentially forcing
+			// a reflow if there's been a style invalidation
+			this.width = window.innerWidth;
+			this.height = window.innerHeight;
+			window.addEventListener('resize', this.onWindowResize.bind(this), false);
+		}
+
+		/**
+   * Updates the stored width/height of window on resize.
+   */
+
+		_createClass(ARCoreCameraRenderer, [{
+			key: 'onWindowResize',
+			value: function onWindowResize() {
+				this.width = window.innerWidth;
+				this.height = window.innerHeight;
+			}
+
+			/**
+    * Renders the see through camera to the passed in gl context
+    */
+
+		}, {
+			key: 'render',
+			value: function render() {
+				var gl = this.gl;
+				var dpr = 1;
+				var width = this.width * dpr;
+				var height = this.height * dpr;
+
+				if (gl.viewportWidth !== width) {
+					gl.viewportWidth = width;
+				}
+
+				if (gl.viewportHeight !== height) {
+					gl.viewportHeight = height;
+				}
+
+				this.gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
+				this.videoRenderer.render();
+			}
+		}]);
+
+		return ARCoreCameraRenderer;
+	}();
+
+	exports.default = ARCoreCameraRenderer;
+
+	/***/
+}]
+/******/);
+
+/***/ })
+/******/ ]);
