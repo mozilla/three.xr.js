@@ -1,4 +1,8 @@
 # three.xr.js
+
+[![Version](http://img.shields.io/npm/v/three.xr.js.svg?style=flat-square)](https://npmjs.org/package/three.xr.js)
+[![License](http://img.shields.io/npm/l/three.xr.js.svg?style=flat-square)](https://npmjs.org/package/three.xr.js)
+
 Library to build [WebXR](https://github.com/mozilla/webxr-api) experiences with [three.js](https://github.com/mrdoob/three.js)
 
 ## Running the examples
@@ -11,9 +15,17 @@ $ npm start
 
 ## Supported browsers
 
+### AR
+
   - ARKit: Mozilla's [ARKit based iOS app](https://github.com/mozilla/webxr-ios)
   - ARCore: Google's [WebARonARCore Android app](https://github.com/google-ar/WebARonARCore)
 
+### VR
+
+  - Daydream: [Chrome for Android](https://webvr.rocks/chrome_for_android)
+  - Gear VR: [Oculus Browser](https://webvr.rocks/oculus_browser)
+  - HTC Vive / Oculus Rift: [Firefox](https://webvr.rocks/firefox)
+  - Windows Mixed Reality: [Microsoft Edge](https://webvr.rocks/microsoft_edge)
 
 ## Usage
 

@@ -16,6 +16,8 @@ THREE.WebXRManager = function( xrDisplays, renderer, camera, scene, updateCallba
 	var requestedFloor = false;
 	var floorGroup = new THREE.Group();
 
+	var devicePixelRatio = window.devicePixelRatio;
+
 	// an array of info that we'll use in _handleFrame to update the nodes using anchors
 	var anchoredNodes = [] // { XRAnchorOffset, Three.js Object3D }
 
@@ -68,7 +70,8 @@ THREE.WebXRManager = function( xrDisplays, renderer, camera, scene, updateCallba
 				// Set up the renderer to the XRView's viewport and then render
 				this.renderer.clearDepth();
 				const viewport = view.getViewport(this.session.baseLayer);
-				this.renderer.setViewport(viewport.x / window.devicePixelRatio, viewport.y / window.devicePixelRatio, viewport.width / window.devicePixelRatio, viewport.height / window.devicePixelRatio);
+				this.renderer.setViewport(viewport.x / devicePixelRatio, viewport.y / devicePixelRatio, viewport.width / devicePixelRatio, viewport.height / devicePixelRatio);
+				console.log(this.renderer.context);
 				this.doRender();
 			}
 		}else{
@@ -175,15 +178,18 @@ THREE.WebXRManager = function( xrDisplays, renderer, camera, scene, updateCallba
 			console.error('Can not start presenting without a session');
 			throw new Error('Can not start presenting without a session');
 		}
-		this.renderer.xr.sessionActive = true;
-		// Set the session's base layer into which the app will render
-		this.session.baseLayer = new XRWebGLLayer(this.session, renderer.context);
-		
-		// Handle layer focus events
-		this.session.baseLayer.addEventListener('focus', ev => { this.handleLayerFocus(ev) });
-		this.session.baseLayer.addEventListener('blur', ev => { this.handleLayerBlur(ev) });
 
-		this.session.requestFrame(boundHandleFrame);
+		if(!this.renderer.xr.sessionActive){
+			// Set the session's base layer into which the app will render
+			this.session.baseLayer = new XRWebGLLayer(this.session, renderer.context);
+			
+			// Handle layer focus events
+			this.session.baseLayer.addEventListener('focus', ev => { this.handleLayerFocus(ev) });
+			this.session.baseLayer.addEventListener('blur', ev => { this.handleLayerBlur(ev) });
+
+			this.session.requestFrame(boundHandleFrame);
+		}
+		this.renderer.xr.sessionActive = true;
 	}
 
 	this.stopPresenting = function () {
