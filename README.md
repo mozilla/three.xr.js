@@ -62,7 +62,12 @@ function init(displays) {
 
   // Init WebXR
   xr = new THREE.WebXRManager(xrDisplays, renderer, camera, scene, update);
+
+  // Only for AR (start an AR session that is presenting automatically)
   xr.startSession( false, true );
+
+  // Only for VR (start an VR session that is NOT presenting automatically)
+  xr.startSession( true, false );
 }
 
 function onWindowResize() {
@@ -73,4 +78,7 @@ function onWindowResize() {
 function update(frame) {
 
 }
+
+// Only for VR (Add this into a click event of a 'enter VR' button)
+renderer.xr.startPresenting();
 ```
