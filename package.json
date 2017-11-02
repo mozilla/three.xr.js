@@ -5,7 +5,7 @@
   "scripts": {
     "build": "cross-env NODE_ENV=production webpack",
     "dev": "webpack",
-    "start": "webpack-dev-server --https --host 0.0.0.0",
+    "start": "webpack-dev-server --host 0.0.0.0",
     "lint": "semistandard -v | snazzy"
   },
   "repository": "https://github.com/arturitu/three.xr.js",

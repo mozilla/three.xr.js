@@ -1,5 +1,5 @@
 # three.xr.js
-Extra classes to make it work WebXR API with three.js
+Library to build [WebXR](https://github.com/mozilla/webxr-api) experiences with [three.js](https://github.com/mrdoob/three.js)
 
 ## Running the examples
 <a href="https://docs.npmjs.com/getting-started/installing-node">Install npm</a> and then run the following:
@@ -15,16 +15,15 @@ $ npm start
   - ARCore: Google's [WebARonARCore Android app](https://github.com/google-ar/WebARonARCore)
 
 
-## Script
+## Usage
 
-You need to have loaded:
+Include three.xr.js after THREE.js:
 ```html
 <script src='three.js'></script>
-<script src='webxr-polyfill.js'></script>
 <script src='three.xr.js'></script>
 ```
 
-And after that, to use a script like this:
+In your application code you can do:
 ```js
 THREE.WebXRUtils.getDisplays().then(init);
 
