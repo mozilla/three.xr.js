@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title>three.xr.js AR simplest example</title>
+    <title>three.xr.js VR simplest example</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
     <style>
@@ -13,12 +13,27 @@
         -webkit-user-select: none;
         user-select: none;
       }
+      #target {
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        z-index: 100;
+      }
+      .enter-vr-button {
+        position: absolute;
+        bottom: 20px;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 2em;
+        padding: 10px;
+      }
     </style>
   </head>
   <body>
-    <script src="../../vendor/three.js"></script>
-    <script src="../../vendor/webxr-polyfill.js"></script>
-    <script src='../../three.xr.js'></script>
+    <script src="../../../vendor/three.js"></script>
+    <script src="../../../vendor/webxr-polyfill.js"></script>
+    <script src='../../../three.xr.js'></script>
+    <div id="target" />
     <script>
       var clock = new THREE.Clock();
 
@@ -27,6 +42,8 @@
       var xrDisplays;
 
       var cube;
+
+      var enterVRButton = document.createElement('button');
 
       THREE.WebXRUtils.getDisplays().then(init);
 
@@ -56,7 +73,7 @@
         onWindowResize();
 
         renderer.xr = new THREE.WebXRManager(xrDisplays, renderer, camera, scene, update);
-        renderer.xr.startSession( false, true );
+        renderer.xr.startSession( true, false );
       }
 
       function onWindowResize() {
@@ -66,9 +83,30 @@
 
       // Called once per frame, before render, to give the app a chance to update this.scene
       function update(frame) {
-        // var delta = clock.getDelta() * 60;
-        // cube.rotation.y += delta * 0.01;
+        var delta = clock.getDelta() * 60;
+        cube.rotation.y += delta * 0.01;
       }
+
+      window.addEventListener('vrdisplaypresentchange', (evt) => {
+          // Polyfill places display inside the detail property
+          var display = evt.display || evt.detail.display;
+          if (!display.isPresenting) {
+            // Exiting VR.
+            renderer.xr.stopPresenting();
+            document.getElementById('target').style.display = 'block';
+          }
+      });
+
+      window.addEventListener('DOMContentLoaded', () => {
+        // HMDs require the call to start presenting to occur due to a user input event, so make a button to trigger that
+        enterVRButton.setAttribute('class', 'enter-vr-button');
+        document.getElementById('target').appendChild(enterVRButton);
+        enterVRButton.innerHTML = 'Enter VR';
+        enterVRButton.addEventListener('click', ev => {
+          renderer.xr.startPresenting();
+          document.getElementById('target').style.display = 'none';
+        })
+      });
     </script>
   </body>
 </html>

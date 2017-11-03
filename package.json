@@ -1,7 +1,7 @@
 {
   "name": "three.xr.js",
   "version": "0.0.1",
-  "description": "three.xr.js",
+  "description": "Library to build WebXR experiences with three.js",
   "main": "dist/three.xr.js",
   "scripts": {
     "build": "cross-env NODE_ENV=production webpack",
