@@ -71,7 +71,6 @@ THREE.WebXRManager = function( xrDisplays, renderer, camera, scene, updateCallba
 				this.renderer.clearDepth();
 				const viewport = view.getViewport(this.session.baseLayer);
 				this.renderer.setViewport(viewport.x / devicePixelRatio, viewport.y / devicePixelRatio, viewport.width / devicePixelRatio, viewport.height / devicePixelRatio);
-				console.log(this.renderer.context);
 				this.doRender();
 			}
 		}else{
