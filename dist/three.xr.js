@@ -180,45 +180,29 @@ THREE.WebXRManager = function (xrDisplays, renderer, camera, scene, updateCallba
 
 		if (this.renderer.xr.sessionActive) {
 			// Render each view into this.session.baseLayer.context
-			var _iteratorNormalCompletion2 = true;
-			var _didIteratorError2 = false;
-			var _iteratorError2 = undefined;
-
-			try {
-				for (var _iterator2 = frame.views[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-					var view = _step2.value;
-
-					this.camera.projectionMatrix.fromArray(view.projectionMatrix);
-					if (this.camera.parent && this.camera.parent.type !== 'Scene') {
-						this.camera.parent.matrixAutoUpdate = false;
-						this.camera.parent.matrix.fromArray(headPose.poseModelMatrix);
-						this.camera.parent.updateMatrixWorld(true);
-					} else {
-						this.camera.matrixAutoUpdate = false;
-						// Each XRView has its own projection matrix, so set the camera to use that
-						this.camera.matrix.fromArray(headPose.poseModelMatrix);
-						this.camera.updateMatrixWorld(true);
-					}
-
-					// Set up the renderer to the XRView's viewport and then render
-					this.renderer.clearDepth();
-					var viewport = view.getViewport(this.session.baseLayer);
-					this.renderer.setViewport(viewport.x / devicePixelRatio, viewport.y / devicePixelRatio, viewport.width / devicePixelRatio, viewport.height / devicePixelRatio);
-					this.doRender();
+			// for(const view of frame.views){
+			for (var i = 0; i < frame.views.length; i++) {
+				var view = frame.views[i];
+				this.camera.projectionMatrix.fromArray(view.projectionMatrix);
+				if (this.camera.parent && this.camera.parent.type !== 'Scene') {
+					this.camera.parent.matrixAutoUpdate = false;
+					this.camera.parent.matrix.fromArray(headPose.poseModelMatrix);
+					this.camera.parent.updateMatrixWorld(true);
+				} else {
+					this.camera.matrixAutoUpdate = false;
+					// Each XRView has its own projection matrix, so set the camera to use that
+					this.camera.matrix.fromArray(headPose.poseModelMatrix);
+					this.camera.updateMatrixWorld(true);
 				}
-			} catch (err) {
-				_didIteratorError2 = true;
-				_iteratorError2 = err;
-			} finally {
-				try {
-					if (!_iteratorNormalCompletion2 && _iterator2.return) {
-						_iterator2.return();
-					}
-				} finally {
-					if (_didIteratorError2) {
-						throw _iteratorError2;
-					}
+
+				// Set up the renderer to the XRView's viewport and then render
+				this.renderer.clearDepth();
+				var viewport = view.getViewport(this.session.baseLayer);
+				this.renderer.setViewport(viewport.x / devicePixelRatio, viewport.y / devicePixelRatio, viewport.width / devicePixelRatio, viewport.height / devicePixelRatio);
+				if (frame.views.length === 1) {
+					this.camera.updateProjectionMatrix();
 				}
+				this.doRender();
 			}
 		} else {
 			if (this.camera.parent && this.camera.parent.type !== 'Scene') {
@@ -264,13 +248,13 @@ THREE.WebXRManager = function (xrDisplays, renderer, camera, scene, updateCallba
 
 			// Hack to receive WebVR 1.1 display info
 		};setTimeout(function () {
-			var _iteratorNormalCompletion3 = true;
-			var _didIteratorError3 = false;
-			var _iteratorError3 = undefined;
+			var _iteratorNormalCompletion2 = true;
+			var _didIteratorError2 = false;
+			var _iteratorError2 = undefined;
 
 			try {
-				for (var _iterator3 = displays[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
-					var displayObj = _step3.value;
+				for (var _iterator2 = displays[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+					var displayObj = _step2.value;
 
 					if (displayObj.supportsSession(sessionInitParamers)) {
 						display = displayObj;
@@ -278,16 +262,16 @@ THREE.WebXRManager = function (xrDisplays, renderer, camera, scene, updateCallba
 					}
 				}
 			} catch (err) {
-				_didIteratorError3 = true;
-				_iteratorError3 = err;
+				_didIteratorError2 = true;
+				_iteratorError2 = err;
 			} finally {
 				try {
-					if (!_iteratorNormalCompletion3 && _iterator3.return) {
-						_iterator3.return();
+					if (!_iteratorNormalCompletion2 && _iterator2.return) {
+						_iterator2.return();
 					}
 				} finally {
-					if (_didIteratorError3) {
-						throw _iteratorError3;
+					if (_didIteratorError2) {
+						throw _iteratorError2;
 					}
 				}
 			}

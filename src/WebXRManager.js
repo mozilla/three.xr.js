@@ -54,7 +54,9 @@ THREE.WebXRManager = function( xrDisplays, renderer, camera, scene, updateCallba
 
 		if(this.renderer.xr.sessionActive) {
 			// Render each view into this.session.baseLayer.context
-			for(const view of frame.views){
+			// for(const view of frame.views){
+			for (var i = 0; i < frame.views.length; i++) {
+				var view = frame.views[i];
 				this.camera.projectionMatrix.fromArray(view.projectionMatrix);
 				if(this.camera.parent && this.camera.parent.type !== 'Scene'){
 					this.camera.parent.matrixAutoUpdate = false;
@@ -66,11 +68,14 @@ THREE.WebXRManager = function( xrDisplays, renderer, camera, scene, updateCallba
 					this.camera.matrix.fromArray(headPose.poseModelMatrix);
 					this.camera.updateMatrixWorld(true);
 				}
-
+	
 				// Set up the renderer to the XRView's viewport and then render
 				this.renderer.clearDepth();
 				const viewport = view.getViewport(this.session.baseLayer);
 				this.renderer.setViewport(viewport.x / devicePixelRatio, viewport.y / devicePixelRatio, viewport.width / devicePixelRatio, viewport.height / devicePixelRatio);
+				if(frame.views.length === 1){
+					this.camera.updateProjectionMatrix();
+				}
 				this.doRender();
 			}
 		}else{
