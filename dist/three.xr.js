@@ -127,7 +127,7 @@ THREE.WebXRManager = function (xrDisplays, renderer, camera, scene, updateCallba
 		var _this = this;
 
 		var nextFrameRequest = this.session.requestFrame(boundHandleFrame);
-		var headPose = frame.getViewPose(frame.getCoordinateSystem(XRCoordinateSystem.HEAD_MODEL));
+		var headPose = frame.getDisplayPose(frame.getCoordinateSystem(XRCoordinateSystem.HEAD_MODEL));
 
 		// If we haven't already, request the floor anchor offset
 		if (requestedFloor === false) {
@@ -405,12 +405,7 @@ THREE.WebXRManager = function (xrDisplays, renderer, camera, scene, updateCallba
 		}
 
 		node.matrixAutoUpdate = false;
-		var offsetCoordinates = anchorOffset.getTransformedCoordinates(anchor);
-		if (offsetCoordinates.coordinateSystem.type === XRCoordinateSystem.TRACKER) {
-			node.matrix.fromArray(offsetCoordinates.poseMatrix);
-		} else {
-			node.matrix.fromArray(offsetCoordinates.getTransformedCoordinates(frame.getCoordinateSystem(XRCoordinateSystem.TRACKER)).poseMatrix);
-		}
+		node.matrix.fromArray(anchorOffset.getOffsetTransform(anchor.coordinateSystem));
 		node.updateMatrixWorld(true);
 	};
 };
@@ -539,7 +534,7 @@ var _typeof2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbo
 	/******/__webpack_require__.p = "";
 	/******/
 	/******/ // Load entry module and return exports
-	/******/return __webpack_require__(__webpack_require__.s = 17);
+	/******/return __webpack_require__(__webpack_require__.s = 15);
 	/******/
 })(
 /************************************************************************/
@@ -1276,16 +1271,14 @@ var _typeof2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbo
 	/*
  XRAnchors provide per-frame coordinates which the Reality attempts to pin "in place".
  In a virtual Reality these coordinates do not change. 
- In a Reality based on environment mapping sensors, the anchors may change coordinates on a per-frame bases as the system refines its map.
+ In a Reality based on environment mapping sensors, the anchors may change pose on a per-frame bases as the system refines its map.
  */
 	var XRAnchor = function () {
-		function XRAnchor(xrCoordinates) {
-			var uid = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
-
+		function XRAnchor(xrCoordinateSystem) {
 			_classCallCheck(this, XRAnchor);
 
-			this._uid = uid == null ? XRAnchor._generateUID() : uid;
-			this._coordinates = xrCoordinates;
+			this._uid = XRAnchor._generateUID();
+			this._coordinateSystem = xrCoordinateSystem;
 		}
 
 		_createClass(XRAnchor, [{
@@ -1294,12 +1287,9 @@ var _typeof2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbo
 				return this._uid;
 			}
 		}, {
-			key: 'coordinates',
+			key: 'coordinateSystem',
 			get: function get() {
-				return this._coordinates;
-			},
-			set: function set(value) {
-				this._coordinates = value;
+				return this._coordinateSystem;
 			}
 		}], [{
 			key: '_generateUID',
@@ -1338,128 +1328,17 @@ var _typeof2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbo
 
 	var _MatrixMath2 = _interopRequireDefault(_MatrixMath);
 
-	var _Quaternion = __webpack_require__(1);
-
-	var _Quaternion2 = _interopRequireDefault(_Quaternion);
-
-	var _XRCoordinateSystem = __webpack_require__(13);
-
-	var _XRCoordinateSystem2 = _interopRequireDefault(_XRCoordinateSystem);
-
-	function _interopRequireDefault(obj) {
-		return obj && obj.__esModule ? obj : { default: obj };
-	}
-
-	function _classCallCheck(instance, Constructor) {
-		if (!(instance instanceof Constructor)) {
-			throw new TypeError("Cannot call a class as a function");
-		}
-	}
-
-	/*
- XRCoordinates represent a pose (position and orientation) in relation to a XRCoordinateSystem.
- */
-	var XRCoordinates = function () {
-		function XRCoordinates(display, coordinateSystem) {
-			var position = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : [0, 0, 0];
-			var orientation = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : [0, 0, 0, 1];
-
-			_classCallCheck(this, XRCoordinates);
-
-			this._display = display;
-			this._coordinateSystem = coordinateSystem;
-			this._poseMatrix = new Float32Array(16);
-			_MatrixMath2.default.mat4_fromRotationTranslation(this._poseMatrix, orientation, position);
-		}
-
-		_createClass(XRCoordinates, [{
-			key: 'getTransformedCoordinates',
-
-			/*
-   Returns a new XRCoordinates that represents this XRCoordinates's pose in the otherCoordinateSystem
-   May return null if there is no transform between this.coordinateSystem and otherCoordinateSystem
-   */
-			value: function getTransformedCoordinates(otherCoordinateSystem) {
-				// XRCoordinates? getTransformedCoordinates(XRCoordinateSystem otherCoordinateSystem)
-				if (this._coordinateSystem.type === _XRCoordinateSystem2.default.GEOSPATIAL || otherCoordinateSystem.type === _XRCoordinateSystem2.default.GEOSPATIAL) {
-					console.error('This polyfill does not yet support geospatial coordinate systems');
-					return null;
-				}
-				var transform = this._coordinateSystem.getTransformTo(otherCoordinateSystem);
-				if (transform === null) {
-					console.error('Could not get a transform between', this._coordinateSystem, otherCoordinateSystem);
-					return null;
-				}
-				var out = new XRCoordinates(this._display, otherCoordinateSystem);
-				_MatrixMath2.default.mat4_multiply(out._poseMatrix, transform, this._poseMatrix);
-				return out;
-			}
-		}, {
-			key: 'coordinateSystem',
-			get: function get() {
-				return this._coordinateSystem;
-			}
-		}, {
-			key: 'poseMatrix',
-			get: function get() {
-				return this._poseMatrix;
-			},
-			set: function set(array16) {
-				for (var i = 0; i < 16; i++) {
-					this._poseMatrix[i] = array16[i];
-				}
-			}
-		}, {
-			key: 'position',
-			get: function get() {
-				return new Float32Array([this._poseMatrix[12], this._poseMatrix[13], this._poseMatrix[14]]);
-			}
-		}, {
-			key: 'orientation',
-			get: function get() {
-				var quat = new _Quaternion2.default();
-				quat.setFromRotationMatrix(this._poseMatrix);
-				return quat.toArray();
-			}
-		}]);
-
-		return XRCoordinates;
-	}();
-
-	exports.default = XRCoordinates;
-
-	/***/
-},
-/* 5 */
-/***/function (module, exports, __webpack_require__) {
-
-	"use strict";
-
-	Object.defineProperty(exports, "__esModule", {
-		value: true
-	});
-
-	var _createClass = function () {
-		function defineProperties(target, props) {
-			for (var i = 0; i < props.length; i++) {
-				var descriptor = props[i];descriptor.enumerable = descriptor.enumerable || false;descriptor.configurable = true;if ("value" in descriptor) descriptor.writable = true;Object.defineProperty(target, descriptor.key, descriptor);
-			}
-		}return function (Constructor, protoProps, staticProps) {
-			if (protoProps) defineProperties(Constructor.prototype, protoProps);if (staticProps) defineProperties(Constructor, staticProps);return Constructor;
-		};
-	}();
-
 	var _EventHandlerBase2 = __webpack_require__(2);
 
 	var _EventHandlerBase3 = _interopRequireDefault(_EventHandlerBase2);
 
-	var _XRFieldOfView = __webpack_require__(18);
-
-	var _XRFieldOfView2 = _interopRequireDefault(_XRFieldOfView);
-
-	var _VirtualReality = __webpack_require__(19);
+	var _VirtualReality = __webpack_require__(16);
 
 	var _VirtualReality2 = _interopRequireDefault(_VirtualReality);
+
+	var _XRFieldOfView = __webpack_require__(17);
+
+	var _XRFieldOfView2 = _interopRequireDefault(_XRFieldOfView);
 
 	function _interopRequireDefault(obj) {
 		return obj && obj.__esModule ? obj : { default: obj };
@@ -1507,7 +1386,7 @@ var _typeof2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbo
 
 			_this._headPose = new XRViewPose([0, XRViewPose.SITTING_EYE_HEIGHT, 0]);
 			_this._eyeLevelPose = new XRViewPose([0, XRViewPose.SITTING_EYE_HEIGHT, 0]);
-			_this._trackerPoseModelMatrix = new Float32Array([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]);
+			_this._trackerPoseModelMatrix = _MatrixMath2.default.mat4_generateIdentity();
 
 			var fov = 50 / 2;
 			_this._fov = new _XRFieldOfView2.default(fov, fov, fov, fov);
@@ -1610,7 +1489,7 @@ var _typeof2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbo
 
 	/***/
 },
-/* 6 */
+/* 5 */
 /***/function (module, exports, __webpack_require__) {
 
 	"use strict";
@@ -1746,13 +1625,12 @@ var _typeof2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbo
 
 				// Copy the head model matrix for the current pose so we have it in the promise below
 				var headModelMatrix = new Float32Array(display._headPose.poseModelMatrix);
-
 				return new Promise(function (resolve, reject) {
 					// For now, just create an anchor at origin level. Maybe in the future search for a surface?
-					var coordinates = new XRCoordinates(display, display._trackerCoordinateSystem);
 					headModelMatrix[13] = 0; // Set height to 0
-					coordinates.poseMatrix = headModelMatrix;
-					var anchor = new XRAnchor(coordinates, uid);
+					var coordinateSystem = new XRCoordinateSystem(display, XRCoordinateSystem.TRACKER);
+					coordinateSystem._relativeMatrix = headModelMatrix;
+					var anchor = new XRAnchor(coordinateSystem, uid);
 					_this2._addAnchor(anchor, display);
 					resolve(new XRAnchorOffset(anchor.uid));
 				});
@@ -1795,7 +1673,7 @@ var _typeof2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbo
 
 	/***/
 },
-/* 7 */
+/* 6 */
 /***/function (module, exports, __webpack_require__) {
 
 	"use strict";
@@ -2019,7 +1897,7 @@ var _typeof2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbo
 
 	/***/
 },
-/* 8 */
+/* 7 */
 /***/function (module, exports, __webpack_require__) {
 
 	"use strict";
@@ -2038,7 +1916,7 @@ var _typeof2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbo
 		};
 	}();
 
-	var _XRViewport = __webpack_require__(14);
+	var _XRViewport = __webpack_require__(12);
 
 	var _XRViewport2 = _interopRequireDefault(_XRViewport);
 
@@ -2126,7 +2004,7 @@ var _typeof2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbo
 
 	/***/
 },
-/* 9 */
+/* 8 */
 /***/function (module, exports, __webpack_require__) {
 
 	"use strict";
@@ -2239,7 +2117,7 @@ var _typeof2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbo
 
 	/***/
 },
-/* 10 */
+/* 9 */
 /***/function (module, exports, __webpack_require__) {
 
 	"use strict";
@@ -2400,7 +2278,7 @@ var _typeof2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbo
 
 	/***/
 },
-/* 11 */
+/* 10 */
 /***/function (module, exports, __webpack_require__) {
 
 	"use strict";
@@ -2972,7 +2850,7 @@ var _typeof2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbo
 
 	/***/
 },
-/* 12 */
+/* 11 */
 /***/function (module, exports, __webpack_require__) {
 
 	"use strict";
@@ -3003,10 +2881,6 @@ var _typeof2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbo
 
 	var _XRAnchor2 = _interopRequireDefault(_XRAnchor);
 
-	var _XRCoordinates = __webpack_require__(4);
-
-	var _XRCoordinates2 = _interopRequireDefault(_XRCoordinates);
-
 	function _interopRequireDefault(obj) {
 		return obj && obj.__esModule ? obj : { default: obj };
 	}
@@ -3031,15 +2905,13 @@ var _typeof2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbo
 		}
 
 		_createClass(XRAnchorOffset, [{
-			key: 'getTransformedCoordinates',
+			key: 'getOffsetTransform',
 
 			/*
-   Return an XRCoordinates in the same coordinate system as `anchor` that is offset by this XRAnchorOffset.poseMatrix
+   Return a transform matrix that is offset by this XRAnchorOffset.poseMatrix relative to coordinateSystem
    */
-			value: function getTransformedCoordinates(anchor) {
-				var coordinates = new _XRCoordinates2.default(anchor.coordinates._display, anchor.coordinates.coordinateSystem);
-				_MatrixMath2.default.mat4_multiply(coordinates.poseMatrix, this._poseMatrix, anchor.coordinates.poseMatrix);
-				return coordinates;
+			value: function getOffsetTransform(coordinateSystem) {
+				return _MatrixMath2.default.mat4_multiply(new Float32Array(16), this._poseMatrix, coordinateSystem._poseModelMatrix);
 			}
 		}, {
 			key: 'anchorUID',
@@ -3092,129 +2964,7 @@ var _typeof2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbo
 
 	/***/
 },
-/* 13 */
-/***/function (module, exports, __webpack_require__) {
-
-	"use strict";
-
-	Object.defineProperty(exports, "__esModule", {
-		value: true
-	});
-
-	var _createClass = function () {
-		function defineProperties(target, props) {
-			for (var i = 0; i < props.length; i++) {
-				var descriptor = props[i];descriptor.enumerable = descriptor.enumerable || false;descriptor.configurable = true;if ("value" in descriptor) descriptor.writable = true;Object.defineProperty(target, descriptor.key, descriptor);
-			}
-		}return function (Constructor, protoProps, staticProps) {
-			if (protoProps) defineProperties(Constructor.prototype, protoProps);if (staticProps) defineProperties(Constructor, staticProps);return Constructor;
-		};
-	}();
-
-	var _MatrixMath = __webpack_require__(0);
-
-	var _MatrixMath2 = _interopRequireDefault(_MatrixMath);
-
-	var _XRCoordinates = __webpack_require__(4);
-
-	var _XRCoordinates2 = _interopRequireDefault(_XRCoordinates);
-
-	function _interopRequireDefault(obj) {
-		return obj && obj.__esModule ? obj : { default: obj };
-	}
-
-	function _classCallCheck(instance, Constructor) {
-		if (!(instance instanceof Constructor)) {
-			throw new TypeError("Cannot call a class as a function");
-		}
-	}
-
-	/*
- XRCoordinateSystem represents the origin of a 3D coordinate system positioned at a known frame of reference.
- The XRCoordinateSystem is a string from XRCoordinateSystem.TYPES:
- 
- - XRCoordinateSystem.HEAD_MODEL: origin is aligned with the pose of the head, as sensed by HMD or handset trackers
- - XRCoordinateSystem.EYE_LEVEL: origin is at a fixed distance above the ground
- - XRCoordinateSystem.TRACKER: The origin of this coordinate system is at floor level at or below the origin of the HMD or handset provided tracking system
- - XRCoordinateSystem.GEOSPATIAL: origin is at the East, Up, South plane tangent to the planet at the latitude, longitude, and altitude represented by the `XRCoordinateSystem.cartographicCoordinates`.
- 
- */
-	var XRCoordinateSystem = function () {
-		function XRCoordinateSystem(display, type) {
-			var cartographicCoordinates = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
-
-			_classCallCheck(this, XRCoordinateSystem);
-
-			this._display = display;
-			this._type = type;
-			this._cartographicCoordinates = cartographicCoordinates;
-		}
-
-		_createClass(XRCoordinateSystem, [{
-			key: 'getCoordinates',
-			value: function getCoordinates() {
-				var position = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [0, 0, 0];
-				var orientation = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : [0, 0, 0, 1];
-
-				return new _XRCoordinates2.default(this._display, this, position, orientation);
-			}
-		}, {
-			key: 'getTransformTo',
-			value: function getTransformTo(otherCoordinateSystem) {
-				var out = new Float32Array([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]);
-
-				// apply inverse of other system's poseModelMatrix to the identity matrix
-				var inverse = new Float32Array(16);
-				_MatrixMath2.default.mat4_invert(inverse, otherCoordinateSystem._poseModelMatrix);
-				_MatrixMath2.default.mat4_multiply(out, inverse, out);
-
-				// apply this system's poseModelMatrix
-				_MatrixMath2.default.mat4_multiply(out, this._poseModelMatrix, out);
-				return out;
-			}
-		}, {
-			key: 'cartographicCoordinates',
-			get: function get() {
-				return this._cartographicCoordinates;
-			}
-		}, {
-			key: 'type',
-			get: function get() {
-				return this._type;
-			}
-		}, {
-			key: '_poseModelMatrix',
-			get: function get() {
-				switch (this._type) {
-					case XRCoordinateSystem.HEAD_MODEL:
-						return this._display._headPose.poseModelMatrix;
-					case XRCoordinateSystem.EYE_LEVEL:
-						return this._display._eyeLevelPose.poseModelMatrix;
-					case XRCoordinateSystem.TRACKER:
-						return this._display._trackerPoseModelMatrix;
-					case XRCoordinateSystem.GEOSPATIAL:
-						throw 'This polyfill does not yet handle geospatial coordinate systems';
-					default:
-						throw 'Unknown coordinate system type: ' + this._type;
-				}
-			}
-		}]);
-
-		return XRCoordinateSystem;
-	}();
-
-	exports.default = XRCoordinateSystem;
-
-	XRCoordinateSystem.HEAD_MODEL = 'headModel';
-	XRCoordinateSystem.EYE_LEVEL = 'eyeLevel';
-	XRCoordinateSystem.TRACKER = 'tracker';
-	XRCoordinateSystem.GEOSPATIAL = 'geospatial';
-
-	XRCoordinateSystem.TYPES = [XRCoordinateSystem.HEAD_MODEL, XRCoordinateSystem.EYE_LEVEL, XRCoordinateSystem.TRACKER, XRCoordinateSystem.GEOSPATIAL];
-
-	/***/
-},
-/* 14 */
+/* 12 */
 /***/function (module, exports, __webpack_require__) {
 
 	"use strict";
@@ -3293,7 +3043,7 @@ var _typeof2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbo
 
 	/***/
 },
-/* 15 */
+/* 13 */
 /***/function (module, exports, __webpack_require__) {
 
 	"use strict";
@@ -3347,7 +3097,7 @@ var _typeof2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbo
 
 	/***/
 },
-/* 16 */
+/* 14 */
 /***/function (module, exports, __webpack_require__) {
 
 	"use strict";
@@ -3370,7 +3120,7 @@ var _typeof2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbo
 
 	var _EventHandlerBase3 = _interopRequireDefault(_EventHandlerBase2);
 
-	var _Vector = __webpack_require__(10);
+	var _Vector = __webpack_require__(9);
 
 	var _Vector2 = _interopRequireDefault(_Vector);
 
@@ -3378,7 +3128,7 @@ var _typeof2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbo
 
 	var _Quaternion2 = _interopRequireDefault(_Quaternion);
 
-	var _Euler = __webpack_require__(30);
+	var _Euler = __webpack_require__(28);
 
 	var _Euler2 = _interopRequireDefault(_Euler);
 
@@ -3466,7 +3216,7 @@ var _typeof2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbo
 
 	/***/
 },
-/* 17 */
+/* 15 */
 /***/function (module, exports, __webpack_require__) {
 
 	"use strict";
@@ -3481,27 +3231,27 @@ var _typeof2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbo
 		};
 	}();
 
-	var _XRDisplay = __webpack_require__(5);
+	var _XRDisplay = __webpack_require__(4);
 
 	var _XRDisplay2 = _interopRequireDefault(_XRDisplay);
 
-	var _XRSession = __webpack_require__(7);
+	var _XRSession = __webpack_require__(6);
 
 	var _XRSession2 = _interopRequireDefault(_XRSession);
 
-	var _XRSessionCreateParameters = __webpack_require__(20);
+	var _XRSessionCreateParameters = __webpack_require__(18);
 
 	var _XRSessionCreateParameters2 = _interopRequireDefault(_XRSessionCreateParameters);
 
-	var _Reality = __webpack_require__(6);
+	var _Reality = __webpack_require__(5);
 
 	var _Reality2 = _interopRequireDefault(_Reality);
 
-	var _XRPointCloud = __webpack_require__(21);
+	var _XRPointCloud = __webpack_require__(19);
 
 	var _XRPointCloud2 = _interopRequireDefault(_XRPointCloud);
 
-	var _XRLightEstimate = __webpack_require__(22);
+	var _XRLightEstimate = __webpack_require__(20);
 
 	var _XRLightEstimate2 = _interopRequireDefault(_XRLightEstimate);
 
@@ -3509,55 +3259,47 @@ var _typeof2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbo
 
 	var _XRAnchor2 = _interopRequireDefault(_XRAnchor);
 
-	var _XRPlaneAnchor = __webpack_require__(23);
+	var _XRPlaneAnchor = __webpack_require__(21);
 
 	var _XRPlaneAnchor2 = _interopRequireDefault(_XRPlaneAnchor);
 
-	var _XRAnchorOffset = __webpack_require__(12);
+	var _XRAnchorOffset = __webpack_require__(11);
 
 	var _XRAnchorOffset2 = _interopRequireDefault(_XRAnchorOffset);
 
-	var _XRStageBounds = __webpack_require__(24);
+	var _XRStageBounds = __webpack_require__(22);
 
 	var _XRStageBounds2 = _interopRequireDefault(_XRStageBounds);
 
-	var _XRStageBoundsPoint = __webpack_require__(25);
+	var _XRStageBoundsPoint = __webpack_require__(23);
 
 	var _XRStageBoundsPoint2 = _interopRequireDefault(_XRStageBoundsPoint);
 
-	var _XRPresentationFrame = __webpack_require__(26);
+	var _XRPresentationFrame = __webpack_require__(24);
 
 	var _XRPresentationFrame2 = _interopRequireDefault(_XRPresentationFrame);
 
-	var _XRView = __webpack_require__(8);
+	var _XRView = __webpack_require__(7);
 
 	var _XRView2 = _interopRequireDefault(_XRView);
 
-	var _XRViewport = __webpack_require__(14);
+	var _XRViewport = __webpack_require__(12);
 
 	var _XRViewport2 = _interopRequireDefault(_XRViewport);
 
-	var _XRCartographicCoordinates = __webpack_require__(27);
-
-	var _XRCartographicCoordinates2 = _interopRequireDefault(_XRCartographicCoordinates);
-
-	var _XRCoordinateSystem = __webpack_require__(13);
+	var _XRCoordinateSystem = __webpack_require__(25);
 
 	var _XRCoordinateSystem2 = _interopRequireDefault(_XRCoordinateSystem);
 
-	var _XRCoordinates = __webpack_require__(4);
-
-	var _XRCoordinates2 = _interopRequireDefault(_XRCoordinates);
-
-	var _XRViewPose = __webpack_require__(9);
+	var _XRViewPose = __webpack_require__(8);
 
 	var _XRViewPose2 = _interopRequireDefault(_XRViewPose);
 
-	var _XRLayer = __webpack_require__(15);
+	var _XRLayer = __webpack_require__(13);
 
 	var _XRLayer2 = _interopRequireDefault(_XRLayer);
 
-	var _XRWebGLLayer = __webpack_require__(28);
+	var _XRWebGLLayer = __webpack_require__(26);
 
 	var _XRWebGLLayer2 = _interopRequireDefault(_XRWebGLLayer);
 
@@ -3565,15 +3307,15 @@ var _typeof2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbo
 
 	var _EventHandlerBase3 = _interopRequireDefault(_EventHandlerBase2);
 
-	var _FlatDisplay = __webpack_require__(29);
+	var _FlatDisplay = __webpack_require__(27);
 
 	var _FlatDisplay2 = _interopRequireDefault(_FlatDisplay);
 
-	var _HeadMountedDisplay = __webpack_require__(31);
+	var _HeadMountedDisplay = __webpack_require__(29);
 
 	var _HeadMountedDisplay2 = _interopRequireDefault(_HeadMountedDisplay);
 
-	var _CameraReality = __webpack_require__(32);
+	var _CameraReality = __webpack_require__(30);
 
 	var _CameraReality2 = _interopRequireDefault(_CameraReality);
 
@@ -3627,9 +3369,7 @@ var _typeof2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbo
 			window.XRPresentationFrame = _XRPresentationFrame2.default;
 			window.XRView = _XRView2.default;
 			window.XRViewport = _XRViewport2.default;
-			window.XRCartographicCoordinates = _XRCartographicCoordinates2.default;
 			window.XRCoordinateSystem = _XRCoordinateSystem2.default;
-			window.XRCoordinates = _XRCoordinates2.default;
 			window.XRViewPose = _XRViewPose2.default;
 			window.XRLayer = _XRLayer2.default;
 			window.XRWebGLLayer = _XRWebGLLayer2.default;
@@ -3719,7 +3459,7 @@ var _typeof2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbo
 
 	/***/
 },
-/* 18 */
+/* 16 */
 /***/function (module, exports, __webpack_require__) {
 
 	"use strict";
@@ -3738,74 +3478,7 @@ var _typeof2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbo
 		};
 	}();
 
-	function _classCallCheck(instance, Constructor) {
-		if (!(instance instanceof Constructor)) {
-			throw new TypeError("Cannot call a class as a function");
-		}
-	}
-
-	/*
- XRFieldOFView represents the four boundaries of a camera's field of view: up, down, left, and right.
- */
-	var XRFieldOfView = function () {
-		function XRFieldOfView(upDegrees, downDegrees, leftDegrees, rightDegrees) {
-			_classCallCheck(this, XRFieldOfView);
-
-			this._upDegrees = upDegrees;
-			this._downDegrees = downDegrees;
-			this._leftDegrees = leftDegrees;
-			this._rightDegrees = rightDegrees;
-		}
-
-		_createClass(XRFieldOfView, [{
-			key: "upDegrees",
-			get: function get() {
-				return this._upDegrees;
-			}
-		}, {
-			key: "downDegrees",
-			get: function get() {
-				return this._downDegrees;
-			}
-		}, {
-			key: "leftDegrees",
-			get: function get() {
-				return this._leftDegrees;
-			}
-		}, {
-			key: "rightDegrees",
-			get: function get() {
-				return this._rightDegrees;
-			}
-		}]);
-
-		return XRFieldOfView;
-	}();
-
-	exports.default = XRFieldOfView;
-
-	/***/
-},
-/* 19 */
-/***/function (module, exports, __webpack_require__) {
-
-	"use strict";
-
-	Object.defineProperty(exports, "__esModule", {
-		value: true
-	});
-
-	var _createClass = function () {
-		function defineProperties(target, props) {
-			for (var i = 0; i < props.length; i++) {
-				var descriptor = props[i];descriptor.enumerable = descriptor.enumerable || false;descriptor.configurable = true;if ("value" in descriptor) descriptor.writable = true;Object.defineProperty(target, descriptor.key, descriptor);
-			}
-		}return function (Constructor, protoProps, staticProps) {
-			if (protoProps) defineProperties(Constructor.prototype, protoProps);if (staticProps) defineProperties(Constructor, staticProps);return Constructor;
-		};
-	}();
-
-	var _Reality2 = __webpack_require__(6);
+	var _Reality2 = __webpack_require__(5);
 
 	var _Reality3 = _interopRequireDefault(_Reality2);
 
@@ -3904,7 +3577,74 @@ var _typeof2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbo
 
 	/***/
 },
-/* 20 */
+/* 17 */
+/***/function (module, exports, __webpack_require__) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+
+	var _createClass = function () {
+		function defineProperties(target, props) {
+			for (var i = 0; i < props.length; i++) {
+				var descriptor = props[i];descriptor.enumerable = descriptor.enumerable || false;descriptor.configurable = true;if ("value" in descriptor) descriptor.writable = true;Object.defineProperty(target, descriptor.key, descriptor);
+			}
+		}return function (Constructor, protoProps, staticProps) {
+			if (protoProps) defineProperties(Constructor.prototype, protoProps);if (staticProps) defineProperties(Constructor, staticProps);return Constructor;
+		};
+	}();
+
+	function _classCallCheck(instance, Constructor) {
+		if (!(instance instanceof Constructor)) {
+			throw new TypeError("Cannot call a class as a function");
+		}
+	}
+
+	/*
+ XRFieldOFView represents the four boundaries of a camera's field of view: up, down, left, and right.
+ */
+	var XRFieldOfView = function () {
+		function XRFieldOfView(upDegrees, downDegrees, leftDegrees, rightDegrees) {
+			_classCallCheck(this, XRFieldOfView);
+
+			this._upDegrees = upDegrees;
+			this._downDegrees = downDegrees;
+			this._leftDegrees = leftDegrees;
+			this._rightDegrees = rightDegrees;
+		}
+
+		_createClass(XRFieldOfView, [{
+			key: "upDegrees",
+			get: function get() {
+				return this._upDegrees;
+			}
+		}, {
+			key: "downDegrees",
+			get: function get() {
+				return this._downDegrees;
+			}
+		}, {
+			key: "leftDegrees",
+			get: function get() {
+				return this._leftDegrees;
+			}
+		}, {
+			key: "rightDegrees",
+			get: function get() {
+				return this._rightDegrees;
+			}
+		}]);
+
+		return XRFieldOfView;
+	}();
+
+	exports.default = XRFieldOfView;
+
+	/***/
+},
+/* 18 */
 /***/function (module, exports, __webpack_require__) {
 
 	"use strict";
@@ -3958,7 +3698,7 @@ var _typeof2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbo
 
 	/***/
 },
-/* 21 */
+/* 19 */
 /***/function (module, exports, __webpack_require__) {
 
 	"use strict";
@@ -4006,7 +3746,7 @@ var _typeof2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbo
 
 	/***/
 },
-/* 22 */
+/* 20 */
 /***/function (module, exports, __webpack_require__) {
 
 	"use strict";
@@ -4060,7 +3800,7 @@ var _typeof2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbo
 
 	/***/
 },
-/* 23 */
+/* 21 */
 /***/function (module, exports, __webpack_require__) {
 
 	"use strict";
@@ -4138,7 +3878,7 @@ var _typeof2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbo
 
 	/***/
 },
-/* 24 */
+/* 22 */
 /***/function (module, exports, __webpack_require__) {
 
 	"use strict";
@@ -4176,7 +3916,7 @@ var _typeof2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbo
 		_createClass(XRStageBounds, [{
 			key: 'center',
 			get: function get() {
-				//readonly attribute XRCoordinates center;
+				//readonly attribute XRCoordinateSystem center;
 				throw new Error('Not implemented');
 			}
 		}, {
@@ -4194,7 +3934,7 @@ var _typeof2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbo
 
 	/***/
 },
-/* 25 */
+/* 23 */
 /***/function (module, exports, __webpack_require__) {
 
 	"use strict";
@@ -4248,7 +3988,7 @@ var _typeof2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbo
 
 	/***/
 },
-/* 26 */
+/* 24 */
 /***/function (module, exports, __webpack_require__) {
 
 	"use strict";
@@ -4270,6 +4010,10 @@ var _typeof2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbo
 	var _XRAnchor = __webpack_require__(3);
 
 	var _XRAnchor2 = _interopRequireDefault(_XRAnchor);
+
+	var _MatrixMath = __webpack_require__(0);
+
+	var _MatrixMath2 = _interopRequireDefault(_MatrixMath);
 
 	function _interopRequireDefault(obj) {
 		return obj && obj.__esModule ? obj : { default: obj };
@@ -4297,9 +4041,16 @@ var _typeof2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbo
 			/*
    Create an anchor at a specific position defined by XRAnchor.coordinates
    */
-			value: function addAnchor(anchor) {
-				//DOMString? addAnchor(XRAnchor anchor);
-				return this._session.reality._addAnchor(anchor, this._session.display);
+			value: function addAnchor(coordinateSystem) {
+				var position = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : [0, 0, 0];
+				var orientation = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : [0, 0, 0, 1];
+
+				//DOMString? addAnchor(XRCoordinateSystem, position, orientation);
+				var poseMatrix = _MatrixMath2.default.mat4_fromRotationTranslation(new Float32Array(16), orientation, position);
+				_MatrixMath2.default.mat4_multiply(poseMatrix, coordinateSystem.getTransformTo(this._session._display._trackerCoordinateSystem), poseMatrix);
+				var anchorCoordinateSystem = new XRCoordinateSystem(this._session._display, XRCoordinateSystem.TRACKER);
+				anchorCoordinateSystem._relativeMatrix = poseMatrix;
+				return this._session.reality._addAnchor(new _XRAnchor2.default(anchorCoordinateSystem), this._session.display);
 			}
 
 			// normalized screen x and y are in range 0..1, with 0,0 at top left and 1,1 at bottom right
@@ -4350,10 +4101,10 @@ var _typeof2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbo
 				return (_session = this._session)._getCoordinateSystem.apply(_session, arguments);
 			}
 		}, {
-			key: 'getViewPose',
-			value: function getViewPose(coordinateSystem) {
-				// XRViewPose? getViewPose(XRCoordinateSystem coordinateSystem);
-				switch (coordinateSystem.type) {
+			key: 'getDisplayPose',
+			value: function getDisplayPose(coordinateSystem) {
+				// XRViewPose? getDisplayPose(XRCoordinateSystem coordinateSystem);
+				switch (coordinateSystem._type) {
 					case XRCoordinateSystem.HEAD_MODEL:
 						return this._session._display._headPose;
 					case XRCoordinateSystem.EYE_LEVEL:
@@ -4443,7 +4194,7 @@ var _typeof2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbo
 
 	/***/
 },
-/* 27 */
+/* 25 */
 /***/function (module, exports, __webpack_require__) {
 
 	"use strict";
@@ -4461,6 +4212,14 @@ var _typeof2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbo
 			if (protoProps) defineProperties(Constructor.prototype, protoProps);if (staticProps) defineProperties(Constructor, staticProps);return Constructor;
 		};
 	}();
+
+	var _MatrixMath = __webpack_require__(0);
+
+	var _MatrixMath2 = _interopRequireDefault(_MatrixMath);
+
+	function _interopRequireDefault(obj) {
+		return obj && obj.__esModule ? obj : { default: obj };
+	}
 
 	function _classCallCheck(instance, Constructor) {
 		if (!(instance instanceof Constructor)) {
@@ -4469,68 +4228,81 @@ var _typeof2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbo
 	}
 
 	/*
- The XRCartographicCoordinates are used in conjunction with the XRCoordinateSystem to represent a frame of reference that may optionally be positioned in relation to a geodetic frame like WGS84 for Earth, otherwise a sphere is assumed.
+ XRCoordinateSystem represents the origin of a 3D coordinate system positioned at a known frame of reference.
+ The XRCoordinateSystem is a string from XRCoordinateSystem.TYPES:
+ 
+ These types are used by the app code when requesting a coordinate system from the session:
+ - XRCoordinateSystem.HEAD_MODEL: origin is aligned with the pose of the head, as sensed by HMD or handset trackers
+ - XRCoordinateSystem.EYE_LEVEL: origin is at a fixed distance above the ground
+ 
+ This is an internal type, specific to just this polyfill and not visible to the app code
+ - XRCoordinateSystem.TRACKER: The origin of this coordinate system is at floor level at or below the origin of the HMD or handset provided tracking system
+ 
  */
-	var XRCartographicCoordinates = function () {
-		function XRCartographicCoordinates() {
-			_classCallCheck(this, XRCartographicCoordinates);
+	var XRCoordinateSystem = function () {
+		function XRCoordinateSystem(display, type) {
+			_classCallCheck(this, XRCoordinateSystem);
+
+			this._display = display;
+			this._type = type;
+
+			this.__relativeMatrix = _MatrixMath2.default.mat4_generateIdentity();
+			this._workingMatrix = _MatrixMath2.default.mat4_generateIdentity();
 		}
 
-		_createClass(XRCartographicCoordinates, [{
-			key: 'geodeticFrame',
-			get: function get() {
-				// attribute XRCartographicCoordinatesGeodeticFrame? geodeticFrame;
-				throw new Error('Not implemented');
+		_createClass(XRCoordinateSystem, [{
+			key: 'getTransformTo',
+			value: function getTransformTo(otherCoordinateSystem) {
+				// apply inverse of the poseModelMatrix to the identity matrix
+				var inverse = _MatrixMath2.default.mat4_invert(new Float32Array(16), otherCoordinateSystem._poseModelMatrix);
+				var out = _MatrixMath2.default.mat4_generateIdentity();
+				_MatrixMath2.default.mat4_multiply(out, inverse, out);
+
+				// apply the other system's poseModelMatrix
+				_MatrixMath2.default.mat4_multiply(out, this._poseModelMatrix, out);
+				return out;
 			}
 		}, {
-			key: 'latitude',
+			key: '_relativeMatrix',
 			get: function get() {
-				// attribute double latitude;
-				throw new Error('Not implemented');
+				return this.__relativeMatrix;
+			},
+			set: function set(value) {
+				for (var i = 0; i < 16; i++) {
+					this.__relativeMatrix[i] = value[i];
+				}
 			}
 		}, {
-			key: 'longitude',
+			key: '_poseModelMatrix',
 			get: function get() {
-				// attribute double longitude;
-				throw new Error('Not implemented');
-			}
-		}, {
-			key: 'positionAccuracy',
-			get: function get() {
-				// attribute double positionAccuracy;
-				throw new Error('Not implemented');
-			}
-		}, {
-			key: 'altitude',
-			get: function get() {
-				// attribute double altitude;
-				throw new Error('Not implemented');
-			}
-		}, {
-			key: 'altitudeAccuracy',
-			get: function get() {
-				// attribute double altitudeAccuracy;
-				throw new Error('Not implemented');
-			}
-		}, {
-			key: 'orientation',
-			get: function get() {
-				//attribute Float32Array orientation; // quaternion x,y,z,w from 0,0,0,1 of East/Up/South 
-				throw new Error('Not implemented');
+				switch (this._type) {
+					case XRCoordinateSystem.HEAD_MODEL:
+						return this._display._headPose.poseModelMatrix;
+					case XRCoordinateSystem.EYE_LEVEL:
+						return this._display._eyeLevelPose.poseModelMatrix;
+					case XRCoordinateSystem.TRACKER:
+						_MatrixMath2.default.mat4_multiply(this._workingMatrix, this.__relativeMatrix, this._display._trackerPoseModelMatrix);
+						return this._workingMatrix;
+					default:
+						throw new Error('Unknown coordinate system type: ' + this._type);
+				}
 			}
 		}]);
 
-		return XRCartographicCoordinates;
+		return XRCoordinateSystem;
 	}();
 
-	exports.default = XRCartographicCoordinates;
+	exports.default = XRCoordinateSystem;
 
-	XRCartographicCoordinates.WGS84 = "WGS84";
-	XRCartographicCoordinates.GEODETIC_FRAMES = [XRCartographicCoordinates.WGS84];
+	XRCoordinateSystem.HEAD_MODEL = 'headModel';
+	XRCoordinateSystem.EYE_LEVEL = 'eyeLevel';
+	XRCoordinateSystem.TRACKER = 'tracker';
+
+	XRCoordinateSystem.TYPES = [XRCoordinateSystem.HEAD_MODEL, XRCoordinateSystem.EYE_LEVEL, XRCoordinateSystem.TRACKER];
 
 	/***/
 },
-/* 28 */
+/* 26 */
 /***/function (module, exports, __webpack_require__) {
 
 	"use strict";
@@ -4549,7 +4321,7 @@ var _typeof2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbo
 		};
 	}();
 
-	var _XRLayer2 = __webpack_require__(15);
+	var _XRLayer2 = __webpack_require__(13);
 
 	var _XRLayer3 = _interopRequireDefault(_XRLayer2);
 
@@ -4657,7 +4429,7 @@ var _typeof2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbo
 
 	/***/
 },
-/* 29 */
+/* 27 */
 /***/function (module, exports, __webpack_require__) {
 
 	"use strict";
@@ -4692,15 +4464,15 @@ var _typeof2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbo
 		}
 	};
 
-	var _XRDisplay2 = __webpack_require__(5);
+	var _XRDisplay2 = __webpack_require__(4);
 
 	var _XRDisplay3 = _interopRequireDefault(_XRDisplay2);
 
-	var _XRView = __webpack_require__(8);
+	var _XRView = __webpack_require__(7);
 
 	var _XRView2 = _interopRequireDefault(_XRView);
 
-	var _XRSession = __webpack_require__(7);
+	var _XRSession = __webpack_require__(6);
 
 	var _XRSession2 = _interopRequireDefault(_XRSession);
 
@@ -4712,15 +4484,15 @@ var _typeof2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbo
 
 	var _Quaternion2 = _interopRequireDefault(_Quaternion);
 
-	var _Vector = __webpack_require__(10);
+	var _Vector = __webpack_require__(9);
 
 	var _Vector2 = _interopRequireDefault(_Vector);
 
-	var _DeviceOrientationTracker = __webpack_require__(16);
+	var _DeviceOrientationTracker = __webpack_require__(14);
 
 	var _DeviceOrientationTracker2 = _interopRequireDefault(_DeviceOrientationTracker);
 
-	var _ARKitWrapper = __webpack_require__(11);
+	var _ARKitWrapper = __webpack_require__(10);
 
 	var _ARKitWrapper2 = _interopRequireDefault(_ARKitWrapper);
 
@@ -4946,7 +4718,7 @@ var _typeof2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbo
 
 	/***/
 },
-/* 30 */
+/* 28 */
 /***/function (module, exports, __webpack_require__) {
 
 	"use strict";
@@ -5010,7 +4782,7 @@ var _typeof2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbo
 
 	/***/
 },
-/* 31 */
+/* 29 */
 /***/function (module, exports, __webpack_require__) {
 
 	"use strict";
@@ -5029,19 +4801,19 @@ var _typeof2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbo
 		};
 	}();
 
-	var _XRDisplay2 = __webpack_require__(5);
+	var _XRDisplay2 = __webpack_require__(4);
 
 	var _XRDisplay3 = _interopRequireDefault(_XRDisplay2);
 
-	var _XRView = __webpack_require__(8);
+	var _XRView = __webpack_require__(7);
 
 	var _XRView2 = _interopRequireDefault(_XRView);
 
-	var _XRSession = __webpack_require__(7);
+	var _XRSession = __webpack_require__(6);
 
 	var _XRSession2 = _interopRequireDefault(_XRSession);
 
-	var _XRViewPose = __webpack_require__(9);
+	var _XRViewPose = __webpack_require__(8);
 
 	var _XRViewPose2 = _interopRequireDefault(_XRViewPose);
 
@@ -5053,15 +4825,15 @@ var _typeof2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbo
 
 	var _Quaternion2 = _interopRequireDefault(_Quaternion);
 
-	var _Vector = __webpack_require__(10);
+	var _Vector = __webpack_require__(9);
 
 	var _Vector2 = _interopRequireDefault(_Vector);
 
-	var _DeviceOrientationTracker = __webpack_require__(16);
+	var _DeviceOrientationTracker = __webpack_require__(14);
 
 	var _DeviceOrientationTracker2 = _interopRequireDefault(_DeviceOrientationTracker);
 
-	var _ARKitWrapper = __webpack_require__(11);
+	var _ARKitWrapper = __webpack_require__(10);
 
 	var _ARKitWrapper2 = _interopRequireDefault(_ARKitWrapper);
 
@@ -5220,7 +4992,7 @@ var _typeof2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbo
 
 	/***/
 },
-/* 32 */
+/* 30 */
 /***/function (module, exports, __webpack_require__) {
 
 	"use strict";
@@ -5239,7 +5011,7 @@ var _typeof2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbo
 		};
 	}();
 
-	var _Reality2 = __webpack_require__(6);
+	var _Reality2 = __webpack_require__(5);
 
 	var _Reality3 = _interopRequireDefault(_Reality2);
 
@@ -5247,15 +5019,11 @@ var _typeof2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbo
 
 	var _XRAnchor2 = _interopRequireDefault(_XRAnchor);
 
-	var _XRViewPose = __webpack_require__(9);
+	var _XRViewPose = __webpack_require__(8);
 
 	var _XRViewPose2 = _interopRequireDefault(_XRViewPose);
 
-	var _XRCoordinates = __webpack_require__(4);
-
-	var _XRCoordinates2 = _interopRequireDefault(_XRCoordinates);
-
-	var _XRAnchorOffset = __webpack_require__(12);
+	var _XRAnchorOffset = __webpack_require__(11);
 
 	var _XRAnchorOffset2 = _interopRequireDefault(_XRAnchorOffset);
 
@@ -5267,11 +5035,11 @@ var _typeof2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbo
 
 	var _Quaternion2 = _interopRequireDefault(_Quaternion);
 
-	var _ARKitWrapper = __webpack_require__(11);
+	var _ARKitWrapper = __webpack_require__(10);
 
 	var _ARKitWrapper2 = _interopRequireDefault(_ARKitWrapper);
 
-	var _ARCoreCameraRenderer = __webpack_require__(33);
+	var _ARCoreCameraRenderer = __webpack_require__(31);
 
 	var _ARCoreCameraRenderer2 = _interopRequireDefault(_ARCoreCameraRenderer);
 
@@ -5499,7 +5267,7 @@ var _typeof2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbo
 					return;
 				}
 				// This assumes that the anchor's coordinates are in the tracker coordinate system
-				anchor.coordinates.poseMatrix = anchorInfo.transform;
+				anchor.coordinateSystem._relativeMatrix = anchorInfo.transform;
 			}
 		}, {
 			key: '_addAnchor',
@@ -5507,9 +5275,8 @@ var _typeof2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbo
 				var _this3 = this;
 
 				// Convert coordinates to the tracker coordinate system so that updating from ARKit transforms is simple
-				anchor.coordinates = anchor.coordinates.getTransformedCoordinates(display._trackerCoordinateSystem);
 				if (this._arKitWrapper !== null) {
-					this._arKitWrapper.addAnchor(anchor.uid, anchor.coordinates.poseMatrix).then(function (detail) {
+					this._arKitWrapper.addAnchor(anchor.uid, anchor.coordinateSystem._poseModelMatrix).then(function (detail) {
 						return _this3._handleARKitAddObject(detail);
 					});
 				}
@@ -5548,9 +5315,9 @@ var _typeof2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbo
 
 							var anchor = _this4._getAnchor(hit.uuid);
 							if (anchor === null) {
-								var anchorCoordinates = new _XRCoordinates2.default(display, display._trackerCoordinateSystem);
-								anchorCoordinates.poseMatrix = hit.anchor_transform;
-								anchor = new _XRAnchor2.default(anchorCoordinates, hit.uuid);
+								var coordinateSystem = new XRCoordinateSystem(display, XRCoordinateSystem.TRACKER);
+								coordinateSystem._relativeMatrix = hit.anchor_transform;
+								anchor = new _XRAnchor2.default(coordinateSystem, hit.uuid);
 								_this4._anchors.set(anchor.uid, anchor);
 							}
 
@@ -5574,10 +5341,10 @@ var _typeof2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbo
 						});
 						var anchor = _this4._getAnchor(hits[0].uuid);
 						if (anchor === null) {
-							var coordinates = new _XRCoordinates2.default(display, display._trackerCoordinateSystem);
-							coordinates.poseMatrix = hits[0].modelMatrix;
-							coordinates._poseMatrix[13] += _XRViewPose2.default.SITTING_EYE_HEIGHT;
-							anchor = new _XRAnchor2.default(coordinates);
+							var coordinateSystem = new XRCoordinateSystem(display, XRCoordinateSystem.TRACKER);
+							coordinateSystem._relativeMatrix = hits[0].modelMatrix;
+							coordinateSystem._relativeMatrix[13] += _XRViewPose2.default.SITTING_EYE_HEIGHT;
+							anchor = new _XRAnchor2.default(coordinateSystem);
 							_this4._anchors.set(anchor.uid, anchor);
 						}
 						resolve(new _XRAnchorOffset2.default(anchor.uid));
@@ -5642,7 +5409,7 @@ var _typeof2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbo
 
 	/***/
 },
-/* 33 */
+/* 31 */
 /***/function (module, exports, __webpack_require__) {
 
 	"use strict";

@@ -23,7 +23,7 @@ THREE.WebXRManager = function( xrDisplays, renderer, camera, scene, updateCallba
 
 	function handleFrame(frame){
 		const nextFrameRequest = this.session.requestFrame(boundHandleFrame);
-		const headPose = frame.getViewPose(frame.getCoordinateSystem(XRCoordinateSystem.HEAD_MODEL));
+		const headPose = frame.getDisplayPose(frame.getCoordinateSystem(XRCoordinateSystem.HEAD_MODEL));
 
 		// If we haven't already, request the floor anchor offset
 		if(requestedFloor === false){
@@ -222,14 +222,7 @@ THREE.WebXRManager = function( xrDisplays, renderer, camera, scene, updateCallba
 		}
 
 		node.matrixAutoUpdate = false;
-		const offsetCoordinates = anchorOffset.getTransformedCoordinates(anchor);
-		if(offsetCoordinates.coordinateSystem.type === XRCoordinateSystem.TRACKER){
-			node.matrix.fromArray(offsetCoordinates.poseMatrix);
-		} else {
-			node.matrix.fromArray(
-				offsetCoordinates.getTransformedCoordinates(frame.getCoordinateSystem(XRCoordinateSystem.TRACKER)).poseMatrix
-			)
-		}
+		node.matrix.fromArray(anchorOffset.getOffsetTransform(anchor.coordinateSystem));
 		node.updateMatrixWorld(true);
 	}
 };
