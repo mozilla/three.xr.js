@@ -102,18 +102,17 @@ Object.defineProperty(exports, "__esModule", {
 });
 
 THREE.WebXRManager = function (xrDisplays, renderer, camera, scene, updateCallback) {
-
 	this.renderer = renderer;
 	this.camera = camera;
 	this.scene = scene;
 
 	var scope = this;
 	var boundHandleFrame = handleFrame.bind(this); // Useful for setting up the requestAnimationFrame callback
+	var boundHandleFrameDeactivate = handleFrameDeactivate.bind(this);
 
 	var frameData = null;
 
 	var displays = xrDisplays;
-	var display = null;
 
 	var requestedFloor = false;
 	var floorGroup = new THREE.Group();
@@ -123,10 +122,117 @@ THREE.WebXRManager = function (xrDisplays, renderer, camera, scene, updateCallba
 	// an array of info that we'll use in _handleFrame to update the nodes using anchors
 	var anchoredNodes = []; // { XRAnchorOffset, Three.js Object3D }
 
-	function handleFrame(frame) {
+	// Start a session per device connected
+	this.sessions = [];
+
+	this.session = null;
+
+	this.supportedRealities = {
+		vr: false,
+		ar: false
+	};
+
+	this.addSession = function (display, reality) {
 		var _this = this;
 
-		var nextFrameRequest = this.session.requestFrame(boundHandleFrame);
+		var createVirtualReality = false;
+		if (reality === 'vr') {
+			createVirtualReality = true;
+		}
+		var sessionInitParamers = {
+			exclusive: createVirtualReality,
+			type: createVirtualReality ? XRSession.REALITY : XRSession.AUGMENTATION
+		};
+
+		display.requestSession(sessionInitParamers).then(function (session) {
+			if (!createVirtualReality) {
+				if (display._reality._arKitWrapper) {
+					display.supportedAR = 'ARKit';
+				} else if (display._reality._vrDisplay) {
+					display.supportedAR = 'ARCore';
+				}
+			}
+
+			session.realityType = reality;
+			session.depthNear = 0.05;
+			session.depthFar = 1000.0;
+
+			// Handle session lifecycle events
+			session.addEventListener('focus', function (ev) {
+				_this.handleSessionFocus(ev);
+			});
+			session.addEventListener('blur', function (ev) {
+				_this.handleSessionBlur(ev);
+			});
+			session.addEventListener('end', function (ev) {
+				_this.handleSessionEnded(ev);
+			});
+
+			_this.sessions.push(session);
+
+			_this.dispatchEvent({ type: 'sessionAdded', session: session });
+		}).catch(function (err) {
+			console.error('Error requesting session', err);
+		});
+	};
+
+	var _iteratorNormalCompletion = true;
+	var _didIteratorError = false;
+	var _iteratorError = undefined;
+
+	try {
+		for (var _iterator = displays[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+			var displayObj = _step.value;
+
+			if (displayObj.supportedRealities.vr) {
+				this.supportedRealities.vr = true;
+				this.addSession(displayObj, 'vr');
+			}
+			if (displayObj.supportedRealities.ar) {
+				// Discard Flat screen from desktop and Android that doesn't support ARCore
+				if (!displayObj._reality._vrDisplay && isMobileDevice() && !isAppleWebView()) {
+					displayObj.supportedRealities.ar = false;
+				} else {
+					this.supportedRealities.ar = true;
+					this.addSession(displayObj, 'ar');
+				}
+			}
+		}
+	} catch (err) {
+		_didIteratorError = true;
+		_iteratorError = err;
+	} finally {
+		try {
+			if (!_iteratorNormalCompletion && _iterator.return) {
+				_iterator.return();
+			}
+		} finally {
+			if (_didIteratorError) {
+				throw _iteratorError;
+			}
+		}
+	}
+
+	function isAppleWebView() {
+		return navigator.userAgent.indexOf('AppleWebKit') && navigator.userAgent.indexOf('Safari') === -1;
+	};
+
+	function isMobileDevice() {
+		return typeof window.orientation !== 'undefined' || navigator.userAgent.indexOf('IEMobile') !== -1;
+	};
+
+	function handleFrameDeactivate(frame) {
+		// Do nothing
+	}
+
+	function handleFrame(frame) {
+		var _this2 = this;
+
+		if (this.renderer.xr.sessionActive) {
+			this.session.requestFrame(boundHandleFrame);
+		} else {
+			this.session.requestFrame(boundHandleFrameDeactivate);
+		}
 		var headPose = frame.getDisplayPose(frame.getCoordinateSystem(XRCoordinateSystem.HEAD_MODEL));
 
 		// If we haven't already, request the floor anchor offset
@@ -137,36 +243,36 @@ THREE.WebXRManager = function (xrDisplays, renderer, camera, scene, updateCallba
 					console.error('could not find the floor anchor');
 					return;
 				}
-				_this.addAnchoredNode(anchorOffset, floorGroup);
+				_this2.addAnchoredNode(anchorOffset, floorGroup);
 			}).catch(function (err) {
 				console.error('error finding the floor anchor', err);
 			});
 		}
 
 		// Update anchored node positions in the scene graph
-		var _iteratorNormalCompletion = true;
-		var _didIteratorError = false;
-		var _iteratorError = undefined;
+		var _iteratorNormalCompletion2 = true;
+		var _didIteratorError2 = false;
+		var _iteratorError2 = undefined;
 
 		try {
-			for (var _iterator = anchoredNodes[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-				var anchoredNode = _step.value;
+			for (var _iterator2 = anchoredNodes[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+				var anchoredNode = _step2.value;
 
 				this.updateNodeFromAnchorOffset(frame, anchoredNode.node, anchoredNode.anchorOffset);
 			}
 
 			// Let the extending class update the scene before each render
 		} catch (err) {
-			_didIteratorError = true;
-			_iteratorError = err;
+			_didIteratorError2 = true;
+			_iteratorError2 = err;
 		} finally {
 			try {
-				if (!_iteratorNormalCompletion && _iterator.return) {
-					_iterator.return();
+				if (!_iteratorNormalCompletion2 && _iterator2.return) {
+					_iterator2.return();
 				}
 			} finally {
-				if (_didIteratorError) {
-					throw _iteratorError;
+				if (_didIteratorError2) {
+					throw _iteratorError2;
 				}
 			}
 		}
@@ -224,86 +330,68 @@ THREE.WebXRManager = function (xrDisplays, renderer, camera, scene, updateCallba
 		}
 	}
 
-	this.getDisplays = function () {
+	this.activateSession = function (display, reality) {
+		var _this3 = this;
 
-		return displays;
-	};
+		var _iteratorNormalCompletion3 = true;
+		var _didIteratorError3 = false;
+		var _iteratorError3 = undefined;
 
-	this.getDisplay = function () {
+		try {
+			for (var _iterator3 = this.sessions[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+				var session = _step3.value;
 
-		return display;
-	};
+				if (session._display === display && session.realityType === reality) {
+					// Set the session's base layer into which the app will render
+					session.baseLayer = new XRWebGLLayer(session, renderer.context);
+					// Handle layer focus events
+					session.baseLayer.addEventListener('focus', function (ev) {
+						_this3.handleLayerFocus(ev);
+					});
+					session.baseLayer.addEventListener('blur', function (ev) {
+						_this3.handleLayerBlur(ev);
+					});
 
-	this.session = null;
-
-	this.startSession = function () {
-		var _this2 = this;
-
-		var createVirtualReality = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
-		var shouldStartPresenting = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
-
-		var sessionInitParamers = {
-			exclusive: createVirtualReality,
-			type: createVirtualReality ? XRSession.REALITY : XRSession.AUGMENTATION
-
-			// Hack to receive WebVR 1.1 display info
-		};setTimeout(function () {
-			var _iteratorNormalCompletion2 = true;
-			var _didIteratorError2 = false;
-			var _iteratorError2 = undefined;
-
+					this.session = session;
+				}
+			}
+		} catch (err) {
+			_didIteratorError3 = true;
+			_iteratorError3 = err;
+		} finally {
 			try {
-				for (var _iterator2 = displays[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-					var displayObj = _step2.value;
-
-					if (displayObj.supportsSession(sessionInitParamers)) {
-						display = displayObj;
-						break;
-					}
+				if (!_iteratorNormalCompletion3 && _iterator3.return) {
+					_iterator3.return();
 				}
-			} catch (err) {
-				_didIteratorError2 = true;
-				_iteratorError2 = err;
 			} finally {
-				try {
-					if (!_iteratorNormalCompletion2 && _iterator2.return) {
-						_iterator2.return();
-					}
-				} finally {
-					if (_didIteratorError2) {
-						throw _iteratorError2;
-					}
+				if (_didIteratorError3) {
+					throw _iteratorError3;
 				}
 			}
+		}
 
-			if (display === null) {
-				console.error('Could not find a display for this type of session');
-				return;
-			}
-			display.requestSession(sessionInitParamers).then(function (session) {
-				_this2.session = session;
-				_this2.session.depthNear = 0.05;
-				_this2.session.depthFar = 1000.0;
+		if (this.session === null) {
+			console.error('Can not start presenting without a session');
+			throw new Error('Can not start presenting without a session');
+		}
 
-				// Handle session lifecycle events
-				_this2.session.addEventListener('focus', function (ev) {
-					_this2.handleSessionFocus(ev);
-				});
-				_this2.session.addEventListener('blur', function (ev) {
-					_this2.handleSessionBlur(ev);
-				});
-				_this2.session.addEventListener('end', function (ev) {
-					_this2.handleSessionEnded(ev);
-				});
+		if (!this.renderer.xr.sessionActive) {
+			// this.requestId = this.session.requestFrame(boundHandleFrame);
+			this.session.requestFrame(boundHandleFrame);
+			this.renderer.xr.sessionActive = true;
+			document.getElementsByClassName('webxr-realities')[0].style.display = 'block';
+		}
+	};
 
-				if (shouldStartPresenting) {
-					// VR Displays need startPresenting called due to input events like a click
-					_this2.startPresenting();
-				}
-			}).catch(function (err) {
-				console.error('Error requesting session', err);
-			});
-		}, 1000);
+	this.deactivateSession = function () {
+		// Added this parameter until End session will be implemented on the WebXR-polyfill
+		this.renderer.xr.sessionActive = false;
+
+		if (this.session._display._vrDisplay && this.session._display.isPresenting) {
+			this.session._display._vrDisplay.exitPresent();
+		}
+		document.getElementsByClassName('webxr-realities')[0].style.display = 'none';
+		// this.session.cancelFrame(this.requestId);
 	};
 
 	this.handleSessionFocus = function (ev) {
@@ -331,36 +419,6 @@ THREE.WebXRManager = function (xrDisplays, renderer, camera, scene, updateCallba
  */
 	this.updateScene = function (updateCallback, frame) {
 		updateCallback(frame);
-	};
-
-	this.startPresenting = function () {
-		var _this3 = this;
-
-		if (this.session === null) {
-			console.error('Can not start presenting without a session');
-			throw new Error('Can not start presenting without a session');
-		}
-
-		if (!this.renderer.xr.sessionActive) {
-			// Set the session's base layer into which the app will render
-			this.session.baseLayer = new XRWebGLLayer(this.session, renderer.context);
-
-			// Handle layer focus events
-			this.session.baseLayer.addEventListener('focus', function (ev) {
-				_this3.handleLayerFocus(ev);
-			});
-			this.session.baseLayer.addEventListener('blur', function (ev) {
-				_this3.handleLayerBlur(ev);
-			});
-
-			this.session.requestFrame(boundHandleFrame);
-		}
-		this.renderer.xr.sessionActive = true;
-	};
-
-	this.stopPresenting = function () {
-		// Added this parameter until End session will be implemented on the WebXR-polyfill
-		this.renderer.xr.sessionActive = false;
 	};
 
 	this.doRender = function () {
@@ -394,6 +452,9 @@ THREE.WebXRManager = function (xrDisplays, renderer, camera, scene, updateCallba
 	};
 };
 
+THREE.WebXRManager.prototype = Object.create(THREE.EventDispatcher.prototype);
+THREE.WebXRManager.prototype.constructor = THREE.WebXRManager;
+
 exports.default = THREE.WebXRManager;
 
 /***/ }),
@@ -421,7 +482,60 @@ THREE.WebXRUtils = {
 						resolve(null);
 						return;
 					}
-					resolve(displays);
+
+					var ARParamers = {
+						exclusive: false,
+						type: XRSession.AUGMENTATION
+					};
+					var VRParamers = {
+						exclusive: true,
+						type: XRSession.REALITY
+					};
+
+					var realities = {
+						vr: false,
+						ar: false
+
+						// Hack to receive WebVR 1.1 display info
+					};setTimeout(function () {
+						var _iteratorNormalCompletion = true;
+						var _didIteratorError = false;
+						var _iteratorError = undefined;
+
+						try {
+							for (var _iterator = displays[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+								var displayObj = _step.value;
+
+								// Reinit realities
+								realities = {
+									vr: false,
+									ar: false
+								};
+								if (displayObj.supportsSession(ARParamers)) {
+									realities.ar = true;
+								}
+								if (displayObj.supportsSession(VRParamers)) {
+									realities.vr = true;
+								}
+								displayObj.supportedRealities = realities;
+							}
+						} catch (err) {
+							_didIteratorError = true;
+							_iteratorError = err;
+						} finally {
+							try {
+								if (!_iteratorNormalCompletion && _iterator.return) {
+									_iterator.return();
+								}
+							} finally {
+								if (_didIteratorError) {
+									throw _iteratorError;
+								}
+							}
+						}
+
+						resolve(displays);
+					}, 1000);
 					return;
 				}).catch(function (err) {
 					console.error('Error getting XR displays', err);

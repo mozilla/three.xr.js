@@ -12,7 +12,39 @@ THREE.WebXRUtils = {
 					resolve(null);
 					return;
 				}
-				resolve(displays);
+
+				var ARParamers = {
+					exclusive: false,
+					type: XRSession.AUGMENTATION
+				}
+				var VRParamers = {
+					exclusive: true,
+					type: XRSession.REALITY
+				}
+
+				var realities = {
+					vr: false,
+					ar: false
+				}
+
+				// Hack to receive WebVR 1.1 display info
+				setTimeout( () => {
+					for(var displayObj of displays){
+						// Reinit realities
+						realities = {
+							vr: false,
+							ar: false
+						}
+						if(displayObj.supportsSession(ARParamers)){
+							realities.ar = true;
+						}
+						if(displayObj.supportsSession(VRParamers)){
+							realities.vr = true;
+						}
+						displayObj.supportedRealities = realities;
+					}
+					resolve(displays);
+				}, 1000);
 				return;
 			}).catch(err => {
 				console.error('Error getting XR displays', err);
