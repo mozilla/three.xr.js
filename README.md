@@ -40,8 +40,6 @@ In your application code you can do:
 THREE.WebXRUtils.getDisplays().then(init);
 
 function init(displays) {
-  xrDisplays = displays;
-
   container = document.createElement( 'div' );
   document.body.appendChild( container );
 
@@ -52,7 +50,6 @@ function init(displays) {
   renderer = new THREE.WebGLRenderer( { alpha: true } );
   renderer.setPixelRatio(window.devicePixelRatio);
   renderer.autoClear = false;
-  renderer.setSize( window.innerWidth, window.innerHeight );
   container.appendChild( renderer.domElement );
 
   // Add custom code here
@@ -61,24 +58,70 @@ function init(displays) {
   onWindowResize();
 
   // Init WebXR
-  xr = new THREE.WebXRManager(xrDisplays, renderer, camera, scene, update);
+  renderer.xr = new THREE.WebXRManager(xrDisplays, renderer, camera, scene, update);
 
-  // Only for AR (start an AR session that is presenting automatically)
-  xr.startSession( false, true );
+  // Listen when a session is started or stopped
+  renderer.xr.addEventListener('sessionStarted', sessionStarted);
+  renderer.xr.addEventListener('sessionStopped', sessionStopped);
 
-  // Only for VR (start an VR session that is NOT presenting automatically)
-  xr.startSession( true, false );
+  // Auto start if only has one AR display supported
+  if(!renderer.xr.autoStarted){
+    // Add as many buttons as there are displays that can be started
+    addEnterButtons(displays);
+  }
+
+  renderer.animate(render);
+}
+
+function sessionStarted(data) {
+  activeRealityType = data.session.realityType;
+  // We can show or hide elements depending on the active reality type
+  // 3d, ar, vr
+}
+
+function sessionStopped(data) {
+  activeRealityType = '3d';
+  // We can show or hide elements depending on the active reality type
+  // 3d, ar, vr
+}
+
+function addEnterButtons(displays) {
+  for (var i = 0; i < displays.length; i++) {
+    var display = displays[i];
+    if(display.supportedRealities.vr){
+      // Add ENTER VR button
+    }
+    if(display.supportedRealities.ar){
+      // Add ENTER AR button
+    }
+  }
 }
 
 function onWindowResize() {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
+  renderer.setSize( window.innerWidth, window.innerHeight );
 }
 // Called once per frame, before render, to give the app a chance to update this.scene
 function update(frame) {
-
+  render();
 }
 
-// Only for VR (Add this into a click event of a 'enter VR' button)
-renderer.xr.startPresenting();
+function render() {
+  // We can different commands depending on the active reality type
+  // 3d, ar, vr
+  switch (activeRealityType) {
+    case '3d':
+    case 'ar':
+    case 'vr':
+      
+      break;
+  } 
+
+  // Only renderer.render out of renderer.xr if the session is not active
+  if(!renderer.xr.sessionActive){
+    renderer.render(this.scene, this.camera);
+  }
+}
+
 ```

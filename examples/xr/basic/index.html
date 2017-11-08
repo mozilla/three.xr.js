@@ -27,7 +27,8 @@
 
       var cube, sky;
 
-      var vrPolyfilledDisplay = null;
+      // 3d, ar, vr
+      var activeRealityType = '3d';
 
       THREE.WebXRUtils.getDisplays().then(init);
 
@@ -64,9 +65,10 @@
         onWindowResize();
 
         renderer.xr = new THREE.WebXRManager(displays, renderer, camera, scene, update);
-        renderer.xr.addEventListener('sessionAdded', sessionAdded);
+        renderer.xr.addEventListener('sessionStarted', sessionStarted);
+        renderer.xr.addEventListener('sessionStopped', sessionStopped);
 
-        if(renderer.xr.supportedRealities.vr || renderer.xr.supportedRealities.ar){
+        if(!renderer.xr.autoStarted){
           var buttonsContainer = document.createElement( 'div' );
           buttonsContainer.id = 'buttonsContainer';
           buttonsContainer.style.position = 'absolute';
@@ -75,21 +77,34 @@
           buttonsContainer.style.textAlign = 'center';
           buttonsContainer.style.zIndex = '999';
           document.body.appendChild(buttonsContainer);
+          addEnterButtons(displays);
         }
 
-        renderer.animate( render );
+        renderer.animate(render);
       }
 
-      function sessionAdded(data) {
-        if(data.session.realityType === 'vr'){
-          buttonsContainer.appendChild(getEnterButton(data.session._display, 'vr'));
-        }else{
-          // Provisional hack to start automatically on ARKit mode
-          if(data.session._display.supportedAR === 'ARKit'){
-            renderer.xr.activateSession(data.session._display, 'ar');
-            sky.visible = false;
-          }else{
-            buttonsContainer.appendChild(getEnterButton(data.session._display, 'ar'));
+      function sessionStarted(data) {
+        activeRealityType = data.session.realityType;
+        if(data.session.realityType === 'ar'){
+          sky.visible = false;
+        }
+      }
+
+      function sessionStopped(data) {
+        activeRealityType = '3d';
+        if(data.session.realityType === 'ar'){
+          sky.visible = true;
+        }
+      }
+
+      function addEnterButtons(displays) {
+        for (var i = 0; i < displays.length; i++) {
+          var display = displays[i];
+          if(display.supportedRealities.vr){
+            buttonsContainer.appendChild(getEnterButton(display, 'vr'));
+          }
+          if(display.supportedRealities.ar){
+              buttonsContainer.appendChild(getEnterButton(display, 'ar'));
           }
         }
       }
@@ -120,17 +135,16 @@
             if(!renderer.xr.sessionActive){
               // Entering AR.
               button.textContent = 'EXIT AR';
-              renderer.xr.activateSession(display, reality);
-              sky.visible = false;
+              renderer.xr.startSession(display, reality);
             }else{
               // Exiting AR.
               button.textContent = 'ENTER AR';
-              renderer.xr.deactivateSession();
+              renderer.xr.stopSession();
               sky.visible = true;
             }
           }else{
             document.getElementById('buttonsContainer').style.display = 'none';
-            renderer.xr.activateSession(display, reality);
+            renderer.xr.startSession(display, reality);
           }
         });
 
@@ -140,7 +154,7 @@
             var display = evt.display || evt.detail.display;
             if (!display.isPresenting) {
               // Exiting VR.
-              renderer.xr.deactivateSession();
+              renderer.xr.stopSession();
               document.getElementById('buttonsContainer').style.display = 'block';
             }
           });
@@ -161,10 +175,14 @@
       }
 
       function render() {
-        if(renderer.xr.supportedRealities.vr){
-          var delta = clock.getDelta() * 60;
-          cube.rotation.y += delta * 0.01;
+        switch (activeRealityType) {
+          case '3d':
+          case 'vr':
+            var delta = clock.getDelta() * 60;
+            cube.rotation.y += delta * 0.01;
+            break;
         }
+
         if(!renderer.xr.sessionActive){
           renderer.render(this.scene, this.camera);
         }

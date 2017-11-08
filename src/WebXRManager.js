@@ -20,83 +20,19 @@ THREE.WebXRManager = function (xrDisplays, renderer, camera, scene, updateCallba
 	// an array of info that we'll use in _handleFrame to update the nodes using anchors
 	var anchoredNodes = [] // { XRAnchorOffset, Three.js Object3D }
 
-	// Start a session per device connected
+	// A provisional hack until XRSession end method works
 	this.sessions = [];
 
 	this.session = null;
 
-	this.supportedRealities = {
-		vr: false,
-		ar: false
-	}
-
-	this.addSession = function (display, reality) {
-		var createVirtualReality = false;
-		if(reality === 'vr'){
-			createVirtualReality = true;
-		}
-		var sessionInitParamers = {
-			exclusive: createVirtualReality,
-			type: createVirtualReality ? XRSession.REALITY : XRSession.AUGMENTATION
-		}
-
-		display.requestSession(sessionInitParamers).then(session => {
-			if(!createVirtualReality){
-				if(display._reality._arKitWrapper){
-					display.supportedAR = 'ARKit';
-				}else if(display._reality._vrDisplay){
-					display.supportedAR = 'ARCore';
-				}
-			}
-
-			session.realityType = reality;
-			session.depthNear = 0.05;
-			session.depthFar = 1000.0;
-
-			// Handle session lifecycle events
-			session.addEventListener('focus', ev => { this.handleSessionFocus(ev) })
-			session.addEventListener('blur', ev => { this.handleSessionBlur(ev) })
-			session.addEventListener('end', ev => { this.handleSessionEnded(ev) })
-
-			this.sessions.push (session);
-
-			this.dispatchEvent({type: 'sessionAdded', session});
-
-		}).catch(err => {
-			console.error('Error requesting session', err);
-		});
-	};
-
-	for(var displayObj of displays){
-		if(displayObj.supportedRealities.vr){
-			this.supportedRealities.vr = true;
-			this.addSession(displayObj, 'vr');
-		}
-		if(displayObj.supportedRealities.ar){
-			// Discard Flat screen from desktop and Android that doesn't support ARCore
-			if(!displayObj._reality._vrDisplay && isMobileDevice() && !isAppleWebView()) {
-				displayObj.supportedRealities.ar = false;
-			}else{
-				this.supportedRealities.ar = true;
-				this.addSession(displayObj, 'ar');
-			}
-		}
-	}
-
-	function isAppleWebView() {
-		return navigator.userAgent.indexOf('AppleWebKit') && navigator.userAgent.indexOf('Safari') === -1;
-	};
-
-	function isMobileDevice() {
-		return (typeof window.orientation !== 'undefined') || (navigator.userAgent.indexOf('IEMobile') !== -1);
-	};
+	this.autoStarted = false;
 
 	function handleFrameDeactivate(frame){
 		// Do nothing
 	}
 
 	function handleFrame(frame){
-		if(this.renderer.xr.sessionActive) {
+		if(this.sessionActive) {
 			this.session.requestFrame(boundHandleFrame);
 		}else{
 			this.session.requestFrame(boundHandleFrameDeactivate);
@@ -130,7 +66,7 @@ THREE.WebXRManager = function (xrDisplays, renderer, camera, scene, updateCallba
 		this.renderer.setSize(window.innerWidth, window.innerHeight);
 		this.renderer.clear();
 
-		if(this.renderer.xr.sessionActive) {
+		if(this.sessionActive) {
 			// Render each view into this.session.baseLayer.context
 			// for(const view of frame.views){
 			for (var i = 0; i < frame.views.length; i++) {
@@ -176,41 +112,70 @@ THREE.WebXRManager = function (xrDisplays, renderer, camera, scene, updateCallba
 		}
 	}
 
-	this.activateSession = function (display, reality) {
-		for(var session of this.sessions){
-			if(session._display === display && session.realityType === reality){
-				// Set the session's base layer into which the app will render
-				session.baseLayer = new XRWebGLLayer(session, renderer.context);
-				// Handle layer focus events
-				session.baseLayer.addEventListener('focus', ev => { this.handleLayerFocus(ev) });
-				session.baseLayer.addEventListener('blur', ev => { this.handleLayerBlur(ev) });
-
+	this.startSession = function (display, reality) {
+		var createVirtualReality = false;
+		if(reality === 'vr'){
+			createVirtualReality = true;
+		}
+		var sessionInitParamers = {
+			exclusive: createVirtualReality,
+			type: createVirtualReality ? XRSession.REALITY : XRSession.AUGMENTATION
+		}
+		if(this.sessionActive){
+			return;
+		}
+		for(let session of this.sessions) {
+			// When session was created
+			if(session.display === display && session.realityType === reality){
 				this.session = session;
+				this.sessionActive = true;
+				if(reality === 'vr'){
+					display._vrDisplay.requestPresent([{
+						source: session.baseLayer._context.canvas
+					}]);
+				}
+				session.requestFrame(boundHandleFrame);
+				this.dispatchEvent({ type: 'sessionStarted', session: session });
+				return;
 			}
 		}
+		// If the session is not created yet
+		display.requestSession(sessionInitParamers).then(session => {
+			session.realityType = reality;
+			session.depthNear = 0.05;
+			session.depthFar = 1000.0;
 
-		if(this.session === null){
-			console.error('Can not start presenting without a session');
-			throw new Error('Can not start presenting without a session');
-		}
+			// Handle session lifecycle events
+			session.addEventListener('focus', ev => { this.handleSessionFocus(ev) })
+			session.addEventListener('blur', ev => { this.handleSessionBlur(ev) })
+			session.addEventListener('end', ev => { this.handleSessionEnded(ev) })
 
-		if(!this.renderer.xr.sessionActive){
-			// this.requestId = this.session.requestFrame(boundHandleFrame);
-			this.session.requestFrame(boundHandleFrame);
-			this.renderer.xr.sessionActive = true;
-			document.getElementsByClassName('webxr-realities')[0].style.display = 'block';
-		}
+			// Set the session's base layer into which the app will render
+			session.baseLayer = new XRWebGLLayer(session, renderer.context);
+			// Handle layer focus events
+			session.baseLayer.addEventListener('focus', ev => { this.handleLayerFocus(ev) });
+			session.baseLayer.addEventListener('blur', ev => { this.handleLayerBlur(ev) });
+
+			session.requestFrame(boundHandleFrame);
+
+			this.sessions.push (session);
+			this.session = session;
+			this.sessionActive = true;
+			// document.getElementsByClassName('webxr-realities')[0].style.display = 'block';
+			this.dispatchEvent({ type: 'sessionStarted', session: session });
+		}).catch(err => {
+			console.error('Error requesting session', err);
+		});
 	};
 
-	this.deactivateSession = function () {
+	this.stopSession = function () {
 		// Added this parameter until End session will be implemented on the WebXR-polyfill
-		this.renderer.xr.sessionActive = false;
-
+		this.sessionActive = false;
+		this.dispatchEvent({ type: 'sessionStopped', session: this.session });
 		if (this.session._display._vrDisplay && this.session._display.isPresenting) {
 			this.session._display._vrDisplay.exitPresent();
 		}
-		document.getElementsByClassName('webxr-realities')[0].style.display = 'none';
-		// this.session.cancelFrame(this.requestId);
+		// document.getElementsByClassName('webxr-realities')[0].style.display = 'none';
 	};
 	
 	
@@ -234,6 +199,25 @@ THREE.WebXRManager = function (xrDisplays, renderer, camera, scene, updateCallba
 		console.log('handleLayerBlur');
 	};
 	
+	// Autostart an AR session if is the only one available
+	var vrSupportedDisplays = 0;
+	var arSupportedDisplays = 0;
+	var displayToAutoStart;
+
+	for (var i = 0; i < displays.length; i++) {
+		var display = displays[i];
+		if(display.supportedRealities.vr){
+			vrSupportedDisplays ++;
+		}
+		if(display.supportedRealities.ar){
+			displayToAutoStart = display;
+			arSupportedDisplays ++;
+		}
+	}
+	if(arSupportedDisplays === 1 && vrSupportedDisplays === 0){
+		this.startSession (displayToAutoStart, 'ar');
+		this.autoStarted = true;
+	}
 	/*
 	Extending classes that need to update the layer during each frame should override this method
 	*/

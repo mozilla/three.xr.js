@@ -36,7 +36,15 @@ THREE.WebXRUtils = {
 							ar: false
 						}
 						if(displayObj.supportsSession(ARParamers)){
-							realities.ar = true;
+							if(!displayObj._reality._vrDisplay && isMobileDevice() && !isAppleWebView()){
+								// Mobile browsers except WebARonARCore and iOS App XR app
+								realities.ar = false;
+							}else if (!isMobileDevice()) {
+								// Desktop browsers
+								realities.ar = false;
+							}else{
+								realities.ar = true;
+							}
 						}
 						if(displayObj.supportsSession(VRParamers)){
 							realities.vr = true;
@@ -45,6 +53,15 @@ THREE.WebXRUtils = {
 					}
 					resolve(displays);
 				}, 1000);
+
+				function isAppleWebView() {
+					return navigator.userAgent.indexOf('AppleWebKit') && navigator.userAgent.indexOf('Safari') === -1;
+				};
+
+				function isMobileDevice() {
+					return (typeof window.orientation !== 'undefined') || (navigator.userAgent.indexOf('IEMobile') !== -1);
+				};
+
 				return;
 			}).catch(err => {
 				console.error('Error getting XR displays', err);
