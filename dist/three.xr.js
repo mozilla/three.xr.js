@@ -362,6 +362,7 @@ THREE.WebXRManager = function (xrDisplays, renderer, camera, scene, updateCallba
 	var vrSupportedDisplays = 0;
 	var arSupportedDisplays = 0;
 	var displayToAutoStart;
+	this.totalSupportedDisplays = 0;
 
 	for (var i = 0; i < displays.length; i++) {
 		var display = displays[i];
@@ -377,6 +378,8 @@ THREE.WebXRManager = function (xrDisplays, renderer, camera, scene, updateCallba
 		this.startSession(displayToAutoStart, 'ar');
 		this.autoStarted = true;
 	}
+
+	this.totalSupportedDisplays = arSupportedDisplays + vrSupportedDisplays;
 	/*
  Extending classes that need to update the layer during each frame should override this method
  */
@@ -485,7 +488,7 @@ THREE.WebXRUtils = {
 										realities.ar = true;
 									}
 								}
-								if (displayObj.supportsSession(VRParamers)) {
+								if (displayObj.supportsSession(VRParamers) && displayObj._displayName.indexOf('polyfill') === -1) {
 									realities.vr = true;
 								}
 								displayObj.supportedRealities = realities;

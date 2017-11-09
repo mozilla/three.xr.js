@@ -27,8 +27,8 @@
 
       var cube, sky;
 
-      // 3d, ar, vr
-      var activeRealityType = '3d';
+      // ar, magicWindow, vr
+      var activeRealityType = 'magicWindow';
 
       THREE.WebXRUtils.getDisplays().then(init);
 
@@ -91,7 +91,7 @@
       }
 
       function sessionStopped(data) {
-        activeRealityType = '3d';
+        activeRealityType = 'magicWindow';
         if(data.session.realityType === 'ar'){
           sky.visible = true;
         }
@@ -176,7 +176,7 @@
 
       function render() {
         switch (activeRealityType) {
-          case '3d':
+          case 'magicWindow':
           case 'vr':
             var delta = clock.getDelta() * 60;
             cube.rotation.y += delta * 0.01;

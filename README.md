@@ -76,13 +76,13 @@ function init(displays) {
 function sessionStarted(data) {
   activeRealityType = data.session.realityType;
   // We can show or hide elements depending on the active reality type
-  // 3d, ar, vr
+  // ar, magicWindow, vr
 }
 
 function sessionStopped(data) {
-  activeRealityType = '3d';
+  activeRealityType = 'magicWindow';
   // We can show or hide elements depending on the active reality type
-  // 3d, ar, vr
+  // ar, magicWindow, vr
 }
 
 function addEnterButtons(displays) {
@@ -109,10 +109,10 @@ function update(frame) {
 
 function render() {
   // We can different commands depending on the active reality type
-  // 3d, ar, vr
+  // ar, magicWindow, vr
   switch (activeRealityType) {
-    case '3d':
     case 'ar':
+    case 'magicWindow':
     case 'vr':
       
       break;

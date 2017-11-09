@@ -46,7 +46,7 @@ THREE.WebXRUtils = {
 								realities.ar = true;
 							}
 						}
-						if(displayObj.supportsSession(VRParamers)){
+						if(displayObj.supportsSession(VRParamers) && displayObj._displayName.indexOf('polyfill') === -1){
 							realities.vr = true;
 						}
 						displayObj.supportedRealities = realities;
