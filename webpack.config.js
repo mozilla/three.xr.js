@@ -14,11 +14,14 @@ module.exports = {
   },
   module: {
     rules: [
-      { test: /\.js/, exclude: /node_modules/, use: ["babel-loader"] }
+      { test: /\.js/, exclude: /node_modules/, use: ['babel-loader'] }
     ]
   },
   plugins: PLUGINS,
   devServer: {
+    publicPath: '/dist',
+    contentBase: [path.resolve(__dirname)],
+    host: '0.0.0.0',
     disableHostCheck: true
   }
 };

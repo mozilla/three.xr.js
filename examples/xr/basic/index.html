@@ -64,7 +64,12 @@
         window.addEventListener( 'resize', onWindowResize, false );
         onWindowResize();
 
-        renderer.xr = new THREE.WebXRManager(displays, renderer, camera, scene, update);
+        var options = {
+          // Flag to start AR if is the unique display available.
+          AR_AUTOSTART: false, // Default: true
+        }
+
+        renderer.xr = new THREE.WebXRManager(options, displays, renderer, camera, scene, update);
         renderer.xr.addEventListener('sessionStarted', sessionStarted);
         renderer.xr.addEventListener('sessionStopped', sessionStopped);
 

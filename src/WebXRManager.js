@@ -1,5 +1,8 @@
 
-THREE.WebXRManager = function (xrDisplays, renderer, camera, scene, updateCallback){
+THREE.WebXRManager = function (options = {}, displays, renderer, camera, scene, updateCallback){
+
+	this.options = options;
+	this.displays = displays;
 	this.renderer = renderer;
 	this.camera = camera;
 	this.scene = scene;
@@ -7,10 +10,7 @@ THREE.WebXRManager = function (xrDisplays, renderer, camera, scene, updateCallba
 	var scope = this;
 	var boundHandleFrame = handleFrame.bind(this); // Useful for setting up the requestAnimationFrame callback
 	var boundHandleFrameDeactivate = handleFrameDeactivate.bind(this);
-
 	var frameData = null;
-
-	var displays = xrDisplays;
 
 	var requestedFloor = false;
 	var floorGroup = new THREE.Group();
@@ -27,6 +27,7 @@ THREE.WebXRManager = function (xrDisplays, renderer, camera, scene, updateCallba
 
 	this.autoStarted = false;
 
+	// Requested when the session is stopped
 	function handleFrameDeactivate(frame){
 		// Do nothing
 	}
@@ -205,8 +206,8 @@ THREE.WebXRManager = function (xrDisplays, renderer, camera, scene, updateCallba
 	var displayToAutoStart;
 	this.totalSupportedDisplays = 0;
 
-	for (var i = 0; i < displays.length; i++) {
-		var display = displays[i];
+	for (var i = 0; i < this.displays.length; i++) {
+		var display = this.displays[i];
 		if(display.supportedRealities.vr){
 			vrSupportedDisplays ++;
 		}
@@ -215,9 +216,9 @@ THREE.WebXRManager = function (xrDisplays, renderer, camera, scene, updateCallba
 			arSupportedDisplays ++;
 		}
 	}
-	if(arSupportedDisplays === 1 && vrSupportedDisplays === 0){
-		this.startSession (displayToAutoStart, 'ar');
+	if(arSupportedDisplays === 1 && vrSupportedDisplays === 0 && this.options.AR_AUTOSTART){
 		this.autoStarted = true;
+		this.startSession (displayToAutoStart, 'ar');
 	}
 
 	this.totalSupportedDisplays = arSupportedDisplays + vrSupportedDisplays;
