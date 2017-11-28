@@ -67,7 +67,7 @@ function init(displays) {
 
   // Listen when a session is started or stopped
   renderer.xr.addEventListener('sessionStarted', sessionStarted);
-  renderer.xr.addEventListener('sessionStopped', sessionStopped);
+  renderer.xr.addEventListener('sessionEnded', sessionEnded);
 
   // Auto start if only has one AR display supported
   if(!renderer.xr.autoStarted){
@@ -84,7 +84,7 @@ function sessionStarted(data) {
   // ar, magicWindow, vr
 }
 
-function sessionStopped(data) {
+function sessionEnded(data) {
   activeRealityType = 'magicWindow';
   // We can show or hide elements depending on the active reality type
   // ar, magicWindow, vr

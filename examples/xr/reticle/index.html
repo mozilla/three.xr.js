@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title>three.xr.js XR simplest example</title>
+    <title>three.xr.js XR reticle example</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
     <style>
@@ -26,6 +26,8 @@
       var renderer, camera, scene;
 
       var cube, sky;
+
+      var reticle;
 
       // ar, magicWindow, vr
       var activeRealityType = 'magicWindow';
@@ -67,11 +69,14 @@
         var options = {
           // Flag to start AR if is the unique display available.
           AR_AUTOSTART: false, // Default: true
+          PIN_TO_START: true, // Default: false
         }
 
         renderer.xr = new THREE.WebXRManager(options, displays, renderer, camera, scene, update);
         renderer.xr.addEventListener('sessionStarted', sessionStarted);
         renderer.xr.addEventListener('sessionEnded', sessionEnded);
+        renderer.xr.addEventListener('poseLost', poseLost);
+        renderer.xr.addEventListener('poseFound', poseFound);
 
         if(!renderer.xr.autoStarted){
           var buttonsContainer = document.createElement( 'div' );
@@ -100,6 +105,14 @@
         if(data.session.realityType === 'ar'){
           sky.visible = true;
         }
+      }
+
+      function poseLost() {
+      //  console.log('---lost');
+      }
+
+      function poseFound() {
+      //  console.log('---found');
       }
 
       function addEnterButtons(displays) {

@@ -1145,6 +1145,7 @@ var XRSession = function (_EventHandlerBase) {
 		_this._xr = xr;
 		_this._display = display;
 		_this._createParameters = createParameters;
+		_this._ended = false;
 
 		_this._baseLayer = null;
 		_this._stageBounds = null;
@@ -1156,6 +1157,7 @@ var XRSession = function (_EventHandlerBase) {
 		value: function requestFrame(callback) {
 			var _this2 = this;
 
+			if (this._ended) return null;
 			if (typeof callback !== 'function') {
 				throw 'Invalid callback';
 			}
@@ -1175,8 +1177,12 @@ var XRSession = function (_EventHandlerBase) {
 	}, {
 		key: 'end',
 		value: function end() {
-			//returns Promise<void>
-			throw 'Not implemented';
+			if (this._ended) return;
+			this._ended = true;
+			this._display._stop();
+			return new Promise(function (resolve, reject) {
+				resolve();
+			});
 		}
 	}, {
 		key: '_createPresentationFrame',
@@ -3671,9 +3677,12 @@ var FlatDisplay = function (_XRDisplay) {
 		}
 	}, {
 		key: '_stop',
-		value: function _stop() {}
-		// TODO figure out how to stop ARKit and ARCore so that CameraReality can still work
-
+		value: function _stop() {
+			// TODO figure out how to stop ARKit and ARCore so that CameraReality can still work
+			if (this.running === false) return;
+			this.running = false;
+			this._reality._stop();
+		}
 
 		/*
   Called by a session to indicate that its baseLayer attribute has been set.
@@ -4121,10 +4130,6 @@ var CameraReality = function (_Reality) {
 							if (_this._elContext === null) {
 								throw 'Could not create CameraReality GL context';
 							}
-							window.addEventListener('resize', function () {
-								_this._arCoreCanvas.width = window.innerWidth;
-								_this._arCoreCanvas.height = window.innerHeight;
-							}, false);
 							break;
 						}
 					}
@@ -4144,6 +4149,13 @@ var CameraReality = function (_Reality) {
 				}
 			});
 		}
+
+		window.addEventListener('resize', function () {
+			if (_this._arCoreCanvas) {
+				_this._arCoreCanvas.width = window.innerWidth;
+				_this._arCoreCanvas.height = window.innerHeight;
+			}
+		}, false);
 		return _this;
 	}
 
@@ -4208,6 +4220,7 @@ var CameraReality = function (_Reality) {
 						_this2._running = false;
 					});
 				} else {
+					this._xr._realityEls.appendChild(this._videoEl);
 					this._videoEl.play();
 				}
 			}
@@ -4215,13 +4228,19 @@ var CameraReality = function (_Reality) {
 	}, {
 		key: '_stop',
 		value: function _stop() {
+			if (this._running === false) return;
+			this._running = false;
 			if (_ARKitWrapper2.default.HasARKit()) {
 				if (this._arKitWrapper === null) {
 					return;
 				}
 				this._arKitWrapper.stop();
+			} else if (this._arCoreCanvas) {
+				this._xr._realityEls.removeChild(this._arCoreCanvas);
+				this._arCoreCanvas = null;
 			} else if (this._videoEl !== null) {
 				this._videoEl.pause();
+				this._xr._realityEls.removeChild(this._videoEl);
 			}
 		}
 	}, {
