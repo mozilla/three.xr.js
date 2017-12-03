@@ -1179,7 +1179,7 @@ var XRSession = function (_EventHandlerBase) {
 		value: function end() {
 			if (this._ended) return;
 			this._ended = true;
-			this._display._stop();
+			// this._display._stop();
 			return new Promise(function (resolve, reject) {
 				resolve();
 			});
