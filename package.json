@@ -1,6 +1,6 @@
 {
   "name": "three.xr.js",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "Library to build WebXR experiences with three.js",
   "main": "dist/three.xr.js",
   "scripts": {
@@ -9,7 +9,7 @@
     "start": "webpack-dev-server --host 0.0.0.0",
     "lint": "semistandard -v | snazzy"
   },
-  "repository": "https://github.com/arturitu/three.xr.js",
+  "repository": "https://github.com/mozilla/three.xr.js",
   "license": "MIT",
   "semistandard": {
     "ignore": [
