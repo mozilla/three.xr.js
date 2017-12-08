@@ -105,8 +105,8 @@ function addEnterButtons(displays) {
 function onWindowResize() {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
-  renderer.setSize( window.innerWidth, window.innerHeight );
 }
+
 // Called once per frame, before render, to give the app a chance to update this.scene
 function update(frame) {
   render();
@@ -125,6 +125,7 @@ function render() {
 
   // Only renderer.render out of renderer.xr if the session is not active
   if(!renderer.xr.sessionActive){
+    renderer.setSize( window.innerWidth, window.innerHeight );
     renderer.render(this.scene, this.camera);
   }
 }

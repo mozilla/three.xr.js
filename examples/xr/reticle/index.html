@@ -17,7 +17,6 @@
   </head>
   <body>
     <script src="../../../vendor/three.js"></script>
-    <script src="../../../vendor/webxr-polyfill.js"></script>
     <script src='../../../dist/three.xr.js'></script>
     <script>
       var clock = new THREE.Clock();
@@ -184,7 +183,6 @@
       function onWindowResize() {
         camera.aspect = window.innerWidth / window.innerHeight;
         camera.updateProjectionMatrix();
-        renderer.setSize( window.innerWidth, window.innerHeight );
       }
 
       // Called once per frame, before render, to give the app a chance to update this.scene
@@ -202,6 +200,7 @@
         }
 
         if(!renderer.xr.sessionActive){
+          renderer.setSize( window.innerWidth, window.innerHeight );
           renderer.render(this.scene, this.camera);
         }
       }
