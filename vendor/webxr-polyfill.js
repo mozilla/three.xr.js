@@ -2648,6 +2648,8 @@ var XRPolyfill = function (_EventHandlerBase) {
 		window.XRLayer = _XRLayer2.default;
 		window.XRWebGLLayer = _XRWebGLLayer2.default;
 
+		_this._getVRDisplaysFinished = false;
+
 		// Reality instances that may be shared by multiple XRSessions
 		_this._sharedRealities = [new _CameraReality2.default(_this)];
 		_this._privateRealities = [];
@@ -2683,7 +2685,12 @@ var XRPolyfill = function (_EventHandlerBase) {
 						}
 					}
 				}
+
+				_this._getVRDisplaysFinished = true;
 			});
+		} else {
+			// if no WebVR, we don't need to wait
+			_this._getVRDisplaysFinished = true;
 		}
 
 		// These elements are at the beginning of the body and absolutely positioned to fill the entire window
@@ -2712,10 +2719,16 @@ var XRPolyfill = function (_EventHandlerBase) {
 	_createClass(XRPolyfill, [{
 		key: 'getDisplays',
 		value: function getDisplays() {
-			var _this2 = this;
-
+			var self = this;
+			var waitTillDisplaysChecked = function waitTillDisplaysChecked(resolve) {
+				if (!self._getVRDisplaysFinished) {
+					setTimeout(waitTillDisplaysChecked.bind(self, resolve), 30);
+				} else {
+					resolve(self._displays);
+				}
+			};
 			return new Promise(function (resolve, reject) {
-				resolve(_this2._displays);
+				waitTillDisplaysChecked(resolve);
 			});
 		}
 
@@ -3970,7 +3983,6 @@ var HeadMountedDisplay = function (_XRDisplay) {
 			}]).then(function () {
 				var leftEye = _this2._vrDisplay.getEyeParameters('left');
 				var rightEye = _this2._vrDisplay.getEyeParameters('right');
-				console.log(leftEye, rightEye);
 				baseLayer._context.canvas.width = Math.max(leftEye.renderWidth, rightEye.renderWidth) * 2;
 				baseLayer._context.canvas.height = Math.max(leftEye.renderHeight, rightEye.renderHeight);
 				baseLayer._context.canvas.style.position = 'absolute';
