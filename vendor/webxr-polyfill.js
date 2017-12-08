@@ -3485,6 +3485,8 @@ var XRWebGLLayer = function (_XRLayer) {
 
 		_this._session = session;
 		_this._context = context;
+		_this._width = _this._context.canvas.width;
+		_this._height = _this._context.canvas.height;
 		_this._framebuffer = null; // TODO
 		return _this;
 	}
@@ -3537,19 +3539,27 @@ var XRWebGLLayer = function (_XRLayer) {
 		}
 	}, {
 		key: 'framebufferWidth',
+		set: function set(w) {
+			this._width = w;
+			this._context.canvas.width = w;
+		},
 		get: function get() {
 			// not using this for now, on iOS it's not good.  
 			// var pr = window.devicePixelRatio || 1;
 			//return this._context.canvas.clientWidth;
-			return this._context.canvas.width;
+			return this._width;
 		}
 	}, {
 		key: 'framebufferHeight',
+		set: function set(h) {
+			this._height = h;
+			this._context.canvas.height = h;
+		},
 		get: function get() {
 			// not using this for now, on iOS it's not good.  
 			// var pr = window.devicePixelRatio || 1;
 			//return this._context.canvas.clientHeight;
-			return this._context.canvas.height;
+			return this._height;
 		}
 	}]);
 
@@ -3718,8 +3728,8 @@ var FlatDisplay = function (_XRDisplay) {
 
 			// TODO:  Need to remove this listener if a new base layer is set
 			window.addEventListener('resize', function () {
-				baseLayer._context.canvas.width = baseLayer._context.canvas.clientWidth;
-				baseLayer._context.canvas.height = baseLayer._context.canvas.clientHeight;
+				baseLayer.framebufferWidth = baseLayer._context.canvas.clientWidth;
+				baseLayer.framebufferHeight = baseLayer._context.canvas.clientHeight;
 			}, false);
 
 			this._xr._sessionEls.appendChild(baseLayer._context.canvas);
@@ -3983,8 +3993,8 @@ var HeadMountedDisplay = function (_XRDisplay) {
 			}]).then(function () {
 				var leftEye = _this2._vrDisplay.getEyeParameters('left');
 				var rightEye = _this2._vrDisplay.getEyeParameters('right');
-				baseLayer._context.canvas.width = Math.max(leftEye.renderWidth, rightEye.renderWidth) * 2;
-				baseLayer._context.canvas.height = Math.max(leftEye.renderHeight, rightEye.renderHeight);
+				baseLayer.framebufferWidth = Math.max(leftEye.renderWidth, rightEye.renderWidth) * 2;
+				baseLayer.framebufferHeight = Math.max(leftEye.renderHeight, rightEye.renderHeight);
 				baseLayer._context.canvas.style.position = 'absolute';
 				baseLayer._context.canvas.style.bottom = '1px';
 				baseLayer._context.canvas.style.right = '1px';
