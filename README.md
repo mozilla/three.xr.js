@@ -48,7 +48,6 @@ function init(displays) {
   scene.add( camera );
 
   renderer = new THREE.WebGLRenderer( { alpha: true } );
-  renderer.setPixelRatio(window.devicePixelRatio);
   renderer.autoClear = false;
   container.appendChild( renderer.domElement );
 
