@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>three.xr.js AR reticle example</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <style>
+      body, html {
+        padding: 0;
+        margin: 0;
+        width: 100%;
+        height: 100%;
+        -webkit-user-select: none;
+        user-select: none;
+      }
+    </style>
+  </head>
+  <body>
+    <script src="../../../vendor/three.js"></script>
+    <script src='../../../dist/three.xr.js'></script>
+    <script>
+      var clock = new THREE.Clock();
+
+      var container;
+      var renderer, camera, scene;
+
+      var reticle, sky;
+
+      // ar, magicWindow, vr
+      var activeRealityType = 'ar';
+
+      THREE.WebXRUtils.getDisplays().then(init);
+
+      function init(displays) {
+        container = document.createElement( 'div' );
+        document.body.appendChild( container );
+        
+        scene = new THREE.Scene();
+        camera = new THREE.PerspectiveCamera();
+        scene.add( camera );
+
+        renderer = new THREE.WebGLRenderer( { alpha: true } );
+        renderer.autoClear = false;
+        container.appendChild( renderer.domElement );
+
+        // Add custom content
+        reticle = new THREE.Mesh(
+          new THREE.RingGeometry(0.04, 0.05, 36, 64),
+          new THREE.MeshBasicMaterial({ color: '#DDFFDD' })
+        );
+        reticle.geometry.applyMatrix(new THREE.Matrix4().makeRotationX(THREE.Math.degToRad(-90)));
+        reticle.visible = false;
+        scene.add(reticle);
+
+        // End custom content
+        window.addEventListener( 'resize', onWindowResize, false );
+        onWindowResize();
+
+        var options = {
+          // Flag to start AR if is the unique display available.
+          AR_AUTOSTART: true
+        }
+
+        window.XRViewPose.SITTING_EYE_HEIGHT = 0;
+
+        renderer.xr = new THREE.WebXRManager(options, displays, renderer, camera, scene, update);
+        renderer.xr.addEventListener('sessionStarted', sessionStarted);
+
+        renderer.animate(render);
+      }
+
+      function sessionStarted(data) {
+        activeRealityType = data.session.realityType;
+      }
+
+      function onWindowResize() {
+        setTimeout(() => {
+          camera.aspect = window.innerWidth / window.innerHeight;
+          camera.updateProjectionMatrix();
+        }, 150);
+      }
+
+      // Called once per frame, before render, to give the app a chance to update this.scene
+      function update(frame) {
+        var hit = frame.hitTestNoAnchor(0.5, 0.5);
+
+        var model = new THREE.Matrix4();
+        var tempPos = new THREE.Vector3();
+        var tempQuat = new THREE.Quaternion();
+        var tempScale = new THREE.Vector3();
+        if (hit && hit.length > 0) {
+          reticle.visible = true
+          model.fromArray(hit[0].modelMatrix);
+          model.decompose(tempPos, tempQuat, tempScale);
+          reticle.position.copy(tempPos);
+          reticle.quaternion.copy(tempQuat);
+        }
+      }
+
+    </script>
+  </body>
+</html>
