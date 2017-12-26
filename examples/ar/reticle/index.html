@@ -61,12 +61,9 @@
           AR_AUTOSTART: true
         }
 
-        window.XRViewPose.SITTING_EYE_HEIGHT = 0;
-
         renderer.xr = new THREE.WebXRManager(options, displays, renderer, camera, scene, update);
         renderer.xr.addEventListener('sessionStarted', sessionStarted);
 
-        renderer.animate(render);
       }
 
       function sessionStarted(data) {

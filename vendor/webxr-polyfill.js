@@ -9753,7 +9753,6 @@ var CameraReality = function (_Reality) {
 			return new Promise(function (resolve, reject) {
 				if (_this4._arKitWrapper !== null) {
 					// Perform a hit test using the ARKit integration
-					var test = _this4._arKitWrapper.hitTestNoAnchor(normalizedScreenX, normalizedScreenY);
 					_this4._arKitWrapper.hitTest(normalizedScreenX, normalizedScreenY, _ARKitWrapper2.default.HIT_TEST_TYPE_EXISTING_PLANES).then(function (hits) {
 						if (hits.length === 0) {
 							resolve(null);
@@ -9867,6 +9866,9 @@ var CameraReality = function (_Reality) {
 			if (this._arKitWrapper !== null) {
 				// Perform a hit test using the ARKit integration
 				var hits = this._arKitWrapper.hitTestNoAnchor(normalizedScreenX, normalizedScreenY);
+				for (var i = 0; i < hits.length; i++) {
+					hits[i].modelMatrix[13] += _XRViewPose2.default.SITTING_EYE_HEIGHT;
+				}
 				if (hits.length == 0) {
 					return null;
 				}
@@ -9874,6 +9876,9 @@ var CameraReality = function (_Reality) {
 			} else if (this._vrDisplay !== null) {
 				// Perform a hit test using the ARCore data
 				var _hits = this._vrDisplay.hitTest(normalizedScreenX, normalizedScreenY);
+				for (var _i = 0; _i < _hits.length; _i++) {
+					_hits[_i].modelMatrix[13] += _XRViewPose2.default.SITTING_EYE_HEIGHT;
+				}
 				if (_hits.length == 0) {
 					return null;
 				}
