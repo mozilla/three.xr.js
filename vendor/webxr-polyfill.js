@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 17);
+/******/ 	return __webpack_require__(__webpack_require__.s = 18);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -878,11 +878,11 @@ var _EventHandlerBase2 = __webpack_require__(2);
 
 var _EventHandlerBase3 = _interopRequireDefault(_EventHandlerBase2);
 
-var _VirtualReality = __webpack_require__(18);
+var _VirtualReality = __webpack_require__(19);
 
 var _VirtualReality2 = _interopRequireDefault(_VirtualReality);
 
-var _XRFieldOfView = __webpack_require__(19);
+var _XRFieldOfView = __webpack_require__(20);
 
 var _XRFieldOfView2 = _interopRequireDefault(_XRFieldOfView);
 
@@ -1161,6 +1161,11 @@ var Reality = function (_EventHandlerBase) {
 		value: function _hitTestNoAnchor(normalizedScreenX, normalizedScreenY, display) {
 			throw new Error('Exending classes should implement _hitTestNoAnchor');
 		}
+	}, {
+		key: '_getLightAmbientIntensity',
+		value: function _getLightAmbientIntensity() {
+			throw new Error('Exending classes should implement _getLightAmbientIntensity');
+		}
 		// attribute EventHandler onchange;
 
 	}, {
@@ -1407,7 +1412,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _XRViewport = __webpack_require__(13);
+var _XRViewport = __webpack_require__(14);
 
 var _XRViewport2 = _interopRequireDefault(_XRViewport);
 
@@ -1768,7 +1773,7 @@ var _quat = __webpack_require__(32);
 
 var quat = _interopRequireWildcard(_quat);
 
-var _vec = __webpack_require__(16);
+var _vec = __webpack_require__(17);
 
 var vec3 = _interopRequireWildcard(_vec);
 
@@ -1822,6 +1827,7 @@ var ARKitWrapper = function (_EventHandlerBase) {
 		_this._isInitialized = false;
 		_this._rawARData = null;
 
+		_this.lightIntensity = 1000;
 		/**
      * The current projection matrix of the device.
      * @type {Float32Array}
@@ -2413,6 +2419,7 @@ var ARKitWrapper = function (_EventHandlerBase) {
 				detail: this._rawARData
 			}));
 
+			this.lightIntensity = data.light_intensity;
 			this.viewMatrix_ = data.camera_view;
 			this.projectionMatrix_ = data.projection_camera;
 
@@ -2624,6 +2631,54 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+/*
+XRLightEstimate represents the attributes of environmental light as supplied by the device's sensors.
+*/
+var XRLightEstimate = function () {
+	function XRLightEstimate() {
+		_classCallCheck(this, XRLightEstimate);
+
+		this._ambientLightIntensity = 1;
+	}
+
+	_createClass(XRLightEstimate, [{
+		key: 'getAmbientColorTemperature',
+		value: function getAmbientColorTemperature() {
+			//readonly attribute double ambientColorTemperature;
+			throw new Error('Not implemented');
+		}
+	}, {
+		key: 'ambientIntensity',
+		set: function set(value) {
+			// A value of 1000 represents "neutral" lighting. (https://developer.apple.com/documentation/arkit/arlightestimate/2878308-ambientintensity)
+			this._ambientLightIntensity = value / 1000;
+		},
+		get: function get() {
+			//readonly attribute double ambientIntensity;
+			return this._ambientLightIntensity;
+		}
+	}]);
+
+	return XRLightEstimate;
+}();
+
+exports.default = XRLightEstimate;
+
+/***/ }),
+/* 13 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
 var _MatrixMath = __webpack_require__(0);
 
 var _MatrixMath2 = _interopRequireDefault(_MatrixMath);
@@ -2713,7 +2768,7 @@ var XRAnchorOffset = function () {
 exports.default = XRAnchorOffset;
 
 /***/ }),
-/* 13 */
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2780,7 +2835,7 @@ var XRViewport = function () {
 exports.default = XRViewport;
 
 /***/ }),
-/* 14 */
+/* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2820,7 +2875,7 @@ var XRLayer = function (_EventHandlerBase) {
 exports.default = XRLayer;
 
 /***/ }),
-/* 15 */
+/* 16 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2919,7 +2974,7 @@ DeviceOrientationTracker.HALF_PI_AROUND_X = new _Quaternion2.default(-Math.sqrt(
 DeviceOrientationTracker.DEG_TO_RAD = Math.PI / 180;
 
 /***/ }),
-/* 16 */
+/* 17 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3769,7 +3824,7 @@ var forEach = exports.forEach = function () {
 }();
 
 /***/ }),
-/* 17 */
+/* 18 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3785,7 +3840,7 @@ var _XRSession = __webpack_require__(7);
 
 var _XRSession2 = _interopRequireDefault(_XRSession);
 
-var _XRSessionCreateParameters = __webpack_require__(20);
+var _XRSessionCreateParameters = __webpack_require__(21);
 
 var _XRSessionCreateParameters2 = _interopRequireDefault(_XRSessionCreateParameters);
 
@@ -3793,11 +3848,11 @@ var _Reality = __webpack_require__(6);
 
 var _Reality2 = _interopRequireDefault(_Reality);
 
-var _XRPointCloud = __webpack_require__(21);
+var _XRPointCloud = __webpack_require__(22);
 
 var _XRPointCloud2 = _interopRequireDefault(_XRPointCloud);
 
-var _XRLightEstimate = __webpack_require__(22);
+var _XRLightEstimate = __webpack_require__(12);
 
 var _XRLightEstimate2 = _interopRequireDefault(_XRLightEstimate);
 
@@ -3809,7 +3864,7 @@ var _XRPlaneAnchor = __webpack_require__(23);
 
 var _XRPlaneAnchor2 = _interopRequireDefault(_XRPlaneAnchor);
 
-var _XRAnchorOffset = __webpack_require__(12);
+var _XRAnchorOffset = __webpack_require__(13);
 
 var _XRAnchorOffset2 = _interopRequireDefault(_XRAnchorOffset);
 
@@ -3829,7 +3884,7 @@ var _XRView = __webpack_require__(8);
 
 var _XRView2 = _interopRequireDefault(_XRView);
 
-var _XRViewport = __webpack_require__(13);
+var _XRViewport = __webpack_require__(14);
 
 var _XRViewport2 = _interopRequireDefault(_XRViewport);
 
@@ -3841,7 +3896,7 @@ var _XRViewPose = __webpack_require__(9);
 
 var _XRViewPose2 = _interopRequireDefault(_XRViewPose);
 
-var _XRLayer = __webpack_require__(14);
+var _XRLayer = __webpack_require__(15);
 
 var _XRLayer2 = _interopRequireDefault(_XRLayer);
 
@@ -4004,7 +4059,7 @@ var XRPolyfill = function (_EventHandlerBase) {
 if (typeof navigator.XR === 'undefined') navigator.XR = new XRPolyfill();
 
 /***/ }),
-/* 18 */
+/* 19 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4106,7 +4161,7 @@ var VirtualReality = function (_Reality) {
 exports.default = VirtualReality;
 
 /***/ }),
-/* 19 */
+/* 20 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4161,7 +4216,7 @@ var XRFieldOfView = function () {
 exports.default = XRFieldOfView;
 
 /***/ }),
-/* 20 */
+/* 21 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4203,7 +4258,7 @@ var XRSessionCreateParameters = function () {
 exports.default = XRSessionCreateParameters;
 
 /***/ }),
-/* 21 */
+/* 22 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4237,48 +4292,6 @@ var XRPointCloud = function () {
 }();
 
 exports.default = XRPointCloud;
-
-/***/ }),
-/* 22 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-/*
-XRLightEstimate represents the attributes of environmental light as supplied by the device's sensors.
-*/
-var XRLightEstimate = function () {
-	function XRLightEstimate() {
-		_classCallCheck(this, XRLightEstimate);
-	}
-
-	_createClass(XRLightEstimate, [{
-		key: 'getAmbientColorTemperature',
-		value: function getAmbientColorTemperature() {
-			//readonly attribute double ambientColorTemperature;
-			throw new Error('Not implemented');
-		}
-	}, {
-		key: 'ambientIntensity',
-		get: function get() {
-			//readonly attribute double ambientIntensity;
-			throw new Error('Not implemented');
-		}
-	}]);
-
-	return XRLightEstimate;
-}();
-
-exports.default = XRLightEstimate;
 
 /***/ }),
 /* 23 */
@@ -4569,13 +4582,13 @@ var XRPresentationFrame = function () {
 		key: 'hasLightEstimate',
 		get: function get() {
 			//readonly attribute boolean hasLightEstimate;
-			return false;
+			return this._session.reality._getHasLightEstimate();
 		}
 	}, {
 		key: 'lightEstimate',
 		get: function get() {
 			//readonly attribute XRLightEstimate? lightEstimate;
-			return null;
+			return this._session.reality._getLightAmbientIntensity();
 		}
 
 		/*
@@ -4729,7 +4742,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _XRLayer2 = __webpack_require__(14);
+var _XRLayer2 = __webpack_require__(15);
 
 var _XRLayer3 = _interopRequireDefault(_XRLayer2);
 
@@ -4876,7 +4889,7 @@ var _Vector = __webpack_require__(10);
 
 var _Vector2 = _interopRequireDefault(_Vector);
 
-var _DeviceOrientationTracker = __webpack_require__(15);
+var _DeviceOrientationTracker = __webpack_require__(16);
 
 var _DeviceOrientationTracker2 = _interopRequireDefault(_DeviceOrientationTracker);
 
@@ -7053,7 +7066,7 @@ var _mat = __webpack_require__(33);
 
 var mat3 = _interopRequireWildcard(_mat);
 
-var _vec = __webpack_require__(16);
+var _vec = __webpack_require__(17);
 
 var vec3 = _interopRequireWildcard(_vec);
 
@@ -9297,7 +9310,7 @@ var _Vector = __webpack_require__(10);
 
 var _Vector2 = _interopRequireDefault(_Vector);
 
-var _DeviceOrientationTracker = __webpack_require__(15);
+var _DeviceOrientationTracker = __webpack_require__(16);
 
 var _DeviceOrientationTracker2 = _interopRequireDefault(_DeviceOrientationTracker);
 
@@ -9472,9 +9485,13 @@ var _XRViewPose = __webpack_require__(9);
 
 var _XRViewPose2 = _interopRequireDefault(_XRViewPose);
 
-var _XRAnchorOffset = __webpack_require__(12);
+var _XRAnchorOffset = __webpack_require__(13);
 
 var _XRAnchorOffset2 = _interopRequireDefault(_XRAnchorOffset);
+
+var _XRLightEstimate = __webpack_require__(12);
+
+var _XRLightEstimate2 = _interopRequireDefault(_XRLightEstimate);
 
 var _MatrixMath = __webpack_require__(0);
 
@@ -9531,6 +9548,8 @@ var CameraReality = function (_Reality) {
 		_this._elContext = null;
 		_this._vrDisplay = null;
 		_this._vrFrameData = null;
+
+		_this._lightEstimate = new _XRLightEstimate2.default();
 
 		// Try to find a WebVR 1.1 display that supports Google's ARCore extensions
 		if (typeof navigator.getVRDisplays === 'function') {
@@ -9885,6 +9904,26 @@ var CameraReality = function (_Reality) {
 				return _hits;
 			} else {
 				// No platform support for finding anchors
+				return null;
+			}
+		}
+	}, {
+		key: '_getHasLightEstimate',
+		value: function _getHasLightEstimate() {
+			if (this._arKitWrapper !== null) {
+				return true;
+			} else {
+				return false;
+			}
+		}
+	}, {
+		key: '_getLightAmbientIntensity',
+		value: function _getLightAmbientIntensity() {
+			if (this._arKitWrapper !== null) {
+				this._lightEstimate.ambientIntensity = this._arKitWrapper.lightIntensity;
+				return this._lightEstimate.ambientIntensity;
+			} else {
+				// No platform support for ligth estimation
 				return null;
 			}
 		}
