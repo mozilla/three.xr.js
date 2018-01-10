@@ -138,7 +138,7 @@
             if(!renderer.xr.sessionActive){
               // Entering AR.
               button.textContent = 'EXIT AR';
-              renderer.xr.startSession(display, reality);
+              renderer.xr.startSession(display, reality, true);
             }else{
               // Exiting AR.
               button.textContent = 'ENTER AR';
@@ -147,7 +147,7 @@
             }
           }else{
             document.getElementById('buttonsContainer').style.display = 'none';
-            renderer.xr.startSession(display, reality);
+            renderer.xr.startPresenting();
           }
         });
 
