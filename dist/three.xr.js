@@ -127,6 +127,8 @@ THREE.WebXRManager = function () {
 
   this.autoStarted = false;
 
+  this.matrixWorldInverse = new THREE.Matrix4();
+
   this.poseFound = false;
   function handleFrame(frame) {
     if (this.sessionActive) {
@@ -154,23 +156,21 @@ THREE.WebXRManager = function () {
     this.renderer.setSize(this.session.baseLayer.framebufferWidth, this.session.baseLayer.framebufferHeight, false);
     this.renderer.clear();
 
+    this.camera.matrixAutoUpdate = false;
+    this.camera.matrix.fromArray(headPose.poseModelMatrix);
+    this.camera.updateMatrixWorld();
+
     if (this.sessionActive) {
       // Render each view into this.session.baseLayer.context
-      // for(const view of frame.views) {
       for (var i = 0; i < frame.views.length; i++) {
         var view = frame.views[i];
-        this.camera.projectionMatrix.fromArray(view.projectionMatrix);
+        // Each XRView has its own projection matrix, so set the camera to use that
+        this.camera.matrixWorldInverse.fromArray(view.viewMatrix);
         if (this.camera.parent && this.camera.parent.type !== 'Scene') {
-          this.camera.parent.matrixAutoUpdate = false;
-          this.camera.parent.matrix.fromArray(headPose.poseModelMatrix);
-          this.camera.parent.updateMatrixWorld(true);
-        } else {
-          this.camera.matrixAutoUpdate = false;
-          // Each XRView has its own projection matrix, so set the camera to use that
-          this.camera.matrix.fromArray(headPose.poseModelMatrix);
-          this.camera.updateMatrixWorld(true);
+          this.matrixWorldInverse.getInverse(this.camera.parent.matrixWorld);
+          this.camera.matrixWorldInverse.multiply(this.matrixWorldInverse);
         }
-
+        this.camera.projectionMatrix.fromArray(view.projectionMatrix);
         // Set up the renderer to the XRView's viewport and then render
         this.renderer.clearDepth();
         var viewport = view.getViewport(this.session.baseLayer);
@@ -179,17 +179,9 @@ THREE.WebXRManager = function () {
       }
     } else {
       if (this.camera.parent && this.camera.parent.type !== 'Scene') {
-        this.camera.parent.matrixAutoUpdate = false;
-        this.camera.parent.matrix = new THREE.Matrix4();
-        this.camera.parent.updateMatrixWorld(true);
-      } else {
-        // this.camera.matrixAutoUpdate = false;
-        // // Each XRView has its own projection matrix, so set the camera to use that
-        // this.camera.projectionMatrix = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
-        this.camera.matrix = new THREE.Matrix4();
-        this.camera.updateMatrixWorld(true);
+        this.matrixWorldInverse.getInverse(this.camera.parent.matrixWorld);
+        this.camera.matrixWorldInverse.multiply(this.matrixWorldInverse);
       }
-
       // Set up the renderer to the XRView's viewport and then render
       this.renderer.clearDepth();
       this.renderer.setViewport(0, 0, window.innerWidth, window.innerHeight);
@@ -10480,8 +10472,8 @@ var _typeof2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbo
       key: '_updateFromVRFrameData',
       value: function _updateFromVRFrameData() {
         this._vrDisplay.getFrameData(this._vrFrameData);
-        this._leftView.setViewMatrix(this._vrFrameData.rightViewMatrix);
-        this._rightView.setViewMatrix(this._vrFrameData.rightProjectionMatrix);
+        this._leftView.setViewMatrix(this._vrFrameData.leftViewMatrix);
+        this._rightView.setViewMatrix(this._vrFrameData.rightViewMatrix);
         this._leftView.setProjectionMatrix(this._vrFrameData.leftProjectionMatrix);
         this._rightView.setProjectionMatrix(this._vrFrameData.rightProjectionMatrix);
         if (this._vrFrameData.pose) {
