@@ -1440,6 +1440,7 @@ var XRView = function () {
 		this._eye = eye;
 		this._viewport = new _XRViewport2.default(0, 0, 1, 1);
 		this._projectionMatrix = new Float32Array(16);
+		this._viewMatrix = new Float32Array(16);
 		_MatrixMath2.default.mat4_perspectiveFromFieldOfView(this._projectionMatrix, this._fov, this._depthNear, this._depthFar);
 	}
 
@@ -1448,6 +1449,13 @@ var XRView = function () {
 		value: function setProjectionMatrix(array16) {
 			for (var i = 0; i < 16; i++) {
 				this._projectionMatrix[i] = array16[i];
+			}
+		}
+	}, {
+		key: 'setViewMatrix',
+		value: function setViewMatrix(array16) {
+			for (var i = 0; i < 16; i++) {
+				this._viewMatrix[i] = array16[i];
 			}
 		}
 	}, {
@@ -1480,6 +1488,11 @@ var XRView = function () {
 		key: 'projectionMatrix',
 		get: function get() {
 			return this._projectionMatrix;
+		}
+	}, {
+		key: 'viewMatrix',
+		get: function get() {
+			return this._viewMatrix;
 		}
 	}]);
 
@@ -4152,6 +4165,11 @@ var VirtualReality = function (_Reality) {
 		key: '_hitTestNoAnchor',
 		value: function _hitTestNoAnchor(normalizedScreenX, normalizedScreenY, display) {
 			return null;
+		}
+	}, {
+		key: '_getHasLightEstimate',
+		value: function _getHasLightEstimate() {
+			return false;
 		}
 	}]);
 
@@ -9432,6 +9450,8 @@ var HeadMountedDisplay = function (_XRDisplay) {
 		key: '_updateFromVRFrameData',
 		value: function _updateFromVRFrameData() {
 			this._vrDisplay.getFrameData(this._vrFrameData);
+			this._leftView.setViewMatrix(this._vrFrameData.rightViewMatrix);
+			this._rightView.setViewMatrix(this._vrFrameData.rightProjectionMatrix);
 			this._leftView.setProjectionMatrix(this._vrFrameData.leftProjectionMatrix);
 			this._rightView.setProjectionMatrix(this._vrFrameData.rightProjectionMatrix);
 			if (this._vrFrameData.pose) {
