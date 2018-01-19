@@ -156,9 +156,15 @@ THREE.WebXRManager = function () {
     this.renderer.setSize(this.session.baseLayer.framebufferWidth, this.session.baseLayer.framebufferHeight, false);
     this.renderer.clear();
 
-    this.camera.matrixAutoUpdate = false;
-    this.camera.matrix.fromArray(headPose.poseModelMatrix);
-    this.camera.updateMatrixWorld();
+    if (this.camera.parent && this.camera.parent.type !== 'Scene') {
+      this.camera.parent.matrixAutoUpdate = false;
+      this.camera.parent.matrix.fromArray(headPose.poseModelMatrix);
+      this.camera.parent.updateMatrixWorld(true);
+    } else {
+      this.camera.matrixAutoUpdate = false;
+      this.camera.matrix.fromArray(headPose.poseModelMatrix);
+      this.camera.updateMatrixWorld(true);
+    }
 
     if (this.sessionActive) {
       // Render each view into this.session.baseLayer.context
@@ -166,10 +172,10 @@ THREE.WebXRManager = function () {
         var view = frame.views[i];
         // Each XRView has its own projection matrix, so set the camera to use that
         this.camera.matrixWorldInverse.fromArray(view.viewMatrix);
-        if (this.camera.parent && this.camera.parent.type !== 'Scene') {
-          this.matrixWorldInverse.getInverse(this.camera.parent.matrixWorld);
-          this.camera.matrixWorldInverse.multiply(this.matrixWorldInverse);
-        }
+        // if (this.camera.parent && this.camera.parent.type !== 'Scene') {
+        //   this.matrixWorldInverse.getInverse(this.camera.parent.matrixWorld);
+        //   this.camera.matrixWorldInverse.multiply(this.matrixWorldInverse);
+        // }
         this.camera.projectionMatrix.fromArray(view.projectionMatrix);
         // Set up the renderer to the XRView's viewport and then render
         this.renderer.clearDepth();
@@ -178,10 +184,10 @@ THREE.WebXRManager = function () {
         this.doRender();
       }
     } else {
-      if (this.camera.parent && this.camera.parent.type !== 'Scene') {
-        this.matrixWorldInverse.getInverse(this.camera.parent.matrixWorld);
-        this.camera.matrixWorldInverse.multiply(this.matrixWorldInverse);
-      }
+      // if (this.camera.parent && this.camera.parent.type !== 'Scene') {
+      //   this.matrixWorldInverse.getInverse(this.camera.parent.matrixWorld);
+      //   this.camera.matrixWorldInverse.multiply(this.matrixWorldInverse);
+      // }
       // Set up the renderer to the XRView's viewport and then render
       this.renderer.clearDepth();
       this.renderer.setViewport(0, 0, window.innerWidth, window.innerHeight);
