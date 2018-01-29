@@ -93,10 +93,15 @@ function addEnterButtons(displays) {
   for (var i = 0; i < displays.length; i++) {
     var display = displays[i];
     if(display.supportedRealities.vr){
+      renderer.vr.enabled = true;
       // Add ENTER VR button
+      // Call this method on 'click' event
+      renderer.xr.startPresenting();
     }
     if(display.supportedRealities.ar){
       // Add ENTER AR button
+      // Call this method on 'click' event
+      renderer.xr.startSession(display, 'ar', true);
     }
   }
 }

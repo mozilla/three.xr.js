@@ -1870,7 +1870,7 @@ var ARKitWrapper = function (_EventHandlerBase) {
 		}
 
 		// Set up some named global methods that the ARKit to JS bridge uses and send out custom events when they are called
-		var eventCallbacks = [['arkitStartRecording', ARKitWrapper.RECORD_START_EVENT], ['arkitStopRecording', ARKitWrapper.RECORD_STOP_EVENT], ['arkitDidMoveBackground', ARKitWrapper.DID_MOVE_BACKGROUND_EVENT], ['arkitWillEnterForeground', ARKitWrapper.WILL_ENTER_FOREGROUND_EVENT], ['arkitInterrupted', ARKitWrapper.INTERRUPTED_EVENT], ['arkitInterruptionEnded', ARKitWrapper.INTERRUPTION_ENDED_EVENT], ['arkitShowDebug', ARKitWrapper.SHOW_DEBUG_EVENT], ['arkitWindowResize', ARKitWrapper.WINDOW_RESIZE_EVENT]];
+		var eventCallbacks = [['arkitStartRecording', ARKitWrapper.RECORD_START_EVENT], ['arkitStopRecording', ARKitWrapper.RECORD_STOP_EVENT], ['arkitDidMoveBackground', ARKitWrapper.DID_MOVE_BACKGROUND_EVENT], ['arkitWillEnterForeground', ARKitWrapper.WILL_ENTER_FOREGROUND_EVENT], ['arkitInterrupted', ARKitWrapper.INTERRUPTED_EVENT], ['arkitInterruptionEnded', ARKitWrapper.INTERRUPTION_ENDED_EVENT], ['arkitShowDebug', ARKitWrapper.SHOW_DEBUG_EVENT], ['arkitWindowResize', ARKitWrapper.WINDOW_RESIZE_EVENT], ['onError', ARKitWrapper.ON_ERROR], ['arTrackingChanged', ARKitWrapper.AR_TRACKING_CHANGED]];
 
 		var _loop = function _loop(_i) {
 			window[eventCallbacks[_i][0]] = function (detail) {
@@ -2620,6 +2620,8 @@ ARKitWrapper.INTERRUPTED_EVENT = 'arkit-interrupted';
 ARKitWrapper.INTERRUPTION_ENDED_EVENT = 'arkit-interruption-ended';
 ARKitWrapper.SHOW_DEBUG_EVENT = 'arkit-show-debug';
 ARKitWrapper.WINDOW_RESIZE_EVENT = 'arkit-window-resize';
+ARKitWrapper.ON_ERROR = 'on-error';
+ARKitWrapper.AR_TRACKING_CHANGED = 'ar_tracking_changed';
 
 // hit test types
 ARKitWrapper.HIT_TEST_TYPE_FEATURE_POINT = 1;
@@ -4985,6 +4987,8 @@ var FlatDisplay = function (_XRDisplay) {
 					this._arKitWrapper.addEventListener(_ARKitWrapper2.default.INIT_EVENT, this._handleARKitInit.bind(this));
 					this._arKitWrapper.addEventListener(_ARKitWrapper2.default.WATCH_EVENT, this._handleARKitUpdate.bind(this));
 					this._arKitWrapper.addEventListener(_ARKitWrapper2.default.WINDOW_RESIZE_EVENT, this._handleARKitWindowResize.bind(this));
+					this._arKitWrapper.addEventListener(_ARKitWrapper2.default.ON_ERROR, this._handleOnError.bind(this));
+					this._arKitWrapper.addEventListener(_ARKitWrapper2.default.AR_TRACKING_CHANGED, this._handleArTrackingChanged.bind(this));
 					this._arKitWrapper.waitForInit().then(function () {
 						_this2._arKitWrapper.watch();
 					});
@@ -5113,6 +5117,25 @@ var FlatDisplay = function (_XRDisplay) {
 		value: function _handleARKitWindowResize(ev) {
 			this.baseLayer.framebufferWidth = ev.detail.width;
 			this.baseLayer.framebufferHeight = ev.detail.height;
+		}
+	}, {
+		key: '_handleOnError',
+		value: function _handleOnError(ev) {
+			//"domain": "error domain",
+			//"code": 1234,
+			//"message": "error message"
+			// Ex: > {code: 3, message: "error.localizedDescription", domain: "error.domain"}
+		}
+	}, {
+		key: '_handleArTrackingChanged',
+		value: function _handleArTrackingChanged(ev) {
+			// ev.detail values
+			// #define WEB_AR_TRACKING_STATE_NORMAL               @"ar_tracking_normal"
+			// #define WEB_AR_TRACKING_STATE_LIMITED              @"ar_tracking_limited"
+			// #define WEB_AR_TRACKING_STATE_LIMITED_INITIALIZING @"ar_tracking_limited_initializing"
+			// #define WEB_AR_TRACKING_STATE_LIMITED_MOTION       @"ar_tracking_limited_excessive_motion"
+			// #define WEB_AR_TRACKING_STATE_LIMITED_FEATURES     @"ar_tracking_limited_insufficient_features"
+			// #define WEB_AR_TRACKING_STATE_NOT_AVAILABLE        @"ar_tracking_not_available"
 		}
 	}, {
 		key: '_createSession',

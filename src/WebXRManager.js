@@ -56,17 +56,13 @@ THREE.WebXRManager = function (options = {}, displays, renderer, camera, scene, 
       this.camera.matrix.fromArray(headPose.poseModelMatrix);
       this.camera.updateMatrixWorld(true);
     }
-
     if (this.sessionActive) {
       // Render each view into this.session.baseLayer.context
       for (var i = 0; i < frame.views.length; i++) {
         var view = frame.views[i];
         // Each XRView has its own projection matrix, so set the camera to use that
         this.camera.matrixWorldInverse.fromArray(view.viewMatrix);
-        // if (this.camera.parent && this.camera.parent.type !== 'Scene') {
-        //   this.matrixWorldInverse.getInverse(this.camera.parent.matrixWorld);
-        //   this.camera.matrixWorldInverse.multiply(this.matrixWorldInverse);
-        // }
+
         this.camera.projectionMatrix.fromArray(view.projectionMatrix);
         // Set up the renderer to the XRView's viewport and then render
         this.renderer.clearDepth();
@@ -75,15 +71,12 @@ THREE.WebXRManager = function (options = {}, displays, renderer, camera, scene, 
         this.doRender();
       }
     } else {
-      // if (this.camera.parent && this.camera.parent.type !== 'Scene') {
-      //   this.matrixWorldInverse.getInverse(this.camera.parent.matrixWorld);
-      //   this.camera.matrixWorldInverse.multiply(this.matrixWorldInverse);
-      // }
       // Set up the renderer to the XRView's viewport and then render
       this.renderer.clearDepth();
       this.renderer.setViewport(0, 0, window.innerWidth, window.innerHeight);
       this.doRender();
     }
+
   }
 
   this.startSession = function (display, reality, autoPresenting) {
@@ -125,19 +118,24 @@ THREE.WebXRManager = function (options = {}, displays, renderer, camera, scene, 
     });
   };
 
-  this.startPresenting = function (){
-    // Set the session's base layer into which the app will render
-    this.session.baseLayer = new XRWebGLLayer(this.session, renderer.context);
+  this.startPresenting = function () {
+    // VR Mode
+    if (displayVR && displayVR._vrDisplay) {
+      displayVR._vrDisplay.isPresenting ? displayVR._vrDisplay.exitPresent() : displayVR._vrDisplay.requestPresent([{source: this.renderer.domElement}]);
+    } else {
+    // AR Mode
+      // Set the session's base layer into which the app will render
+      this.session.baseLayer = new XRWebGLLayer(this.session, renderer.context);
 
-    // Handle layer focus events
-    this.session.baseLayer.addEventListener('focus', ev => { this.handleLayerFocus(ev) });
-    this.session.baseLayer.addEventListener('blur', ev => { this.handleLayerBlur(ev) });
+      // Handle layer focus events
+      this.session.baseLayer.addEventListener('focus', ev => { this.handleLayerFocus(ev) });
+      this.session.baseLayer.addEventListener('blur', ev => { this.handleLayerBlur(ev) });
 
-    this.session.requestFrame(boundHandleFrame);
+      this.session.requestFrame(boundHandleFrame);
+      this.sessions.push(this.session);
+      this.sessionActive = true;
+    }
 
-    this.sessions.push(this.session);
-    this.sessionActive = true;
-    // document.getElementsByClassName('webxr-realities')[0].style.display = 'block';
     this.dispatchEvent({ type: 'sessionStarted', session: this.session });
   };
 
@@ -182,6 +180,7 @@ THREE.WebXRManager = function (options = {}, displays, renderer, camera, scene, 
     var display = this.displays[i];
     if (display.supportedRealities.vr) {
       displayVR = display;
+      this.renderer.vr.setDevice(displayVR._vrDisplay);
       vrSupportedDisplays++;
     }
     if (display.supportedRealities.ar) {

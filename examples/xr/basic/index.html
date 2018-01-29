@@ -24,7 +24,7 @@
       var container;
       var renderer, camera, scene;
 
-      var cube, sky;
+      var floor, cube, sky;
 
       // ar, magicWindow, vr
       var activeRealityType = 'magicWindow';
@@ -38,16 +38,20 @@
         scene = new THREE.Scene();
         camera = new THREE.PerspectiveCamera();
         scene.add( camera );
-
+        camera.position.set(0, 1, 0);
         renderer = new THREE.WebGLRenderer( { alpha: true } );
         renderer.autoClear = false;
         container.appendChild( renderer.domElement );
 
         // Add custom content
-        var geometry = new THREE.BoxGeometry(0.2, 0.2, 0.2);
+        floor = new THREE.Mesh(new THREE.PlaneGeometry(8, 8), new THREE.MeshBasicMaterial({color:0xffffff, transparent: true, opacity: 0.3}));
+        floor.geometry.rotateX(- Math.PI / 2);
+        scene.add (floor);
+
+        var geometry = new THREE.BoxGeometry(0.5,0.5,0.5);
         var material = new THREE.MeshNormalMaterial();
         cube = new THREE.Mesh(geometry, material);
-        cube.position.set(0, 0, -1);
+        cube.position.set(0, 1, -1.5);
         cube.rotation.y = Math.PI/4;
         scene.add (cube);
 
@@ -105,9 +109,10 @@
           var display = displays[i];
           if(display.supportedRealities.vr){
             buttonsContainer.appendChild(getEnterButton(display, 'vr'));
+            renderer.vr.enabled = true;
           }
           if(display.supportedRealities.ar){
-              buttonsContainer.appendChild(getEnterButton(display, 'ar'));
+            buttonsContainer.appendChild(getEnterButton(display, 'ar'));
           }
         }
       }
@@ -181,13 +186,15 @@
           case 'magicWindow':
           case 'vr':
             var delta = clock.getDelta() * 60;
-            cube.rotation.y += delta * 0.01;
+            // cube.rotation.y += delta * 0.01;
             break;
         }
 
         if(!renderer.xr.sessionActive){
           renderer.setSize( window.innerWidth, window.innerHeight );
           renderer.render(this.scene, this.camera);
+        }else{
+          // console.log(camera.getWorldPosition());
         }
       }
 
