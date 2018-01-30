@@ -121,6 +121,7 @@ THREE.WebXRManager = function (options = {}, displays, renderer, camera, scene, 
   this.startPresenting = function () {
     // VR Mode
     if (displayVR && displayVR._vrDisplay) {
+      renderer.vr.enabled = true;
       displayVR._vrDisplay.isPresenting ? displayVR._vrDisplay.exitPresent() : displayVR._vrDisplay.requestPresent([{source: this.renderer.domElement}]);
     } else {
     // AR Mode
@@ -144,6 +145,7 @@ THREE.WebXRManager = function (options = {}, displays, renderer, camera, scene, 
     this.dispatchEvent({ type: 'sessionEnded', session: this.session });
     this.sessionActive = false;
     if (this.session._display._vrDisplay && this.session._display.isPresenting) {
+      renderer.vr.enabled = false;
       this.session._display._vrDisplay.exitPresent();
     }
     // document.getElementsByClassName('webxr-realities')[0].style.display = 'none';

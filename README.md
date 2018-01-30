@@ -93,18 +93,37 @@ function addEnterButtons(displays) {
   for (var i = 0; i < displays.length; i++) {
     var display = displays[i];
     if(display.supportedRealities.vr){
-      renderer.vr.enabled = true;
       // Add ENTER VR button
-      // Call this method on 'click' event
-      renderer.xr.startPresenting();
+      // and to call enterVR on 'click' event
     }
     if(display.supportedRealities.ar){
       // Add ENTER AR button
-      // Call this method on 'click' event
-      renderer.xr.startSession(display, 'ar', true);
+      // and to call enterVR on 'click' event
     }
   }
 }
+
+function enterAR(){
+  renderer.xr.startSession(display, 'ar', true);
+}
+
+function exitAR(){
+  renderer.xr.endSession();
+}
+
+function enterVR(){
+  renderer.xr.startPresenting();
+}
+
+// To detect and exitVR
+window.addEventListener('vrdisplaypresentchange', (evt) => {
+  // Polyfill places cameraActivateddisplay inside the detail property
+  var display = evt.display || evt.detail.display;
+  if (!display.isPresenting) {
+    // Exiting VR.
+    renderer.xr.endSession();
+  }
+});
 
 function onWindowResize() {
   camera.aspect = window.innerWidth / window.innerHeight;

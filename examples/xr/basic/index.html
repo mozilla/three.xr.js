@@ -109,7 +109,6 @@
           var display = displays[i];
           if(display.supportedRealities.vr){
             buttonsContainer.appendChild(getEnterButton(display, 'vr'));
-            renderer.vr.enabled = true;
           }
           if(display.supportedRealities.ar){
             buttonsContainer.appendChild(getEnterButton(display, 'ar'));
@@ -189,13 +188,14 @@
             // cube.rotation.y += delta * 0.01;
             break;
         }
-
+  
         if(!renderer.xr.sessionActive){
           renderer.setSize( window.innerWidth, window.innerHeight );
-          renderer.render(this.scene, this.camera);
+          renderer.render(scene, camera);
         }else{
-          // console.log(camera.getWorldPosition());
+
         }
+        // console.log(camera.getWorldPosition(), cube.getWorldPosition());
       }
 
     </script>

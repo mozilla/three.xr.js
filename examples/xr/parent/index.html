@@ -23,7 +23,7 @@
 
       var container;
       var renderer, camera, scene;
-      var rails, cube;
+      var cameraRig, floor, cube, cube2, cubeOnRig;
 
       var cube, sky;
 
@@ -39,24 +39,28 @@
         scene = new THREE.Scene();
         camera = new THREE.PerspectiveCamera();
         
-        rails = new THREE.Group();
-        rails.position.set(0,1,0);
-        scene.add(rails);
-        rails.add( camera );
+        // Add custom content
+        cameraRig = new THREE.Group();
+        cameraRig.position.set(0,1,0);
+        scene.add(cameraRig);
+        cameraRig.add( camera );
 
-        cube = new THREE.Mesh(new THREE.BoxGeometry(0.03,0.05,0.02), new THREE.MeshNormalMaterial());
-        cube.position.set(0,0,-0.2);
-        rails.add(cube);
+        cubeOnRig = new THREE.Mesh(new THREE.BoxGeometry(0.03,0.05,0.02), new THREE.MeshNormalMaterial());
+        cubeOnRig.position.set(0,0,-0.2);
+        cameraRig.add(cubeOnRig);
 
         renderer = new THREE.WebGLRenderer( { alpha: true } );
         renderer.autoClear = false;
         container.appendChild( renderer.domElement );
+        
+        floor = new THREE.Mesh(new THREE.PlaneGeometry(8, 8), new THREE.MeshBasicMaterial({color:0xaaaaaa}));
+        floor.geometry.rotateX(- Math.PI / 2);
+        scene.add (floor);
 
-        // Add custom content
-        var geometry = new THREE.BoxGeometry(0.1, 0.1, 0.1);
+        var geometry = new THREE.BoxGeometry(0.5,0.5,0.5);
         var material = new THREE.MeshNormalMaterial();
         cube = new THREE.Mesh(geometry, material);
-        cube.position.set(0, 0, -0.35);
+        cube.position.set(0, 1, -1.5);
         cube.rotation.y = Math.PI/4;
         scene.add (cube);
 
@@ -190,7 +194,7 @@
           case 'magicWindow':
           case 'vr':
             var delta = clock.getDelta() * 60;
-            cube.rotation.y += delta * 0.01;
+            // cube.rotation.y += delta * 0.01;
             break;
         }
 
@@ -198,6 +202,7 @@
           renderer.setSize( window.innerWidth, window.innerHeight );
           renderer.render(this.scene, this.camera);
         }
+        // console.log(camera.parent.getWorldPosition());
       }
 
     </script>
