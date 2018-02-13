@@ -47,15 +47,17 @@ THREE.WebXRManager = function (options = {}, displays, renderer, camera, scene, 
     this.renderer.setSize(this.session.baseLayer.framebufferWidth, this.session.baseLayer.framebufferHeight, false);
     this.renderer.clear();
 
+    let poseTarget;
     if (this.camera.parent && this.camera.parent.type !== 'Scene') {
-      this.camera.parent.matrixAutoUpdate = false;
-      this.camera.parent.matrix.fromArray(headPose.poseModelMatrix);
-      this.camera.parent.updateMatrixWorld(true);
+      poseTarget = this.camera.parent;
     } else {
-      this.camera.matrixAutoUpdate = false;
-      this.camera.matrix.fromArray(headPose.poseModelMatrix);
-      this.camera.updateMatrixWorld(true);
+      poseTarget = this.camera;
     }
+    poseTarget.matrixAutoUpdate = false;
+    poseTarget.matrix.fromArray(headPose.poseModelMatrix);
+    poseTarget.matrix.decompose(poseTarget.position, poseTarget.quaternion, poseTarget.scale);
+    poseTarget.updateMatrixWorld(true);
+
     if (this.sessionActive) {
       // Render each view into this.session.baseLayer.context
       for (var i = 0; i < frame.views.length; i++) {
