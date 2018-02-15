@@ -60,7 +60,7 @@ THREE.WebXRUtils = {
 
             function isAppleWebView () {
               return (
-                navigator.userAgent.indexOf('AppleWebKit') &&
+                navigator.userAgent.indexOf('AppleWebKit') !== -1 &&
                 navigator.userAgent.indexOf('Safari') === -1
               );
             }
