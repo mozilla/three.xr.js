@@ -203,13 +203,51 @@
           scene.add(planeGroup);
           planesMap.set(plane.id, planeGroup);
           plane.modelMatrix[13] += SITTING_EYE_HEIGHT;
-          matrix.fromArray(plane.modelMatrix);
+          var mm = plane.modelMatrix;
+          matrix.set(
+            mm[0],
+            mm[4],
+            mm[8],
+            mm[12],
+            mm[1],
+            mm[5],
+            mm[9],
+            mm[13],
+            mm[2],
+            mm[6],
+            mm[10],
+            mm[14],
+            mm[3],
+            mm[7],
+            mm[11],
+            mm[15]
+          );
+          // matrix.fromArray(plane.modelMatrix);
           planeGroup.applyMatrix(matrix);
         }else{
           var planeGroup = planesMap.get(plane.id);
           var planeMesh = planeGroup.children[0];
           plane.modelMatrix[13] += SITTING_EYE_HEIGHT;
-          matrix.fromArray(plane.modelMatrix);
+          var mm = plane.modelMatrix;
+          matrix.set(
+            mm[0],
+            mm[4],
+            mm[8],
+            mm[12],
+            mm[1],
+            mm[5],
+            mm[9],
+            mm[13],
+            mm[2],
+            mm[6],
+            mm[10],
+            mm[14],
+            mm[3],
+            mm[7],
+            mm[11],
+            mm[15]
+          );
+          // matrix.fromArray(plane.modelMatrix);
           planeGroup.matrix = matrix;
         }
         planeMesh.scale.set(plane.extent[0],1,plane.extent[1]);
