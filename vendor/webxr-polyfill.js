@@ -1887,12 +1887,12 @@ var ARKitWrapper = function (_EventHandlerBase) {
 		}
 		/**
    * The result of a raycast into the AR world encoded as a transform matrix.
-   * This structure has a single property - transform - which encodes the
+   * This structure has a single property - modelMatrix - which encodes the
    * translation of the intersection of the hit in the form of a 4x4 matrix.
    * @constructor
    */
 		function VRHit() {
-			this.transform = new Float32Array(16);
+			this.modelMatrix = new Float32Array(16);
 			return this;
 		};
 
@@ -1977,14 +1977,14 @@ var ARKitWrapper = function (_EventHandlerBase) {
    */
 			var sortFunction = function sortFunction(a, b) {
 				// Get the matrix of hit a.
-				setMat4FromArray(hitVars.planeMatrix, a.transform);
+				setMat4FromArray(hitVars.planeMatrix, a.modelMatrix);
 				// Get the translation component of a's matrix.
 				mat4.getTranslation(hitVars.planeIntersection, hitVars.planeMatrix);
 				// Get the distance from the intersection point to the camera.
 				var distA = vec3.distance(hitVars.planeIntersection, hitVars.cameraPosition);
 
 				// Get the matrix of hit b.
-				setMat4FromArray(hitVars.planeMatrix, b.transform);
+				setMat4FromArray(hitVars.planeMatrix, b.modelMatrix);
 				// Get the translation component of b's matrix.
 				mat4.getTranslation(hitVars.planeIntersection, hitVars.planeMatrix);
 				// Get the distance from the intersection point to the camera.
@@ -2033,7 +2033,7 @@ var ARKitWrapper = function (_EventHandlerBase) {
 				for (var i = 0; i < planes.length; i++) {
 					var plane = planes[i];
 					// Get the anchor transform.
-					setMat4FromArray(hitVars.planeMatrix, plane.transform);
+					setMat4FromArray(hitVars.planeMatrix, plane.modelMatrix);
 
 					// Get the position of the anchor in world-space.
 					vec3.set(hitVars.planeCenter, 0, 0, 0);
@@ -2097,7 +2097,7 @@ var ARKitWrapper = function (_EventHandlerBase) {
 					mat4.fromTranslation(hitVars.planeHit, hitVars.planeIntersection);
 					var hit = new VRHit();
 					for (var j = 0; j < 16; j++) {
-						hit.transform[j] = hitVars.planeHit[j];
+						hit.modelMatrix[j] = hitVars.planeHit[j];
 					}
 					hit.i = i;
 					hits.push(hit);
@@ -2447,12 +2447,12 @@ var ARKitWrapper = function (_EventHandlerBase) {
 							id: element.uuid,
 							center: element.h_plane_center,
 							extent: [element.h_plane_extent.x, element.h_plane_extent.z],
-							transform: element.transform
+							modelMatrix: element.transform
 						});
 					} else {
 						this.anchors_.set(element.uuid, {
 							id: element.uuid,
-							transform: element.transform
+							modelMatrix: element.transform
 						});
 					}
 				}
@@ -2479,7 +2479,7 @@ var ARKitWrapper = function (_EventHandlerBase) {
 								id: _element2.uuid,
 								center: _element2.h_plane_center,
 								extent: [_element2.h_plane_extent.x, _element2.h_plane_extent.z],
-								transform: _element2.transform
+								modelMatrix: _element2.transform
 							});
 						} else {
 							plane.center = _element2.h_plane_center;
@@ -2491,7 +2491,7 @@ var ARKitWrapper = function (_EventHandlerBase) {
 						if (!anchor) {
 							this.anchors_.set(_element2.uuid, {
 								id: _element2.uuid,
-								transform: _element2.transform
+								modelMatrix: _element2.transform
 							});
 						} else {
 							anchor.transform = _element2.transform;
@@ -9867,7 +9867,7 @@ var CameraReality = function (_Reality) {
 					var anchor = _this4._getAnchor(hits[0].uuid);
 					if (anchor === null) {
 						var coordinateSystem = new XRCoordinateSystem(display, XRCoordinateSystem.TRACKER);
-						coordinateSystem._relativeMatrix = hits[0].transform;
+						coordinateSystem._relativeMatrix = hits[0].modelMatrix;
 						coordinateSystem._relativeMatrix[13] += _XRViewPose2.default.SITTING_EYE_HEIGHT;
 						anchor = new _XRAnchor2.default(coordinateSystem);
 						_this4._anchors.set(anchor.uid, anchor);
@@ -9938,7 +9938,7 @@ var CameraReality = function (_Reality) {
 				// Perform a hit test using the ARKit integration
 				var hits = this._arKitWrapper.hitTestNoAnchor(normalizedScreenX, normalizedScreenY);
 				for (var i = 0; i < hits.length; i++) {
-					hits[i].transform[13] += _XRViewPose2.default.SITTING_EYE_HEIGHT;
+					hits[i].modelMatrix[13] += _XRViewPose2.default.SITTING_EYE_HEIGHT;
 				}
 				if (hits.length == 0) {
 					return null;

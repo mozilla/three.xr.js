@@ -202,14 +202,14 @@
           planeGroup.add(planeMesh);
           scene.add(planeGroup);
           planesMap.set(plane.id, planeGroup);
-          plane.transform[13] += SITTING_EYE_HEIGHT;
-          matrix.fromArray(plane.transform);
+          plane.modelMatrix[13] += SITTING_EYE_HEIGHT;
+          matrix.fromArray(plane.modelMatrix);
           planeGroup.applyMatrix(matrix);
         }else{
           var planeGroup = planesMap.get(plane.id);
           var planeMesh = planeGroup.children[0];
-          plane.transform[13] += SITTING_EYE_HEIGHT;
-          matrix.fromArray(plane.transform);
+          plane.modelMatrix[13] += SITTING_EYE_HEIGHT;
+          matrix.fromArray(plane.modelMatrix);
           planeGroup.matrix = matrix;
         }
         planeMesh.scale.set(plane.extent[0],1,plane.extent[1]);

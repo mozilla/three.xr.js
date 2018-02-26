@@ -138,7 +138,9 @@ THREE.WebXRManager = function (options = {}, displays, renderer, camera, scene, 
       this.sessions.push(this.session);
       this.sessionActive = true;
     }
-    document.getElementsByClassName('webxr-sessions')[0].style.display = 'block';
+    if (document.getElementsByClassName('webxr-sessions')[0]) {
+      document.getElementsByClassName('webxr-sessions')[0].style.display = 'block';
+    }
     this.dispatchEvent({ type: 'sessionStarted', session: this.session });
   };
 
