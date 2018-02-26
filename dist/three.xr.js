@@ -117,7 +117,6 @@ THREE.WebXRManager = function () {
   this.renderer = renderer;
   this.camera = camera;
   this.scene = scene;
-
   var boundHandleFrame = handleFrame.bind(this); // Useful for setting up the requestAnimationFrame callback
 
   // A provisional hack until XRSession end method works
@@ -133,6 +132,8 @@ THREE.WebXRManager = function () {
   function handleFrame(frame) {
     if (this.sessionActive) {
       this.session.requestFrame(boundHandleFrame);
+    } else {
+      return;
     }
     var headPose = frame.getDisplayPose(frame.getCoordinateSystem(XRCoordinateSystem.HEAD_MODEL));
 
@@ -155,16 +156,10 @@ THREE.WebXRManager = function () {
     this.renderer.autoClear = false;
     this.renderer.setSize(this.session.baseLayer.framebufferWidth, this.session.baseLayer.framebufferHeight, false);
     this.renderer.clear();
-
-    if (this.camera.parent && this.camera.parent.type !== 'Scene') {
-      this.camera.parent.matrixAutoUpdate = false;
-      this.camera.parent.matrix.fromArray(headPose.poseModelMatrix);
-      this.camera.parent.updateMatrixWorld(true);
-    } else {
-      this.camera.matrixAutoUpdate = false;
-      this.camera.matrix.fromArray(headPose.poseModelMatrix);
-      this.camera.updateMatrixWorld(true);
-    }
+    this.poseTarget.matrixAutoUpdate = false;
+    this.poseTarget.matrix.fromArray(headPose.poseModelMatrix);
+    this.poseTarget.matrix.decompose(this.poseTarget.position, this.poseTarget.quaternion, this.poseTarget.scale);
+    this.poseTarget.updateMatrixWorld(true);
     if (this.sessionActive) {
       // Render each view into this.session.baseLayer.context
       for (var i = 0; i < frame.views.length; i++) {
@@ -212,7 +207,14 @@ THREE.WebXRManager = function () {
       session.realityType = reality;
       session.depthNear = 0.05;
       session.depthFar = 1000.0;
-
+      _this.domElementOriginal = renderer.domElement.parentNode;
+      _this.cameraCloned = _this.camera.clone();
+      if (_this.camera.parent && _this.camera.parent.type !== 'Scene') {
+        _this.poseTarget = _this.camera.parent;
+      } else {
+        _this.poseTarget = _this.camera;
+      }
+      _this.poseTargetCloned = _this.poseTarget.clone();
       // Handle session lifecycle events
       session.addEventListener('focus', function (ev) {
         _this.handleSessionFocus(ev);
@@ -258,7 +260,7 @@ THREE.WebXRManager = function () {
       this.sessions.push(this.session);
       this.sessionActive = true;
     }
-
+    document.getElementsByClassName('webxr-sessions')[0].style.display = 'block';
     this.dispatchEvent({ type: 'sessionStarted', session: this.session });
   };
 
@@ -270,7 +272,14 @@ THREE.WebXRManager = function () {
       renderer.vr.enabled = false;
       this.session._display._vrDisplay.exitPresent();
     }
-    // document.getElementsByClassName('webxr-realities')[0].style.display = 'none';
+    this.domElementOriginal.appendChild(this.session.baseLayer._context.canvas);
+    this.poseTarget.matrixAutoUpdate = false;
+    this.poseTarget.matrix.copy(this.poseTargetCloned.matrix);
+    this.poseTarget.updateMatrixWorld(true);
+    this.camera.matrixWorldInverse.copy(this.cameraCloned.matrixWorldInverse);
+    this.camera.projectionMatrix.copy(this.cameraCloned.projectionMatrix);
+    this.camera.updateProjectionMatrix();
+    document.getElementsByClassName('webxr-sessions')[0].style.display = 'none';
   };
 
   this.handleSessionFocus = function (ev) {
@@ -424,7 +433,7 @@ THREE.WebXRUtils = {
           resolve(displays);
 
           function isAppleWebView() {
-            return navigator.userAgent.indexOf('AppleWebKit') && navigator.userAgent.indexOf('Safari') === -1;
+            return navigator.userAgent.indexOf('AppleWebKit') !== -1 && navigator.userAgent.indexOf('Safari') === -1;
           }
 
           function isMobileDevice() {
@@ -2538,12 +2547,12 @@ var _typeof2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbo
       }
       /**
        * The result of a raycast into the AR world encoded as a transform matrix.
-       * This structure has a single property - modelMatrix - which encodes the
+       * This structure has a single property - transform - which encodes the
        * translation of the intersection of the hit in the form of a 4x4 matrix.
        * @constructor
        */
       function VRHit() {
-        this.modelMatrix = new Float32Array(16);
+        this.transform = new Float32Array(16);
         return this;
       };
 
@@ -2628,14 +2637,14 @@ var _typeof2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbo
         */
         var sortFunction = function sortFunction(a, b) {
           // Get the matrix of hit a.
-          setMat4FromArray(hitVars.planeMatrix, a.modelMatrix);
+          setMat4FromArray(hitVars.planeMatrix, a.transform);
           // Get the translation component of a's matrix.
           mat4.getTranslation(hitVars.planeIntersection, hitVars.planeMatrix);
           // Get the distance from the intersection point to the camera.
           var distA = vec3.distance(hitVars.planeIntersection, hitVars.cameraPosition);
 
           // Get the matrix of hit b.
-          setMat4FromArray(hitVars.planeMatrix, b.modelMatrix);
+          setMat4FromArray(hitVars.planeMatrix, b.transform);
           // Get the translation component of b's matrix.
           mat4.getTranslation(hitVars.planeIntersection, hitVars.planeMatrix);
           // Get the distance from the intersection point to the camera.
@@ -2684,7 +2693,7 @@ var _typeof2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbo
           for (var i = 0; i < planes.length; i++) {
             var plane = planes[i];
             // Get the anchor transform.
-            setMat4FromArray(hitVars.planeMatrix, plane.modelMatrix);
+            setMat4FromArray(hitVars.planeMatrix, plane.transform);
 
             // Get the position of the anchor in world-space.
             vec3.set(hitVars.planeCenter, 0, 0, 0);
@@ -2748,7 +2757,7 @@ var _typeof2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbo
             mat4.fromTranslation(hitVars.planeHit, hitVars.planeIntersection);
             var hit = new VRHit();
             for (var j = 0; j < 16; j++) {
-              hit.modelMatrix[j] = hitVars.planeHit[j];
+              hit.transform[j] = hitVars.planeHit[j];
             }
             hit.i = i;
             hits.push(hit);
@@ -2937,6 +2946,7 @@ var _typeof2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbo
             resolve();
             return;
           }
+          console.log('----STOP');
           window.webkit.messageHandlers.stopAR.postMessage({
             callback: _this5._createPromiseCallback('stop', resolve)
           });
@@ -2980,6 +2990,7 @@ var _typeof2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbo
           options: options,
           callback: this._globalCallbacksMap.onWatch
         };
+        console.log('----WATCH');
         window.webkit.messageHandlers.watchAR.postMessage(data);
         return true;
       }
@@ -3033,6 +3044,7 @@ var _typeof2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbo
       key: "_sendInit",
       value: function _sendInit(options) {
         // get device id
+        console.log('----INIT');
         window.webkit.messageHandlers.initAR.postMessage({
           options: options,
           callback: this._globalCallbacksMap.onInit
@@ -3095,12 +3107,12 @@ var _typeof2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbo
                 id: element.uuid,
                 center: element.h_plane_center,
                 extent: [element.h_plane_extent.x, element.h_plane_extent.z],
-                modelMatrix: element.transform
+                transform: element.transform
               });
             } else {
               this.anchors_.set(element.uuid, {
                 id: element.uuid,
-                modelMatrix: element.transform
+                transform: element.transform
               });
             }
           }
@@ -4789,12 +4801,18 @@ var _typeof2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbo
         el.style.height = '100%';
       }
 
-      document.addEventListener('DOMContentLoaded', function () {
+      var prependElements = function prependElements() {
         document.body.style.width = '100%';
         document.body.style.height = '100%';
         document.body.prepend(_this._sessionEls);
         document.body.prepend(_this._realityEls); // realities must render behind the sessions
-      });
+      };
+
+      if (document.readyState !== 'loading') {
+        prependElements();
+      } else {
+        document.addEventListener('DOMContentLoaded', prependElements);
+      }
       return _this;
     }
 
@@ -10907,7 +10925,7 @@ var _typeof2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbo
             var anchor = _this4._getAnchor(hits[0].uuid);
             if (anchor === null) {
               var coordinateSystem = new XRCoordinateSystem(display, XRCoordinateSystem.TRACKER);
-              coordinateSystem._relativeMatrix = hits[0].modelMatrix;
+              coordinateSystem._relativeMatrix = hits[0].transform;
               coordinateSystem._relativeMatrix[13] += _XRViewPose2.default.SITTING_EYE_HEIGHT;
               anchor = new _XRAnchor2.default(coordinateSystem);
               _this4._anchors.set(anchor.uid, anchor);
@@ -10978,7 +10996,7 @@ var _typeof2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbo
           // Perform a hit test using the ARKit integration
           var hits = this._arKitWrapper.hitTestNoAnchor(normalizedScreenX, normalizedScreenY);
           for (var i = 0; i < hits.length; i++) {
-            hits[i].modelMatrix[13] += _XRViewPose2.default.SITTING_EYE_HEIGHT;
+            hits[i].transform[13] += _XRViewPose2.default.SITTING_EYE_HEIGHT;
           }
           if (hits.length == 0) {
             return null;
@@ -10988,7 +11006,7 @@ var _typeof2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbo
           // Perform a hit test using the ARCore data
           var _hits = this._vrDisplay.hitTest(normalizedScreenX, normalizedScreenY);
           for (var _i = 0; _i < _hits.length; _i++) {
-            _hits[_i].modelMatrix[13] += _XRViewPose2.default.SITTING_EYE_HEIGHT;
+            _hits[_i].transform[13] += _XRViewPose2.default.SITTING_EYE_HEIGHT;
           }
           if (_hits.length == 0) {
             return null;

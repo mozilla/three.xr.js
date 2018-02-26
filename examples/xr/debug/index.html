@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>three.xr.js XR debug example</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <style>
+      body, html {
+        padding: 0;
+        margin: 0;
+        width: 100%;
+        height: 100%;
+        -webkit-user-select: none;
+        user-select: none;
+      }
+    </style>
+  </head>
+  <body>
+    <script src="../../../vendor/three.js"></script>
+    <script src='../../../dist/three.xr.js'></script>
+    <script>
+      var clock = new THREE.Clock();
+
+      var container;
+      var renderer, camera, scene;
+
+      var floor, cube, sky;
+
+      // XRViewPose.SITTING_EYE_HEIGHT
+      const SITTING_EYE_HEIGHT = 1.1;
+
+      var planesMap = new Map();
+
+      // ar, magicWindow, vr
+      var activeRealityType = 'magicWindow';
+
+      THREE.WebXRUtils.getDisplays().then(init);
+
+      function init(displays) {
+        container = document.createElement( 'div' );
+        container.setAttribute('id', 'container');
+        document.body.appendChild( container );
+        
+        scene = new THREE.Scene();
+        camera = new THREE.PerspectiveCamera();
+        scene.add( camera );
+        camera.position.set(0, 1, 0);
+        renderer = new THREE.WebGLRenderer( { alpha: true } );
+        renderer.autoClear = false;
+        container.appendChild( renderer.domElement );
+
+        // Add custom content
+        var skyGeometry = new THREE.SphereGeometry(5);
+        var skyMaterial = new THREE.MeshNormalMaterial({
+          side: THREE.BackSide
+        });
+        sky = new THREE.Mesh(skyGeometry, skyMaterial);
+        scene.add (sky);
+        
+        // var geometry = new THREE.BoxGeometry(0.5,0.5,0.5);
+        // var material = new THREE.MeshNormalMaterial();
+        // cube = new THREE.Mesh(geometry, material);
+        // cube.position.set(0, 0, 0);
+        // scene.add (cube);
+
+        // End custom content
+        window.addEventListener( 'resize', onWindowResize, false );
+        onWindowResize();
+
+        var options = {
+          // Flag to start AR if is the unique display available.
+          AR_AUTOSTART: false, // Default: true
+        }
+
+        renderer.xr = new THREE.WebXRManager(options, displays, renderer, camera, scene, update);
+        renderer.xr.addEventListener('sessionStarted', sessionStarted);
+        renderer.xr.addEventListener('sessionEnded', sessionEnded);
+
+        if(!renderer.xr.autoStarted){
+          var buttonsContainer = document.createElement( 'div' );
+          buttonsContainer.id = 'buttonsContainer';
+          buttonsContainer.style.position = 'absolute';
+          buttonsContainer.style.bottom = '10%';
+          buttonsContainer.style.width = '100%';
+          buttonsContainer.style.textAlign = 'center';
+          buttonsContainer.style.zIndex = '999';
+          document.body.appendChild(buttonsContainer);
+          addEnterButtons(displays);
+        }
+
+        renderer.animate(render);
+      }
+
+      function sessionStarted(data) {
+        activeRealityType = data.session.realityType;
+        if(data.session.realityType === 'ar'){
+          sky.visible = false;
+        }
+      }
+
+      function sessionEnded(data) {
+        activeRealityType = 'magicWindow';
+        if(data.session.realityType === 'ar'){
+          sky.visible = true;
+        }
+      }
+
+      function addEnterButtons(displays) {
+        for (var i = 0; i < displays.length; i++) {
+          var display = displays[i];
+          if(display.supportedRealities.vr){
+            buttonsContainer.appendChild(getEnterButton(display, 'vr'));
+          }
+          if(display.supportedRealities.ar){
+            buttonsContainer.appendChild(getEnterButton(display, 'ar'));
+          }
+        }
+      }
+
+      function getEnterButton(display, reality) {
+        // HMDs require the call to start presenting to occur due to a user input event, so make a button to trigger that
+        var button = document.createElement( 'button' );
+        button.style.display = 'inline-block';
+        button.style.margin = '5px';
+        button.style.width = '120px';
+        button.style.border = '0';
+        button.style.padding = '8px';
+        button.style.cursor = 'pointer';
+        button.style.backgroundColor = '#000';
+        button.style.color = '#fff';
+        button.style.fontFamily = 'sans-serif';
+        button.style.fontSize = '13px';
+        button.style.fontStyle = 'normal';
+        button.style.textAlign = 'center';
+        if(reality === 'vr'){
+          button.textContent = 'ENTER VR';
+        }else{
+          button.textContent = 'ENTER AR';
+        }
+        
+        button.addEventListener('click', ev => {
+          if(reality === 'ar'){
+            if(!renderer.xr.sessionActive){
+              // Entering AR.
+              button.textContent = 'EXIT AR';
+              renderer.xr.startSession(display, reality, true);
+            }else{
+              // Exiting AR.
+              button.textContent = 'ENTER AR';
+              renderer.xr.endSession();
+              sky.visible = true;
+            }
+          }else{
+            document.getElementById('buttonsContainer').style.display = 'none';
+            renderer.xr.startPresenting();
+          }
+        });
+
+        if(reality === 'vr'){
+          window.addEventListener('vrdisplaypresentchange', (evt) => {
+            // Polyfill places cameraActivateddisplay inside the detail property
+            var display = evt.display || evt.detail.display;
+            if (!display.isPresenting) {
+              // Exiting VR.
+              renderer.xr.endSession();
+              document.getElementById('buttonsContainer').style.display = 'block';
+            }
+          });
+        }
+
+        return button;
+      }
+
+      function onWindowResize() {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+      }
+
+      // Called once per frame, before render, to give the app a chance to update this.scene
+      function update(frame) {
+        if (renderer.xr.displays[0] && renderer.xr.displays[0]._arKitWrapper) {
+          // console.log(renderer.xr.displays[0]._arKitWrapper.anchors);
+          if (renderer.xr.displays[0]._arKitWrapper.anchors_.size > 0){
+            console.log('---anchors', renderer.xr.displays[0]._arKitWrapper.anchors_);
+          }
+          if (renderer.xr.displays[0]._arKitWrapper.planes_.size > 0){
+            // console.log('---planes', renderer.xr.displays[0]._arKitWrapper.planes_);
+            for (var [key, value] of renderer.xr.displays[0]._arKitWrapper.planes_) {
+              updatePlane (renderer.xr.displays[0]._arKitWrapper.planes_.get(key));
+            }
+          }
+        }
+        render();
+      }
+
+      function updatePlane(plane) {
+        var matrix = new THREE.Matrix4();
+        if(!planesMap.get(plane.id)){
+          var planeGroup = new THREE.Group();
+          var planeMesh = new THREE.Mesh(new THREE.PlaneGeometry(1,1), new THREE.MeshBasicMaterial({color: 0xffffff, transparent:true, opacity: 0.25}));
+          planeMesh.geometry.rotateX(-Math.PI/2);
+          planeGroup.add(planeMesh);
+          scene.add(planeGroup);
+          planesMap.set(plane.id, planeGroup);
+          plane.transform[13] += SITTING_EYE_HEIGHT;
+          matrix.fromArray(plane.transform);
+          planeGroup.applyMatrix(matrix);
+        }else{
+          var planeGroup = planesMap.get(plane.id);
+          var planeMesh = planeGroup.children[0];
+          plane.transform[13] += SITTING_EYE_HEIGHT;
+          matrix.fromArray(plane.transform);
+          planeGroup.matrix = matrix;
+        }
+        planeMesh.scale.set(plane.extent[0],1,plane.extent[1]);
+        planeMesh.position.set(plane.center.x, plane.center.y, plane.center.z);
+      }
+
+      function render() {
+        switch (activeRealityType) {
+          case 'magicWindow':
+          case 'vr':
+            var delta = clock.getDelta() * 60;
+            break;
+        }
+        if(!renderer.xr.sessionActive){
+          renderer.setSize( window.innerWidth, window.innerHeight );
+          renderer.render(scene, camera);
+        }else{
+        }
+      }
+
+    </script>
+  </body>
+</html>

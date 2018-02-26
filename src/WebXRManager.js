@@ -8,7 +8,6 @@ THREE.WebXRManager = function (options = {}, displays, renderer, camera, scene, 
   this.renderer = renderer;
   this.camera = camera;
   this.scene = scene;
-
   var boundHandleFrame = handleFrame.bind(this); // Useful for setting up the requestAnimationFrame callback
 
   // A provisional hack until XRSession end method works
@@ -24,6 +23,8 @@ THREE.WebXRManager = function (options = {}, displays, renderer, camera, scene, 
   function handleFrame (frame) {
     if (this.sessionActive) {
       this.session.requestFrame(boundHandleFrame);
+    } else {
+      return;
     }
     const headPose = frame.getDisplayPose(frame.getCoordinateSystem(XRCoordinateSystem.HEAD_MODEL));
 
@@ -46,18 +47,10 @@ THREE.WebXRManager = function (options = {}, displays, renderer, camera, scene, 
     this.renderer.autoClear = false;
     this.renderer.setSize(this.session.baseLayer.framebufferWidth, this.session.baseLayer.framebufferHeight, false);
     this.renderer.clear();
-
-    let poseTarget;
-    if (this.camera.parent && this.camera.parent.type !== 'Scene') {
-      poseTarget = this.camera.parent;
-    } else {
-      poseTarget = this.camera;
-    }
-    poseTarget.matrixAutoUpdate = false;
-    poseTarget.matrix.fromArray(headPose.poseModelMatrix);
-    poseTarget.matrix.decompose(poseTarget.position, poseTarget.quaternion, poseTarget.scale);
-    poseTarget.updateMatrixWorld(true);
-
+    this.poseTarget.matrixAutoUpdate = false;
+    this.poseTarget.matrix.fromArray(headPose.poseModelMatrix);
+    this.poseTarget.matrix.decompose(this.poseTarget.position, this.poseTarget.quaternion, this.poseTarget.scale);
+    this.poseTarget.updateMatrixWorld(true);
     if (this.sessionActive) {
       // Render each view into this.session.baseLayer.context
       for (var i = 0; i < frame.views.length; i++) {
@@ -87,7 +80,7 @@ THREE.WebXRManager = function (options = {}, displays, renderer, camera, scene, 
       createVirtualReality = true;
     }
     var sessionInitParamers = {
-      exclusive: createVirtualReality,
+      exclusive : createVirtualReality,
       type: createVirtualReality ? XRSession.REALITY : XRSession.AUGMENTATION
     }
     if (this.sessionActive) {
@@ -104,7 +97,14 @@ THREE.WebXRManager = function (options = {}, displays, renderer, camera, scene, 
       session.realityType = reality;
       session.depthNear = 0.05;
       session.depthFar = 1000.0;
-
+      this.domElementOriginal = renderer.domElement.parentNode;
+      this.cameraCloned = this.camera.clone();
+      if (this.camera.parent && this.camera.parent.type !== 'Scene') {
+        this.poseTarget = this.camera.parent;
+      } else {
+        this.poseTarget = this.camera;
+      }
+      this.poseTargetCloned = this.poseTarget.clone();
       // Handle session lifecycle events
       session.addEventListener('focus', ev => { this.handleSessionFocus(ev) })
       session.addEventListener('blur', ev => { this.handleSessionBlur(ev) })
@@ -138,7 +138,7 @@ THREE.WebXRManager = function (options = {}, displays, renderer, camera, scene, 
       this.sessions.push(this.session);
       this.sessionActive = true;
     }
-
+    document.getElementsByClassName('webxr-sessions')[0].style.display = 'block';
     this.dispatchEvent({ type: 'sessionStarted', session: this.session });
   };
 
@@ -150,7 +150,14 @@ THREE.WebXRManager = function (options = {}, displays, renderer, camera, scene, 
       renderer.vr.enabled = false;
       this.session._display._vrDisplay.exitPresent();
     }
-    // document.getElementsByClassName('webxr-realities')[0].style.display = 'none';
+    this.domElementOriginal.appendChild(this.session.baseLayer._context.canvas);
+    this.poseTarget.matrixAutoUpdate = false;
+    this.poseTarget.matrix.copy(this.poseTargetCloned.matrix);
+    this.poseTarget.updateMatrixWorld(true);
+    this.camera.matrixWorldInverse.copy(this.cameraCloned.matrixWorldInverse);
+    this.camera.projectionMatrix.copy(this.cameraCloned.projectionMatrix);
+    this.camera.updateProjectionMatrix();
+    document.getElementsByClassName('webxr-sessions')[0].style.display = 'none';
   };
 
   this.handleSessionFocus = function (ev) {
