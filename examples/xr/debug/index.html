@@ -26,9 +26,6 @@
 
       var floor, cube, sky;
 
-      // XRViewPose.SITTING_EYE_HEIGHT
-      const SITTING_EYE_HEIGHT = 1.1;
-
       var planesMap = new Map();
 
       // ar, magicWindow, vr
@@ -183,10 +180,19 @@
           if (renderer.xr.displays[0]._arKitWrapper.anchors_.size > 0){
             console.log('---anchors', renderer.xr.displays[0]._arKitWrapper.anchors_);
           }
+          for (var [key, value] of planesMap) {
+            value.current = false;
+          }
           if (renderer.xr.displays[0]._arKitWrapper.planes_.size > 0){
             // console.log('---planes', renderer.xr.displays[0]._arKitWrapper.planes_);
             for (var [key, value] of renderer.xr.displays[0]._arKitWrapper.planes_) {
               updatePlane (renderer.xr.displays[0]._arKitWrapper.planes_.get(key));
+            }
+          }
+          for (var [key, value] of planesMap) {
+            if (!value.current) {
+              planesMap.delete(key)
+              scene.remove(value)
             }
           }
         }
@@ -197,12 +203,13 @@
         var matrix = new THREE.Matrix4();
         if(!planesMap.get(plane.id)){
           var planeGroup = new THREE.Group();
-          var planeMesh = new THREE.Mesh(new THREE.PlaneGeometry(1,1), new THREE.MeshBasicMaterial({color: 0xffffff, transparent:true, opacity: 0.25}));
+          planeGroup.extent = [plane.extent[0], plane.extent[1]];  // avoid caching
+          var planeMesh = new THREE.Mesh(new THREE.PlaneGeometry(plane.extent[0], plane.extent[1], Math.floor(plane.extent[0]*10)+1, Math.floor(plane.extent[1]*10)+1),  new THREE.MeshBasicMaterial({color: 0xffffff, wireframe: true, transparent:true, opacity: 0.25}));
           planeMesh.geometry.rotateX(-Math.PI/2);
           planeGroup.add(planeMesh);
           scene.add(planeGroup);
+          planeGroup.current = true;
           planesMap.set(plane.id, planeGroup);
-          plane.modelMatrix[13] += SITTING_EYE_HEIGHT;
           var mm = plane.modelMatrix;
           matrix.set(
             mm[0],
@@ -224,10 +231,18 @@
           );
           // matrix.fromArray(plane.modelMatrix);
           planeGroup.applyMatrix(matrix);
+          planeMesh.position.set(plane.center.x, plane.center.y, plane.center.z);
         }else{
           var planeGroup = planesMap.get(plane.id);
+          planeGroup.current = true;
           var planeMesh = planeGroup.children[0];
-          plane.modelMatrix[13] += SITTING_EYE_HEIGHT;
+          if ((planeGroup.extent[0] != plane.extent[0]) || (planeGroup.extent[1] != plane.extent[1])) {
+            planeGroup.remove(planeMesh)          
+            planeGroup.extent = [plane.extent[0], plane.extent[1]];  // avoid caching
+            planeMesh = new THREE.Mesh(new THREE.PlaneGeometry(plane.extent[0], plane.extent[1], Math.floor(plane.extent[0]*10)+1, Math.floor(plane.extent[1]*10)+1),  new THREE.MeshBasicMaterial({color: 0xffffff, wireframe: true, transparent:true, opacity: 0.25}));
+            planeMesh.geometry.rotateX(-Math.PI/2);
+            planeGroup.add(planeMesh);
+          }
           var mm = plane.modelMatrix;
           matrix.set(
             mm[0],
@@ -249,9 +264,8 @@
           );
           // matrix.fromArray(plane.modelMatrix);
           planeGroup.matrix = matrix;
+          planeMesh.position.set(plane.center.x, plane.center.y, plane.center.z);
         }
-        planeMesh.scale.set(plane.extent[0],1,plane.extent[1]);
-        planeMesh.position.set(plane.center.x, plane.center.y, plane.center.z);
       }
 
       function render() {
