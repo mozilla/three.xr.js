@@ -204,8 +204,11 @@
         if(!planesMap.get(plane.id)){
           var planeGroup = new THREE.Group();
           planeGroup.extent = [plane.extent[0], plane.extent[1]];  // avoid caching
-          var planeMesh = new THREE.Mesh(new THREE.PlaneGeometry(plane.extent[0], plane.extent[1], Math.floor(plane.extent[0]*10)+1, Math.floor(plane.extent[1]*10)+1),  new THREE.MeshBasicMaterial({color: 0xffffff, wireframe: true, transparent:true, opacity: 0.25}));
+          var planeMesh = new THREE.Mesh(new THREE.PlaneGeometry(planeGroup.extent[0], planeGroup.extent[1], Math.floor(planeGroup.extent[0]*10)+1, Math.floor(planeGroup.extent[1]*10)+1),  new THREE.MeshBasicMaterial({color: 0xffffff, wireframe: true, transparent:true, opacity: 0.25}));
           planeMesh.geometry.rotateX(-Math.PI/2);
+          var planeMeshGroup = new THREE.Group();
+          planeMeshGroup.add(planeMesh)
+          planeMesh = planeMeshGroup
           planeGroup.add(planeMesh);
           scene.add(planeGroup);
           planeGroup.current = true;
@@ -231,6 +234,7 @@
           );
           // matrix.fromArray(plane.modelMatrix);
           planeGroup.applyMatrix(matrix);
+          planeGroup.matrixAutoUpdate = false;
           planeMesh.position.set(plane.center.x, plane.center.y, plane.center.z);
         }else{
           var planeGroup = planesMap.get(plane.id);
@@ -239,8 +243,11 @@
           if ((planeGroup.extent[0] != plane.extent[0]) || (planeGroup.extent[1] != plane.extent[1])) {
             planeGroup.remove(planeMesh)          
             planeGroup.extent = [plane.extent[0], plane.extent[1]];  // avoid caching
-            planeMesh = new THREE.Mesh(new THREE.PlaneGeometry(plane.extent[0], plane.extent[1], Math.floor(plane.extent[0]*10)+1, Math.floor(plane.extent[1]*10)+1),  new THREE.MeshBasicMaterial({color: 0xffffff, wireframe: true, transparent:true, opacity: 0.25}));
+            planeMesh = new THREE.Mesh(new THREE.PlaneGeometry(planeGroup.extent[0], planeGroup.extent[1], Math.floor(planeGroup.extent[0]*10)+1, Math.floor(planeGroup.extent[1]*10)+1),  new THREE.MeshBasicMaterial({color: 0xffffff, wireframe: true, transparent:true, opacity: 0.25}));
             planeMesh.geometry.rotateX(-Math.PI/2);
+            var planeMeshGroup = new THREE.Group();
+            planeMeshGroup.add(planeMesh)
+            planeMesh = planeMeshGroup
             planeGroup.add(planeMesh);
           }
           var mm = plane.modelMatrix;
