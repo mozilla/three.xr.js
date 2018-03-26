@@ -236,6 +236,7 @@
           planeGroup.applyMatrix(matrix);
           planeGroup.matrixAutoUpdate = false;
           planeMesh.position.set(plane.center.x, plane.center.y, plane.center.z);
+          planeGroup.updateMatrixWorld(true);
         }else{
           var planeGroup = planesMap.get(plane.id);
           planeGroup.current = true;
@@ -272,6 +273,7 @@
           // matrix.fromArray(plane.modelMatrix);
           planeGroup.matrix = matrix;
           planeMesh.position.set(plane.center.x, plane.center.y, plane.center.z);
+          planeGroup.updateMatrixWorld(true);
         }
       }
 

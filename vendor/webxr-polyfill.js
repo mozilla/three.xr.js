@@ -699,12 +699,16 @@ var EventHandlerBase = function () {
 		value: function dispatchEvent(event) {
 			var listeners = this._listeners.get(event.type);
 			if (Array.isArray(listeners) === false) return;
+
+			// need a copy, since removeEventListener is often called inside listeners to create one-shots and it modifies the array, causing 
+			// listeners not to be called! 
+			var array = listeners.slice(0);
 			var _iteratorNormalCompletion = true;
 			var _didIteratorError = false;
 			var _iteratorError = undefined;
 
 			try {
-				for (var _iterator = listeners[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+				for (var _iterator = array[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
 					var listener = _step.value;
 
 					listener(event);
@@ -829,9 +833,11 @@ In a Reality based on environment mapping sensors, the anchors may change pose o
 */
 var XRAnchor = function () {
 	function XRAnchor(xrCoordinateSystem) {
+		var uid = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+
 		_classCallCheck(this, XRAnchor);
 
-		this._uid = XRAnchor._generateUID();
+		this._uid = uid || XRAnchor._generateUID();
 		this._coordinateSystem = xrCoordinateSystem;
 	}
 
@@ -953,6 +959,9 @@ var XRDisplay = function (_EventHandlerBase) {
 				resolve(_this2._createSession(parameters));
 			});
 		}
+	}, {
+		key: '_requestVideoFrame',
+		value: function _requestVideoFrame(buffers) {}
 	}, {
 		key: '_requestAnimationFrame',
 		value: function _requestAnimationFrame(callback) {
@@ -1076,7 +1085,7 @@ var Reality = function (_EventHandlerBase) {
 
 	}, {
 		key: '_start',
-		value: function _start() {
+		value: function _start(parameters) {
 			throw new Error('Exending classes should implement _start');
 		}
 
@@ -1129,21 +1138,9 @@ var Reality = function (_EventHandlerBase) {
 	}, {
 		key: '_findFloorAnchor',
 		value: function _findFloorAnchor(display) {
-			var _this2 = this;
-
 			var uid = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
 
-			// Copy the head model matrix for the current pose so we have it in the promise below
-			var headModelMatrix = new Float32Array(display._headPose.poseModelMatrix);
-			return new Promise(function (resolve, reject) {
-				// For now, just create an anchor at origin level. Maybe in the future search for a surface?
-				headModelMatrix[13] = 0; // Set height to 0
-				var coordinateSystem = new XRCoordinateSystem(display, XRCoordinateSystem.TRACKER);
-				coordinateSystem._relativeMatrix = headModelMatrix;
-				var anchor = new XRAnchor(coordinateSystem, uid);
-				_this2._addAnchor(anchor, display);
-				resolve(new XRAnchorOffset(anchor.uid));
-			});
+			throw new Error('Exending classes should implement _findFloorAnchor');
 		}
 	}, {
 		key: '_getAnchor',
@@ -1268,6 +1265,28 @@ var XRSession = function (_EventHandlerBase) {
 			return new Promise(function (resolve, reject) {
 				resolve();
 			});
+		}
+	}, {
+		key: 'setVideoFrameHandler',
+		value: function setVideoFrameHandler(callback) {
+			if (callback instanceof Worker) {
+				var worker = callback;
+				callback = function callback(ev) {
+					var cv = ev.detail;
+					var buffers = cv.frame.buffers;
+					var buffs = [];
+					for (var i = 0; i < buffers.length; i++) {
+						buffs.push(buffers[i].buffer);
+					}
+					worker.postMessage(cv, buffs);
+				};
+			}
+			this._display.addEventListener("videoFrame", callback);
+		}
+	}, {
+		key: 'requestVideoFrame',
+		value: function requestVideoFrame(buffers) {
+			this._display._requestVideoFrame(buffers);
 		}
 	}, {
 		key: '_createPresentationFrame',
@@ -1601,10 +1620,12 @@ var XRViewPose = function () {
 	return XRViewPose;
 }();
 
+// We are not going to use this any more.  The way it was handled was broken, we'll just
+// use the raw values for the coordinate systems.
+
+
 exports.default = XRViewPose;
-
-
-XRViewPose.SITTING_EYE_HEIGHT = 1.1; // meters
+XRViewPose.SITTING_EYE_HEIGHT = 0; // meters
 
 /***/ }),
 /* 10 */
@@ -1790,6 +1811,10 @@ var _vec = __webpack_require__(17);
 
 var vec3 = _interopRequireWildcard(_vec);
 
+var _base64Binary = __webpack_require__(35);
+
+var _base64Binary2 = _interopRequireDefault(_base64Binary);
+
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
@@ -1840,12 +1865,27 @@ var ARKitWrapper = function (_EventHandlerBase) {
 		_this._isInitialized = false;
 		_this._rawARData = null;
 
+		// worker to convert buffers
+		var blobURL = _this._buildWorkerBlob();
+		_this._worker = new Worker(blobURL);
+		URL.revokeObjectURL(blobURL);
+
+		var self = _this;
+		_this._worker.onmessage = function (ev) {
+			setTimeout(function () {
+				self.dispatchEvent(new CustomEvent(ARKitWrapper.COMPUTER_VISION_DATA, {
+					source: self,
+					detail: ev.data
+				}));
+			});
+		};
+
 		_this.lightIntensity = 1000;
 		/**
-     * The current projection matrix of the device.
-     * @type {Float32Array}
-     * @private
-     */
+   * The current projection matrix of the device.
+   * @type {Float32Array}
+   * @private
+   */
 		_this.projectionMatrix_ = new Float32Array(16);
 		/**
    * The current view matrix of the device.
@@ -1869,8 +1909,21 @@ var ARKitWrapper = function (_EventHandlerBase) {
 			_this._generateGlobalCallback(callbackNames[i], i);
 		}
 
+		// default options for initializing ARKit
+		_this._defaultOptions = {
+			location: true,
+			camera: true,
+			objects: true,
+			light_intensity: true,
+			computer_vision_data: false
+
+			// temp storage for CV arraybuffers
+		};_this._ab = [];
+
 		// Set up some named global methods that the ARKit to JS bridge uses and send out custom events when they are called
-		var eventCallbacks = [['arkitStartRecording', ARKitWrapper.RECORD_START_EVENT], ['arkitStopRecording', ARKitWrapper.RECORD_STOP_EVENT], ['arkitDidMoveBackground', ARKitWrapper.DID_MOVE_BACKGROUND_EVENT], ['arkitWillEnterForeground', ARKitWrapper.WILL_ENTER_FOREGROUND_EVENT], ['arkitInterrupted', ARKitWrapper.INTERRUPTED_EVENT], ['arkitInterruptionEnded', ARKitWrapper.INTERRUPTION_ENDED_EVENT], ['arkitShowDebug', ARKitWrapper.SHOW_DEBUG_EVENT], ['arkitWindowResize', ARKitWrapper.WINDOW_RESIZE_EVENT], ['onError', ARKitWrapper.ON_ERROR], ['arTrackingChanged', ARKitWrapper.AR_TRACKING_CHANGED]];
+		var eventCallbacks = [['arkitStartRecording', ARKitWrapper.RECORD_START_EVENT], ['arkitStopRecording', ARKitWrapper.RECORD_STOP_EVENT], ['arkitDidMoveBackground', ARKitWrapper.DID_MOVE_BACKGROUND_EVENT], ['arkitWillEnterForeground', ARKitWrapper.WILL_ENTER_FOREGROUND_EVENT], ['arkitInterrupted', ARKitWrapper.INTERRUPTED_EVENT], ['arkitInterruptionEnded', ARKitWrapper.INTERRUPTION_ENDED_EVENT], ['arkitShowDebug', ARKitWrapper.SHOW_DEBUG_EVENT], ['arkitWindowResize', ARKitWrapper.WINDOW_RESIZE_EVENT], ['onError', ARKitWrapper.ON_ERROR], ['arTrackingChanged', ARKitWrapper.AR_TRACKING_CHANGED], ['userGrantedComputerVisionData', ARKitWrapper.USER_GRANTED_COMPUTER_VISION_DATA]
+		//,['onComputerVisionData', ARKitWrapper.COMPUTER_VISION_DATA]
+		];
 
 		var _loop = function _loop(_i) {
 			window[eventCallbacks[_i][0]] = function (detail) {
@@ -1885,6 +1938,13 @@ var ARKitWrapper = function (_EventHandlerBase) {
 		for (var _i = 0; _i < eventCallbacks.length; _i++) {
 			_loop(_i);
 		}
+		/*
+   * Computer vision needs massaging
+   */
+		window['onComputerVisionData'] = function (detail) {
+			_this._onComputerVisionData(detail);
+		};
+
 		/**
    * The result of a raycast into the AR world encoded as a transform matrix.
    * This structure has a single property - modelMatrix - which encodes the
@@ -2271,13 +2331,18 @@ var ARKitWrapper = function (_EventHandlerBase) {
 				});
 			});
 		}
+	}, {
+		key: "stop",
+
+
+		/* 
+  RACE CONDITION:  call stop, then watch:  stop does not set isWatching false until it gets a message back from the app,
+  so watch will return and not issue a watch command.   May want to set isWatching false immediately?
+  */
 
 		/*
   If this instance is currently watching, send the stopAR message to ARKit to request that it stop sending data on onWatch
   */
-
-	}, {
-		key: "stop",
 		value: function stop() {
 			var _this5 = this;
 
@@ -2300,7 +2365,8 @@ var ARKitWrapper = function (_EventHandlerBase) {
   		location: boolean,
   		camera: boolean,
   		objects: boolean,
-  		light_intensity: boolean
+  		light_intensity: boolean,
+  		computer_vision_data: boolean
   	}
   */
 
@@ -2317,17 +2383,14 @@ var ARKitWrapper = function (_EventHandlerBase) {
 			}
 			this._isWatching = true;
 
-			if (options === null) {
-				options = {
-					location: true,
-					camera: true,
-					objects: true,
-					light_intensity: true
-				};
+			var newO = Object.assign({}, this._defaultOptions);
+
+			if (options != null) {
+				newO = Object.assign(newO, options);
 			}
 
 			var data = {
-				options: options,
+				options: newO,
 				callback: this._globalCallbacksMap.onWatch
 			};
 			console.log('----WATCH');
@@ -2410,17 +2473,26 @@ var ARKitWrapper = function (_EventHandlerBase) {
   _onWatch is called from native ARKit on each frame:
   	data:
   	{
-  		"camera_transform":[4x4 column major affine transform matrix],
+  		"light_intensity": value
+  		"camera_view":[4x4 column major affine transform matrix],
   		"projection_camera":[4x4 projection matrix],
-  		"location":{
-  			"altitude": 176.08457946777344,
-  			"longitude": -79.222516606740456,
-  			"latitude": 35.789005972772181
-  		},
+  		"newObjects": [
+  			{
+  				uuid: DOMString (unique UID),
+  				transform: [4x4 column major affine transform],
+  				h_plane_center: {x, y, z},  // only on planes
+  				h_plane_center: {x, y, z}	// only on planes, where x/z are used,
+  			}, ...
+  		],
+  		"removeObjects": [
+  			uuid: DOMString (unique UID), ...
+  		]
   		"objects":[
   			{
   				uuid: DOMString (unique UID),
   				transform: [4x4 column major affine transform]
+  				h_plane_center: {x, y, z},  // only on planes
+  				h_plane_center: {x, y, z}	// only on planes, where x/z are used,
   			}, ...
   		]
   	}
@@ -2461,10 +2533,10 @@ var ARKitWrapper = function (_EventHandlerBase) {
 			if (data.removedObjects.length) {
 				for (var _i2 = 0; _i2 < data.removedObjects.length; _i2++) {
 					var _element = data.removedObjects[_i2];
-					if (_element.h_plane_center) {
-						this.planes_.delete(_element.uuid);
+					if (this.planes_.get(_element)) {
+						this.planes_.delete(_element);
 					} else {
-						this.anchors_.delete(_element.uuid);
+						this.anchors_.delete(_element);
 					}
 				}
 			}
@@ -2484,7 +2556,7 @@ var ARKitWrapper = function (_EventHandlerBase) {
 						} else {
 							plane.center = _element2.h_plane_center;
 							plane.extent = [_element2.h_plane_extent.x, _element2.h_plane_extent.z];
-							plane.transform = _element2.transform;
+							plane.modelMatrix = _element2.transform;
 						}
 					} else {
 						var anchor = this.anchors_.get(_element2.uuid);
@@ -2494,7 +2566,7 @@ var ARKitWrapper = function (_EventHandlerBase) {
 								modelMatrix: _element2.transform
 							});
 						} else {
-							anchor.transform = _element2.transform;
+							anchor.modelMatrix = _element2.transform;
 						}
 					}
 				}
@@ -2547,6 +2619,243 @@ var ARKitWrapper = function (_EventHandlerBase) {
 			window[name] = function (deviceData) {
 				self['_' + callbackName](deviceData);
 			};
+		}
+
+		/*
+  ev.detail contains:
+  	{
+  	  "frame": {
+  		"buffers": [ // Array of base64 encoded string buffers
+  		  {
+  			"size": {
+  			  "width": 320,
+  			  "height": 180,
+  			  "bytesPerRow": 320,
+  			  "bytesPerPixel": 1
+  			},
+  			"buffer": "e3x...d7d"   /// convert to Uint8 buffer in code below
+  		  },
+  		  {
+  			"size": {
+  			  "width": 160,
+  			  "height": 90,
+  			  "bytesPerRow": 320,
+  			  "bytesPerPixel": 2
+  			},
+  			"buffer": "ZZF.../fIJ7"  /// convert to Uint8 buffer in code below
+  		  }
+  		],
+  		"pixelFormatType": "kCVPixelFormatType_420YpCbCr8BiPlanarFullRange",
+  		"pixelFormat": "YUV420P",  /// Added in the code below, clients should ignore pixelFormatType
+  		"timestamp": 337791
+  	  },
+  	  "camera": {
+  		"cameraIntrinsics": [3x3 matrix],
+  			fx 0   px
+  			0  fy  py
+  			0  0   1
+  			fx and fy are the focal length in pixels.
+  			px and py are the coordinates of the principal point in pixels.
+  			The origin is at the center of the upper-left pixel.
+  			"cameraImageResolution": {
+  		  "width": 1280,
+  		  "height": 720
+  		},
+  		"viewMatrix": [4x4 camera view matrix],
+  		"interfaceOrientation": 3,
+  			// 0 UIDeviceOrientationUnknown
+  			// 1 UIDeviceOrientationPortrait
+  			// 2 UIDeviceOrientationPortraitUpsideDown
+  			// 3 UIDeviceOrientationLandscapeRight
+  			// 4 UIDeviceOrientationLandscapeLeft
+  		"projectionMatrix": [4x4 camera projection matrix]
+  	  }
+  	}
+   */
+
+	}, {
+		key: "_onComputerVisionData",
+		value: function _onComputerVisionData(detail) {
+			// convert the arrays
+			if (!detail) {
+				console.error("detail passed to _onComputerVisionData is null");
+				return;
+			}
+			// convert the arrays
+			if (!detail.frame || !detail.frame.buffers || detail.frame.buffers.length <= 0) {
+				console.error("detail passed to _onComputerVisionData is bad, no buffers");
+				return;
+			}
+
+			// convert buffers in place
+			var buffers = detail.frame.buffers;
+
+			// if there are too many cached array buffers, drop the unneeded ones
+			if (this._ab.length > buffers.length) {
+				this._ab = this._ab.slice(0, buffer.length);
+			}
+
+			if (this._worker) {
+				detail.ab = this._ab;
+				if (this._ab) {
+					this._worker.postMessage(detail, this._ab);
+				} else {
+					this._worker.postMessage(detail);
+				}
+			} else {
+				for (var i = 0; i < buffers.length; i++) {
+					// gradually increase the size of the ab[] array to hold the temp buffers, 
+					// and add null so it gets allocated properly
+					if (this._ab.length <= i) {
+						this._ab.push(null);
+					}
+					var bufflen = buffers[i].buffer.length;
+					this._ab[i] = buffers[i].buffer = _base64Binary2.default.decodeArrayBuffer(buffers[i].buffer, this._ab[i]);
+					var buffersize = buffers[i].buffer.byteLength;
+					var imagesize = buffers[i].size.height * buffers[i].size.bytesPerRow;
+				}
+				switch (detail.frame.pixelFormatType) {
+					case "kCVPixelFormatType_420YpCbCr8BiPlanarFullRange":
+						detail.frame.pixelFormat = "YUV420P";
+						break;
+					default:
+						detail.frame.pixelFormat = detail.frame.pixelFormatType;
+						break;
+				}
+
+				this.dispatchEvent(new CustomEvent(ARKitWrapper.COMPUTER_VISION_DATA, {
+					source: this,
+					detail: detail
+				}));
+			}
+		}
+		/*
+  Requests ARKit a new set of buffers for computer vision processing
+   */
+
+	}, {
+		key: "_requestComputerVisionData",
+		value: function _requestComputerVisionData(buffers) {
+			if (buffers) {
+				this._ab = [];
+				// if buffers are passed in, check if they are ArrayBuffers, and if so, save
+				// them for possible use on the next frame.
+				//
+				// we do this because passing buffers down into Workers invalidates them, so we need to
+				// return them here when we get them back from the Worker, so they can be reused. 
+				for (var i = 0; i < buffers.length; i++) {
+					if (buffers[i] instanceof ArrayBuffer) {
+						this._ab.push(buffers[i]);
+					}
+				}
+			}
+			window.webkit.messageHandlers.requestComputerVisionData.postMessage({});
+		}
+	}, {
+		key: "_buildWorkerBlob",
+		value: function _buildWorkerBlob() {
+			var blobURL = URL.createObjectURL(new Blob(['(', function () {
+				// could not get workers working, so am not using this.
+				//
+				// Tried to use Transferable ArrayBuffers but kept getting DOM Error 25. 
+				// 
+
+				var b64 = {
+					_keyStr: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",
+
+					/* will return a  Uint8Array type */
+					decodeArrayBuffer: function decodeArrayBuffer(input, buffer) {
+						var bytes = input.length / 4 * 3;
+						if (!buffer || buffer.byteLength != bytes) {
+							// replace the buffer with a new, appropriately sized one
+							buffer = new ArrayBuffer(bytes);
+						}
+						this.decode(input, buffer);
+
+						return buffer;
+					},
+
+					removePaddingChars: function removePaddingChars(input) {
+						var lkey = this._keyStr.indexOf(input.charAt(input.length - 1));
+						if (lkey == 64) {
+							return input.substring(0, input.length - 1);
+						}
+						return input;
+					},
+
+					decode: function decode(input, arrayBuffer) {
+						//get last chars to see if are valid
+						input = this.removePaddingChars(input);
+						input = this.removePaddingChars(input);
+
+						var bytes = parseInt(input.length / 4 * 3, 10);
+
+						var uarray;
+						var chr1, chr2, chr3;
+						var enc1, enc2, enc3, enc4;
+						var i = 0;
+						var j = 0;
+
+						if (arrayBuffer) uarray = new Uint8Array(arrayBuffer);else uarray = new Uint8Array(bytes);
+
+						input = input.replace(/[^A-Za-z0-9\+\/\=]/g, "");
+
+						for (i = 0; i < bytes; i += 3) {
+							//get the 3 octects in 4 ascii chars
+							enc1 = this._keyStr.indexOf(input.charAt(j++));
+							enc2 = this._keyStr.indexOf(input.charAt(j++));
+							enc3 = this._keyStr.indexOf(input.charAt(j++));
+							enc4 = this._keyStr.indexOf(input.charAt(j++));
+
+							chr1 = enc1 << 2 | enc2 >> 4;
+							chr2 = (enc2 & 15) << 4 | enc3 >> 2;
+							chr3 = (enc3 & 3) << 6 | enc4;
+
+							uarray[i] = chr1;
+							if (enc3 != 64) uarray[i + 1] = chr2;
+							if (enc4 != 64) uarray[i + 2] = chr3;
+						}
+
+						return uarray;
+					}
+				};
+
+				self.addEventListener('message', function (event) {
+					var frame = event.data.frame;
+					var camera = event.data.camera;
+
+					var ab = event.data.ab;
+
+					// convert buffers in place
+					var buffers = frame.buffers;
+					var buffs = [];
+					// if there are too many cached array buffers, drop the unneeded ones
+					if (ab.length > buffers.length) {
+						ab = ab.slice(0, buffer.length);
+					}
+					for (var i = 0; i < buffers.length; i++) {
+						// gradually increase the size of the ab[] array to hold the temp buffers, 
+						// and add null so it gets allocated properly
+						if (ab.length <= i) {
+							ab.push(null);
+						}
+						ab[i] = buffers[i].buffer = b64.decodeArrayBuffer(buffers[i].buffer, ab[i]);
+						buffs.push(buffers[i].buffer);
+					}
+					switch (frame.pixelFormatType) {
+						case "kCVPixelFormatType_420YpCbCr8BiPlanarFullRange":
+							frame.pixelFormat = "YUV420P";
+							break;
+						default:
+							frame.pixelFormat = frame.pixelFormatType;
+							break;
+					}
+
+					postMessage(event.data, buffs);
+				});
+			}.toString(), ')()'], { type: 'application/javascript' }));
+
+			return blobURL;
 		}
 	}, {
 		key: "deviceId",
@@ -2604,6 +2913,11 @@ var ARKitWrapper = function (_EventHandlerBase) {
 		value: function HasARKit() {
 			return typeof window.webkit !== 'undefined';
 		}
+	}, {
+		key: "removeAnchor",
+		value: function removeAnchor(uid) {
+			window.webkit.messageHandlers.removeAnchors.postMessage([uid]);
+		}
 	}]);
 
 	return ARKitWrapper;
@@ -2625,6 +2939,8 @@ ARKitWrapper.SHOW_DEBUG_EVENT = 'arkit-show-debug';
 ARKitWrapper.WINDOW_RESIZE_EVENT = 'arkit-window-resize';
 ARKitWrapper.ON_ERROR = 'on-error';
 ARKitWrapper.AR_TRACKING_CHANGED = 'ar_tracking_changed';
+ARKitWrapper.COMPUTER_VISION_DATA = 'cv_data';
+ARKitWrapper.USER_GRANTED_COMPUTER_VISION_DATA = 'user-granted-cv-data';
 
 // hit test types
 ARKitWrapper.HIT_TEST_TYPE_FEATURE_POINT = 1;
@@ -3930,11 +4246,11 @@ var _FlatDisplay = __webpack_require__(29);
 
 var _FlatDisplay2 = _interopRequireDefault(_FlatDisplay);
 
-var _HeadMountedDisplay = __webpack_require__(35);
+var _HeadMountedDisplay = __webpack_require__(36);
 
 var _HeadMountedDisplay2 = _interopRequireDefault(_HeadMountedDisplay);
 
-var _CameraReality = __webpack_require__(36);
+var _CameraReality = __webpack_require__(37);
 
 var _CameraReality2 = _interopRequireDefault(_CameraReality);
 
@@ -4126,7 +4442,7 @@ var VirtualReality = function (_Reality) {
 
 	_createClass(VirtualReality, [{
 		key: '_start',
-		value: function _start() {}
+		value: function _start(parameters) {}
 
 		/*
   Called when no more active XRSessions are using this Reality
@@ -4181,6 +4497,31 @@ var VirtualReality = function (_Reality) {
 		key: '_getHasLightEstimate',
 		value: function _getHasLightEstimate() {
 			return false;
+		}
+
+		/*
+  Find an XRAnchorOffset that is at floor level below the current head pose
+  returns a Promise that resolves either to an AnchorOffset or null if the floor level is unknown
+  */
+
+	}, {
+		key: '_findFloorAnchor',
+		value: function _findFloorAnchor(display) {
+			var _this2 = this;
+
+			var uid = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+
+			// Copy the head model matrix for the current pose so we have it in the promise below
+			var headModelMatrix = new Float32Array(display._headPose.poseModelMatrix);
+			return new Promise(function (resolve, reject) {
+				// For now, just create an anchor at origin level.  Probably want to use stage more intelligently
+				headModelMatrix[13] = 0;
+				var coordinateSystem = new XRCoordinateSystem(display, XRCoordinateSystem.TRACKER);
+				coordinateSystem._relativeMatrix = headModelMatrix;
+				var anchor = new XRAnchor(coordinateSystem, uid);
+				_this2._addAnchor(anchor, display);
+				resolve(new XRAnchorOffset(anchor.uid));
+			});
 		}
 	}]);
 
@@ -4976,7 +5317,7 @@ var FlatDisplay = function (_XRDisplay) {
 	_createClass(FlatDisplay, [{
 		key: '_start',
 		value: function _start() {
-			var _this2 = this;
+			var parameters = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
 
 			if (this._reality._vrDisplay) {
 				// Use ARCore
@@ -4998,11 +5339,14 @@ var FlatDisplay = function (_XRDisplay) {
 					this._arKitWrapper.addEventListener(_ARKitWrapper2.default.WINDOW_RESIZE_EVENT, this._handleARKitWindowResize.bind(this));
 					this._arKitWrapper.addEventListener(_ARKitWrapper2.default.ON_ERROR, this._handleOnError.bind(this));
 					this._arKitWrapper.addEventListener(_ARKitWrapper2.default.AR_TRACKING_CHANGED, this._handleArTrackingChanged.bind(this));
+					this._arKitWrapper.addEventListener(_ARKitWrapper2.default.COMPUTER_VISION_DATA, this._handleComputerVisionData.bind(this));
 					this._arKitWrapper.waitForInit().then(function () {
-						_this2._arKitWrapper.watch();
+						// doing this in the reality
+						// this._arKitWrapper.watch()
 					});
 				} else {
-					this._arKitWrapper.watch();
+					// doing this in the reality
+					// this._arKitWrapper.watch()
 				}
 			} else {
 				// Use device orientation
@@ -5016,7 +5360,7 @@ var FlatDisplay = function (_XRDisplay) {
 				}
 			}
 			this.running = true;
-			this._reality._start();
+			this._reality._start(parameters);
 		}
 	}, {
 		key: '_stop',
@@ -5110,16 +5454,16 @@ var FlatDisplay = function (_XRDisplay) {
 	}, {
 		key: '_handleARKitInit',
 		value: function _handleARKitInit(ev) {
-			var _this3 = this;
-
-			setTimeout(function () {
-				_this3._arKitWrapper.watch({
-					location: true,
-					camera: true,
-					objects: true,
-					light_intensity: true
-				});
-			}, 1000);
+			// doing this in the reality
+			// 	setTimeout(() => {
+			// 		this._arKitWrapper.watch({
+			// 			location: true,
+			// 			camera: true,
+			// 			objects: true,
+			// 			light_intensity: true,
+			//             computer_vision_data: true
+			// 		})
+			// 	}, 1000)
 		}
 	}, {
 		key: '_handleARKitWindowResize',
@@ -5147,9 +5491,30 @@ var FlatDisplay = function (_XRDisplay) {
 			// #define WEB_AR_TRACKING_STATE_NOT_AVAILABLE        @"ar_tracking_not_available"
 		}
 	}, {
+		key: '_handleComputerVisionData',
+		value: function _handleComputerVisionData(ev) {
+			// Do whatever is needed with the image buffers here, and then call
+			// this._arKitWrapper.requestComputerVisionData(buffers) to request a new one
+			try {
+				this.dispatchEvent(new CustomEvent("videoFrame", {
+					source: this,
+					detail: ev.detail
+				}));
+			} catch (e) {
+				console.error('computer vision callback error', e);
+			}
+		}
+	}, {
+		key: '_requestVideoFrame',
+		value: function _requestVideoFrame(buffers) {
+			this._arKitWrapper._requestComputerVisionData(buffers);
+		}
+	}, {
 		key: '_createSession',
-		value: function _createSession(parameters) {
-			this._start();
+		value: function _createSession() {
+			var parameters = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+
+			this._start(parameters);
 			return _get(FlatDisplay.prototype.__proto__ || Object.getPrototypeOf(FlatDisplay.prototype), '_createSession', this).call(this, parameters);
 		}
 	}, {
@@ -9332,6 +9697,131 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+/*
+Copyright (c) 2011, Daniel Guerrero
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL DANIEL GUERRERO BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+/**
+ * Uses the new array typed in javascript to binary base64 encode/decode
+ * at the moment just decodes a binary base64 encoded
+ * into either an ArrayBuffer (decodeArrayBuffer)
+ * or into an Uint8Array (decode)
+ * 
+ * References:
+ * https://developer.mozilla.org/en/JavaScript_typed_arrays/ArrayBuffer
+ * https://developer.mozilla.org/en/JavaScript_typed_arrays/Uint8Array
+ */
+
+var base64 = function () {
+	function base64() {
+		_classCallCheck(this, base64);
+	}
+
+	_createClass(base64, null, [{
+		key: "decodeArrayBuffer",
+
+
+		/* will return a  Uint8Array type */
+		value: function decodeArrayBuffer(input, buffer) {
+			var bytes = input.length / 4 * 3;
+			if (!buffer || buffer.byteLength != bytes) {
+				// replace the buffer with a new, appropriately sized one
+				buffer = new ArrayBuffer(bytes);
+			}
+			this.decode(input, buffer);
+
+			return buffer;
+		}
+	}, {
+		key: "removePaddingChars",
+		value: function removePaddingChars(input) {
+			var lkey = this._keyStr.indexOf(input.charAt(input.length - 1));
+			if (lkey == 64) {
+				return input.substring(0, input.length - 1);
+			}
+			return input;
+		}
+	}, {
+		key: "decode",
+		value: function decode(input, arrayBuffer) {
+			//get last chars to see if are valid
+			input = this.removePaddingChars(input);
+			input = this.removePaddingChars(input);
+
+			var bytes = parseInt(input.length / 4 * 3, 10);
+
+			var uarray;
+			var chr1, chr2, chr3;
+			var enc1, enc2, enc3, enc4;
+			var i = 0;
+			var j = 0;
+
+			if (arrayBuffer) uarray = new Uint8Array(arrayBuffer);else uarray = new Uint8Array(bytes);
+
+			input = input.replace(/[^A-Za-z0-9\+\/\=]/g, "");
+
+			for (i = 0; i < bytes; i += 3) {
+				//get the 3 octects in 4 ascii chars
+				enc1 = this._keyStr.indexOf(input.charAt(j++));
+				enc2 = this._keyStr.indexOf(input.charAt(j++));
+				enc3 = this._keyStr.indexOf(input.charAt(j++));
+				enc4 = this._keyStr.indexOf(input.charAt(j++));
+
+				chr1 = enc1 << 2 | enc2 >> 4;
+				chr2 = (enc2 & 15) << 4 | enc3 >> 2;
+				chr3 = (enc3 & 3) << 6 | enc4;
+
+				uarray[i] = chr1;
+				if (enc3 != 64) uarray[i + 1] = chr2;
+				if (enc4 != 64) uarray[i + 2] = chr3;
+			}
+
+			return uarray;
+		}
+	}]);
+
+	return base64;
+}();
+
+exports.default = base64;
+
+base64._keyStr = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
+
+/***/ }),
+/* 36 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
 var _XRDisplay2 = __webpack_require__(5);
 
 var _XRDisplay3 = _interopRequireDefault(_XRDisplay2);
@@ -9513,7 +10003,7 @@ var HeadMountedDisplay = function (_XRDisplay) {
 exports.default = HeadMountedDisplay;
 
 /***/ }),
-/* 36 */
+/* 37 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -9557,7 +10047,7 @@ var _ARKitWrapper = __webpack_require__(11);
 
 var _ARKitWrapper2 = _interopRequireDefault(_ARKitWrapper);
 
-var _ARCoreCameraRenderer = __webpack_require__(37);
+var _ARCoreCameraRenderer = __webpack_require__(38);
 
 var _ARCoreCameraRenderer2 = _interopRequireDefault(_ARCoreCameraRenderer);
 
@@ -9680,6 +10170,8 @@ var CameraReality = function (_Reality) {
 		value: function _start() {
 			var _this2 = this;
 
+			var parameters = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+
 			if (this._running) return;
 			this._running = true;
 
@@ -9698,10 +10190,10 @@ var CameraReality = function (_Reality) {
 					this._arKitWrapper = _ARKitWrapper2.default.GetOrCreate();
 					this._arKitWrapper.addEventListener(_ARKitWrapper2.default.WATCH_EVENT, this._handleARKitWatch.bind(this));
 					this._arKitWrapper.waitForInit().then(function () {
-						_this2._arKitWrapper.watch();
+						_this2._arKitWrapper.watch(parameters);
 					});
 				} else {
-					this._arKitWrapper.watch();
+					this._arKitWrapper.watch(parameters);
 				}
 			} else {
 				// Using WebRTC
@@ -9777,6 +10269,37 @@ var CameraReality = function (_Reality) {
 					}
 				}
 			}
+			if (ev.detail && ev.detail.removedObjects) {
+				var _iteratorNormalCompletion3 = true;
+				var _didIteratorError3 = false;
+				var _iteratorError3 = undefined;
+
+				try {
+					for (var _iterator3 = ev.detail.removedObjects[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+						var removedAnchor = _step3.value;
+
+						this._deleteAnchorFromARKitUpdate(removedAnchor);
+					}
+				} catch (err) {
+					_didIteratorError3 = true;
+					_iteratorError3 = err;
+				} finally {
+					try {
+						if (!_iteratorNormalCompletion3 && _iterator3.return) {
+							_iterator3.return();
+						}
+					} finally {
+						if (_didIteratorError3) {
+							throw _iteratorError3;
+						}
+					}
+				}
+			}
+		}
+	}, {
+		key: '_deleteAnchorFromARKitUpdate',
+		value: function _deleteAnchorFromARKitUpdate(anchorUUID) {
+			this._anchors.delete(anchorUUID);
 		}
 	}, {
 		key: '_handleARKitAddObject',
@@ -9881,9 +10404,7 @@ var CameraReality = function (_Reality) {
 	}, {
 		key: '_removeAnchor',
 		value: function _removeAnchor(uid) {
-			// returns void
-			// TODO talk to ARKit to delete an anchor
-			this._anchors.delete(uid);
+			_ARKitWrapper2.default.removeAnchor(uid);
 		}
 	}, {
 		key: '_pickARKitHit',
@@ -9948,7 +10469,7 @@ var CameraReality = function (_Reality) {
 				// Perform a hit test using the ARCore data
 				var _hits = this._vrDisplay.hitTest(normalizedScreenX, normalizedScreenY);
 				for (var _i = 0; _i < _hits.length; _i++) {
-					_hits[_i].transform[13] += _XRViewPose2.default.SITTING_EYE_HEIGHT;
+					_hits[_i].modelMatrix[13] += _XRViewPose2.default.SITTING_EYE_HEIGHT;
 				}
 				if (_hits.length == 0) {
 					return null;
@@ -9979,6 +10500,20 @@ var CameraReality = function (_Reality) {
 				return null;
 			}
 		}
+
+		/*
+  No floor in AR
+  */
+
+	}, {
+		key: '_findFloorAnchor',
+		value: function _findFloorAnchor(display) {
+			var uid = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+
+			return new Promise(function (resolve, reject) {
+				resolve(null);
+			});
+		}
 	}]);
 
 	return CameraReality;
@@ -9987,7 +10522,7 @@ var CameraReality = function (_Reality) {
 exports.default = CameraReality;
 
 /***/ }),
-/* 37 */
+/* 38 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
