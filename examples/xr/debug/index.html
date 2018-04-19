@@ -210,8 +210,11 @@
           planeMeshGroup.add(planeMesh)
           planeMesh = planeMeshGroup
           planeGroup.add(planeMesh);
+          var axesHelper = new THREE.AxesHelper( 0.1 );
+          planeGroup.add( axesHelper );
           scene.add(planeGroup);
           planeGroup.current = true;
+          planeGroup.planeMesh = planeMesh
           planesMap.set(plane.id, planeGroup);
           var mm = plane.modelMatrix;
           matrix.set(
@@ -240,7 +243,7 @@
         }else{
           var planeGroup = planesMap.get(plane.id);
           planeGroup.current = true;
-          var planeMesh = planeGroup.children[0];
+          var planeMesh = planeGroup.planeMesh;
           if ((planeGroup.extent[0] != plane.extent[0]) || (planeGroup.extent[1] != plane.extent[1])) {
             planeGroup.remove(planeMesh)          
             planeGroup.extent = [plane.extent[0], plane.extent[1]];  // avoid caching
@@ -249,6 +252,7 @@
             var planeMeshGroup = new THREE.Group();
             planeMeshGroup.add(planeMesh)
             planeMesh = planeMeshGroup
+            planeGroup.planeMesh = planeMesh
             planeGroup.add(planeMesh);
           }
           var mm = plane.modelMatrix;
