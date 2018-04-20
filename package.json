@@ -1,6 +1,6 @@
 {
   "name": "three.xr.js",
-  "version": "0.1.10",
+  "version": "0.1.11",
   "description": "Library to build WebXR experiences with three.js",
   "main": "dist/three.xr.js",
   "scripts": {
