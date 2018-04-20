@@ -1311,9 +1311,9 @@ var XRSession = function (_EventHandlerBase) {
 		value: function end() {
 			if (this._ended) return;
 			for (var i = 0; i < this._frameAnchors.length; i++) {
-				this._display._reality._removeAnchor(this._frameAnchors[i]);
+				this._display._reality._removeAnchor(this._frameAnchors[i].uid);
 			}
-			this._frameAnchors = null;
+			this._frameAnchors = [];
 			this._ended = true;
 			this._display._stop();
 			return new Promise(function (resolve, reject) {
@@ -3022,8 +3022,8 @@ var ARKitWrapper = function (_EventHandlerBase) {
 				planeNormal: vec3.create(),
 				planeIntersection: vec3.create(),
 				planeIntersectionLocal: vec3.create(),
-				planeHit: mat4.create()
-				//planeQuaternion: quat.create()
+				planeHit: mat4.create(),
+				planeQuaternion: quat.create()
 			};
 
 			/**
@@ -3122,12 +3122,17 @@ var ARKitWrapper = function (_EventHandlerBase) {
 					setMat4FromArray(hitVars.planeMatrix, plane.modelMatrix);
 
 					// Get the position of the anchor in world-space.
-					vec3.set(hitVars.planeCenter, 0, 0, 0);
+					vec3.set(hitVars.planeCenter, plane.center.x, plane.center.y, plane.center.z);
 					vec3.transformMat4(hitVars.planePosition, hitVars.planeCenter, hitVars.planeMatrix);
 
+					hitVars.planeAlignment = plane.alignment;
+
 					// Get the plane normal.
-					// TODO: use alignment to determine this.
-					vec3.set(hitVars.planeNormal, 0, 1, 0);
+					if (hitVars.planeAlignment === 0) {
+						vec3.set(hitVars.planeNormal, 0, 1, 0);
+					} else {
+						vec3.set(hitVars.planeNormal, hitVars.planeMatrix[4], hitVars.planeMatrix[5], hitVars.planeMatrix[6]);
+					}
 
 					// Check if the ray intersects the plane.
 					var t = rayIntersectsPlane(hitVars.planeNormal, hitVars.planePosition, hitVars.worldRayStart, hitVars.worldRayDir);
@@ -3163,7 +3168,10 @@ var ARKitWrapper = function (_EventHandlerBase) {
       */
 
 					////////////////////////////////////////////////
+					mat4.getRotation(hitVars.planeQuaternion, hitVars.planeMatrix);
+
 					// Test by converting intersection into plane-space.
+
 					mat4.invert(hitVars.planeMatrix, hitVars.planeMatrix);
 					vec3.transformMat4(hitVars.planeIntersectionLocal, hitVars.planeIntersection, hitVars.planeMatrix);
 
@@ -3180,7 +3188,8 @@ var ARKitWrapper = function (_EventHandlerBase) {
 					////////////////////////////////////////////////
 
 					// The intersection is valid - create a matrix from hit position.
-					mat4.fromTranslation(hitVars.planeHit, hitVars.planeIntersection);
+					//mat4.fromTranslation(hitVars.planeHit, hitVars.planeIntersection);
+					mat4.fromRotationTranslation(hitVars.planeHit, hitVars.planeQuaternion, hitVars.planeIntersection);
 					var hit = new VRHit();
 					for (var j = 0; j < 16; j++) {
 						hit.modelMatrix[j] = hitVars.planeHit[j];
@@ -3363,6 +3372,22 @@ var ARKitWrapper = function (_EventHandlerBase) {
 			window.webkit.messageHandlers.removeAnchors.postMessage([uid]);
 		}
 
+		/*
+   * ask for an image anchor.
+   * 
+   * Provide a uid for the anchor that will be created.
+   * Supply the image in an ArrayBuffer, typedArray or ImageData
+   * width and height are in meters 
+   */
+
+	}, {
+		key: "createImageAnchor",
+		value: function createImageAnchor(uid, buffer, width, height) {
+			var b64 = _base64Binary2.default.encode(buffer);
+
+			// something like addAnchor?
+		}
+
 		/* 
   RACE CONDITION:  call stop, then watch:  stop does not set isWatching false until it gets a message back from the app,
   so watch will return and not issue a watch command.   May want to set isWatching false immediately?
@@ -3518,8 +3543,8 @@ var ARKitWrapper = function (_EventHandlerBase) {
   			{
   				uuid: DOMString (unique UID),
   				transform: [4x4 column major affine transform],
-  				h_plane_center: {x, y, z},  // only on planes
-  				h_plane_center: {x, y, z}	// only on planes, where x/z are used,
+  				plane_center: {x, y, z},  // only on planes
+  				plane_center: {x, y, z}	// only on planes, where x/z are used,
   			}, ...
   		],
   		"removeObjects": [
@@ -3529,8 +3554,8 @@ var ARKitWrapper = function (_EventHandlerBase) {
   			{
   				uuid: DOMString (unique UID),
   				transform: [4x4 column major affine transform]
-  				h_plane_center: {x, y, z},  // only on planes
-  				h_plane_center: {x, y, z}	// only on planes, where x/z are used,
+  				plane_center: {x, y, z},  // only on planes
+  				plane_center: {x, y, z}	// only on planes, where x/z are used,
   			}, ...
   		]
   	}
@@ -3552,12 +3577,13 @@ var ARKitWrapper = function (_EventHandlerBase) {
 			if (data.newObjects.length) {
 				for (var i = 0; i < data.newObjects.length; i++) {
 					var element = data.newObjects[i];
-					if (element.h_plane_center) {
+					if (element.plane_center) {
 						this.planes_.set(element.uuid, {
 							id: element.uuid,
-							center: element.h_plane_center,
-							extent: [element.h_plane_extent.x, element.h_plane_extent.z],
-							modelMatrix: element.transform
+							center: element.plane_center,
+							extent: [element.plane_extent.x, element.plane_extent.z],
+							modelMatrix: element.transform,
+							alignment: element.plane_alignment
 						});
 					} else {
 						this.anchors_.set(element.uuid, {
@@ -3582,18 +3608,19 @@ var ARKitWrapper = function (_EventHandlerBase) {
 			if (data.objects.length) {
 				for (var _i3 = 0; _i3 < data.objects.length; _i3++) {
 					var _element2 = data.objects[_i3];
-					if (_element2.h_plane_center) {
+					if (_element2.plane_center) {
 						var plane = this.planes_.get(_element2.uuid);
 						if (!plane) {
 							this.planes_.set(_element2.uuid, {
 								id: _element2.uuid,
-								center: _element2.h_plane_center,
-								extent: [_element2.h_plane_extent.x, _element2.h_plane_extent.z],
-								modelMatrix: _element2.transform
+								center: _element2.plane_center,
+								extent: [_element2.plane_extent.x, _element2.plane_extent.z],
+								modelMatrix: _element2.transform,
+								alignment: _element2.plane_alignment
 							});
 						} else {
-							plane.center = _element2.h_plane_center;
-							plane.extent = [_element2.h_plane_extent.x, _element2.h_plane_extent.z];
+							plane.center = _element2.plane_center;
+							plane.extent = [_element2.plane_extent.x, _element2.plane_extent.z];
 							plane.modelMatrix = _element2.transform;
 						}
 					} else {
@@ -4034,9 +4061,11 @@ ARKitWrapper.USER_GRANTED_COMPUTER_VISION_DATA = 'user-granted-cv-data';
 
 // hit test types
 ARKitWrapper.HIT_TEST_TYPE_FEATURE_POINT = 1;
-ARKitWrapper.HIT_TEST_TYPE_EXISTING_PLANE = 8;
 ARKitWrapper.HIT_TEST_TYPE_ESTIMATED_HORIZONTAL_PLANE = 2;
+ARKitWrapper.HIT_TEST_TYPE_ESTIMATED_VERTICAL_PLANE = 4;
+ARKitWrapper.HIT_TEST_TYPE_EXISTING_PLANE = 8;
 ARKitWrapper.HIT_TEST_TYPE_EXISTING_PLANE_USING_EXTENT = 16;
+ARKitWrapper.HIT_TEST_TYPE_EXISTING_PLANE_USING_GEOMETRY = 32;
 
 ARKitWrapper.HIT_TEST_TYPE_ALL = ARKitWrapper.HIT_TEST_TYPE_FEATURE_POINT | ARKitWrapper.HIT_TEST_TYPE_EXISTING_PLANE | ARKitWrapper.HIT_TEST_TYPE_ESTIMATED_HORIZONTAL_PLANE | ARKitWrapper.HIT_TEST_TYPE_EXISTING_PLANE_USING_EXTENT;
 
@@ -6997,7 +7026,7 @@ var base64 = function () {
 	}
 
 	_createClass(base64, null, [{
-		key: "decodeLength",
+		key: 'decodeLength',
 		value: function decodeLength(input) {
 			return input.length / 4 * 3;
 		}
@@ -7005,7 +7034,7 @@ var base64 = function () {
 		/* will return a  Uint8Array type */
 
 	}, {
-		key: "decodeArrayBuffer",
+		key: 'decodeArrayBuffer',
 		value: function decodeArrayBuffer(input, buffer) {
 			var bytes = input.length / 4 * 3;
 			if (!buffer || buffer.byteLength != bytes) {
@@ -7017,7 +7046,7 @@ var base64 = function () {
 			return buffer;
 		}
 	}, {
-		key: "removePaddingChars",
+		key: 'removePaddingChars',
 		value: function removePaddingChars(input) {
 			var lkey = this._keyStr.indexOf(input.charAt(input.length - 1));
 			if (lkey == 64) {
@@ -7026,7 +7055,7 @@ var base64 = function () {
 			return input;
 		}
 	}, {
-		key: "decode",
+		key: 'decode',
 		value: function decode(input, arrayBuffer) {
 			//get last chars to see if are valid
 			input = this.removePaddingChars(input);
@@ -7061,6 +7090,69 @@ var base64 = function () {
 			}
 
 			return uarray;
+		}
+
+		// pass in a typedArray, ArrayBuffer, or ImageData object
+
+	}, {
+		key: 'encode',
+		value: function encode(buffer) {
+			var base64 = '';
+			var encodings = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+
+			var bytes = buffer; // assume it's a typedArrayBuffer 
+
+			if (buffer instanceof ArrayBuffer) {
+				bytes = new Uint8Array(arrayBuffer);
+			} else if (buffer instanceof ImageData) {
+				bytes = buffer.data;
+			}
+
+			var byteLength = buffer.length;
+			var byteRemainder = byteLength % 3;
+			var mainLength = byteLength - byteRemainder;
+
+			var a, b, c, d;
+			var chunk;
+
+			// Main loop deals with bytes in chunks of 3
+			for (var i = 0; i < mainLength; i = i + 3) {
+				// Combine the three bytes into a single integer
+				chunk = bytes[i] << 16 | bytes[i + 1] << 8 | bytes[i + 2];
+
+				// Use bitmasks to extract 6-bit segments from the triplet
+				a = (chunk & 16515072) >> 18; // 16515072 = (2^6 - 1) << 18
+				b = (chunk & 258048) >> 12; // 258048   = (2^6 - 1) << 12
+				c = (chunk & 4032) >> 6; // 4032     = (2^6 - 1) << 6
+				d = chunk & 63; // 63       = 2^6 - 1
+
+				// Convert the raw binary segments to the appropriate ASCII encoding
+				base64 += encodings[a] + encodings[b] + encodings[c] + encodings[d];
+			}
+
+			// Deal with the remaining bytes and padding
+			if (byteRemainder == 1) {
+				chunk = bytes[mainLength];
+
+				a = (chunk & 252) >> 2; // 252 = (2^6 - 1) << 2
+
+				// Set the 4 least significant bits to zero
+				b = (chunk & 3) << 4; // 3   = 2^2 - 1
+
+				base64 += encodings[a] + encodings[b] + '==';
+			} else if (byteRemainder == 2) {
+				chunk = bytes[mainLength] << 8 | bytes[mainLength + 1];
+
+				a = (chunk & 64512) >> 10; // 64512 = (2^6 - 1) << 10
+				b = (chunk & 1008) >> 4; // 1008  = (2^6 - 1) << 4
+
+				// Set the 2 least significant bits to zero
+				c = (chunk & 15) << 2; // 15    = 2^4 - 1
+
+				base64 += encodings[a] + encodings[b] + encodings[c] + '=';
+			}
+
+			return base64;
 		}
 	}]);
 

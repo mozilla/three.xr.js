@@ -145,6 +145,10 @@
               // Exiting AR.
               button.textContent = 'ENTER AR';
               renderer.xr.endSession();
+              for (var [key, value] of planesMap) {
+                  planesMap.delete(key)
+                  scene.remove(value)
+              }
               sky.visible = true;
             }
           }else{
@@ -178,7 +182,7 @@
         if (renderer.xr.displays[0] && renderer.xr.displays[0]._arKitWrapper) {
           // console.log(renderer.xr.displays[0]._arKitWrapper.anchors);
           if (renderer.xr.displays[0]._arKitWrapper.anchors_.size > 0){
-            console.log('---anchors', renderer.xr.displays[0]._arKitWrapper.anchors_);
+            //console.log('---anchors', renderer.xr.displays[0]._arKitWrapper.anchors_);
           }
           for (var [key, value] of planesMap) {
             value.current = false;
