@@ -17,8 +17,6 @@ THREE.WebXRManager = function (options = {}, displays, renderer, camera, scene, 
 
   this.autoStarted = false;
 
-  this.matrixWorldInverse = new THREE.Matrix4();
-
   this.poseFound = false;
   function handleFrame (frame) {
     if (this.sessionActive) {
