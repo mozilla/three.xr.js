@@ -111,16 +111,16 @@ THREE.WebXRManager = function (options = {}, displays, renderer, camera, scene, 
       renderer.domElement.style.width = '100%';
       renderer.domElement.style.height = '100%';
       if (reality === 'ar' && autoPresenting) {
-        self.startPresenting();
+        self.startPresenting(reality);
       }
     }).catch(err => {
       console.error('Error requesting session', err);
     });
   };
 
-  this.startPresenting = function () {
+  this.startPresenting = function (reality) {
     // VR Mode
-    if (displayVR && displayVR._vrDisplay) {
+    if (reality === 'vr' && displayVR && displayVR._vrDisplay) {
       renderer.vr.enabled = true;
       displayVR._vrDisplay.isPresenting ? displayVR._vrDisplay.exitPresent() : displayVR._vrDisplay.requestPresent([{source: this.renderer.domElement}]);
     } else {
@@ -200,7 +200,7 @@ THREE.WebXRManager = function (options = {}, displays, renderer, camera, scene, 
     }
   }
   // Start and presenting an AR session
-  if (arSupportedDisplays === 1 && vrSupportedDisplays === 0 && this.options.AR_AUTOSTART) {
+  if (arSupportedDisplays === 1 && this.options.AR_AUTOSTART) {
     this.autoStarted = true;
     this.startSession(displayToAutoStart, 'ar', true);
   }
